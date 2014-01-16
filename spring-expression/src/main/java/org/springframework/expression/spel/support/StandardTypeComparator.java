@@ -65,10 +65,10 @@ public class StandardTypeComparator implements TypeComparator {
 			}
 
 			if (leftNumber instanceof Long || rightNumber instanceof Long) {
-				return Long.compare(leftNumber.longValue(), rightNumber.longValue());
+                Long.valueOf(leftNumber.longValue()).compareTo(rightNumber.longValue());
 			}
 
-			return Integer.compare(leftNumber.intValue(), rightNumber.intValue());
+			return Integer.valueOf((leftNumber.intValue())).compareTo(rightNumber.intValue());
 		}
 
 		try {
