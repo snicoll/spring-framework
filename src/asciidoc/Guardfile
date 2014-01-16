@@ -2,13 +2,14 @@ require 'asciidoctor'
 require 'erb'
 require 'fileutils'
 
-FileUtils.mkdir_p('build')
-FileUtils.cp_r('images','build')
+buildDir = File.expand_path("../../../build/reference/htmlsingle", __FILE__)
+FileUtils.mkdir_p(buildDir)
+FileUtils.cp_r('images',buildDir)
 
 guard 'shell' do
   watch(/^.*\.adoc$/) {|m|
-    Asciidoctor.render_file(m[0], :to_dir => File.expand_path("../../../build/reference/htmlsingle", __FILE__), :safe => Asciidoctor::SafeMode::UNSAFE, :attributes=> {'idprefix' => '', 'idseparator' => '-', 'copycss' => '', 'icons' => 'font', 'source-highlighter' => 'prettify', 'sectanchors' => '', 'doctype' => 'book','toc2' => '', 'spring-version' => '4.0.0.BUILD-SNAPSHOT', 'revnumber' => '4.0.0.BUILD-SNAPSHOT' })
-    puts "Finished rendering file #{m[0]} to #{File.expand_path("../../../build/reference/htmlsingle", __FILE__)}"
+    Asciidoctor.render_file(m[0], :to_dir => buildDir, :safe => Asciidoctor::SafeMode::UNSAFE, :attributes=> {'idprefix' => '', 'idseparator' => '-', 'copycss' => '', 'icons' => 'font', 'source-highlighter' => 'prettify', 'sectanchors' => '', 'doctype' => 'book','toc2' => '', 'spring-version' => '4.0.0.BUILD-SNAPSHOT', 'revnumber' => '4.0.0.BUILD-SNAPSHOT' })
+    puts "Finished rendering file #{m[0]} to #{buildDir}"
   }
 end
 
