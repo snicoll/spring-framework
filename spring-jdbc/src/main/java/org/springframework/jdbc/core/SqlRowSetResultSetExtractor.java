@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
 
+import org.springframework.core.Java7Required;
 import org.springframework.core.JdkVersion;
 import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -109,6 +110,7 @@ public class SqlRowSetResultSetExtractor implements ResultSetExtractor<SqlRowSet
 	/**
 	 * Inner class to avoid a hard dependency on JDBC 4.1 RowSetProvider class.
 	 */
+	@Java7Required
 	private static class StandardCachedRowSetFactory implements CachedRowSetFactory {
 
 		private final RowSetFactory rowSetFactory;
