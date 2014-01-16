@@ -16,6 +16,8 @@
 
 package org.springframework.beans.propertyeditors;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.beans.PropertyEditorSupport;
 import java.time.ZoneId;
 
@@ -28,6 +30,7 @@ import java.time.ZoneId;
  * @see java.time.ZoneId
  * @see TimeZoneEditor
  */
+@IgnoreJRERequirement // JSR-310
 public class ZoneIdEditor extends PropertyEditorSupport {
 
 	@Override

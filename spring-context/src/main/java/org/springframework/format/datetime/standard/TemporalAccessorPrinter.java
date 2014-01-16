@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.format.Printer;
 
 /**
@@ -31,6 +32,7 @@ import org.springframework.format.Printer;
  * @see DateTimeContextHolder#getFormatter
  * @see java.time.format.DateTimeFormatter#format(java.time.temporal.TemporalAccessor)
  */
+@IgnoreJRERequirement // JSR-310
 public final class TemporalAccessorPrinter implements Printer<TemporalAccessor> {
 
 	private final DateTimeFormatter formatter;

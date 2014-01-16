@@ -21,6 +21,7 @@ import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.i18n.TimeZoneAwareLocaleContext;
@@ -34,6 +35,7 @@ import org.springframework.context.i18n.TimeZoneAwareLocaleContext;
  * @since 4.0
  * @see DateTimeContextHolder
  */
+@IgnoreJRERequirement // JSR-310
 public class DateTimeContext {
 
 	private Chronology chronology;

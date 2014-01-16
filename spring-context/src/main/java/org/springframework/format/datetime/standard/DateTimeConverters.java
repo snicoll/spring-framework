@@ -26,6 +26,7 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.format.datetime.DateFormatterRegistrar;
@@ -42,6 +43,7 @@ import org.springframework.format.datetime.DateFormatterRegistrar;
  * @author Juergen Hoeller
  * @since 4.0.1
  */
+@IgnoreJRERequirement // JSR-310
 final class DateTimeConverters {
 
 	/**
@@ -83,7 +85,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class LocalDateTimeToLocalDateConverter implements Converter<LocalDateTime, LocalDate> {
 
 		@Override
@@ -92,7 +94,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class LocalDateTimeToLocalTimeConverter implements Converter<LocalDateTime, LocalTime> {
 
 		@Override
@@ -101,7 +103,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class ZonedDateTimeToLocalDateConverter implements Converter<ZonedDateTime, LocalDate> {
 
 		@Override
@@ -110,7 +112,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class ZonedDateTimeToLocalTimeConverter implements Converter<ZonedDateTime, LocalTime> {
 
 		@Override
@@ -119,7 +121,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class ZonedDateTimeToLocalDateTimeConverter implements Converter<ZonedDateTime, LocalDateTime> {
 
 		@Override
@@ -128,7 +130,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class ZonedDateTimeToOffsetDateTimeConverter implements Converter<ZonedDateTime, OffsetDateTime> {
 
 		@Override
@@ -137,7 +139,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class ZonedDateTimeToInstantConverter implements Converter<ZonedDateTime, Instant> {
 
 		@Override
@@ -147,6 +149,7 @@ final class DateTimeConverters {
 		}
 	}
 
+    @IgnoreJRERequirement
 	private static class OffsetDateTimeToLocalDateConverter implements Converter<OffsetDateTime, LocalDate> {
 
 		@Override
@@ -155,7 +158,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class OffsetDateTimeToLocalTimeConverter implements Converter<OffsetDateTime, LocalTime> {
 
 		@Override
@@ -164,7 +167,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class OffsetDateTimeToLocalDateTimeConverter implements Converter<OffsetDateTime, LocalDateTime> {
 
 		@Override
@@ -173,7 +176,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class OffsetDateTimeToZonedDateTimeConverter implements Converter<OffsetDateTime, ZonedDateTime> {
 
 		@Override
@@ -182,7 +185,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class OffsetDateTimeToInstantConverter implements Converter<OffsetDateTime, Instant> {
 
 		@Override
@@ -191,7 +194,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToZonedDateTimeConverter implements Converter<Calendar, ZonedDateTime> {
 
 		@Override
@@ -200,7 +203,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToOffsetDateTimeConverter implements Converter<Calendar, OffsetDateTime> {
 
 		@Override
@@ -209,7 +212,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToLocalDateConverter implements Converter<Calendar, LocalDate> {
 
 		@Override
@@ -218,7 +221,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToLocalTimeConverter implements Converter<Calendar, LocalTime> {
 
 		@Override
@@ -227,7 +230,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToLocalDateTimeConverter implements Converter<Calendar, LocalDateTime> {
 
 		@Override
@@ -236,7 +239,7 @@ final class DateTimeConverters {
 		}
 	}
 
-
+    @IgnoreJRERequirement
 	private static class CalendarToInstantConverter implements Converter<Calendar, Instant> {
 
 		@Override
@@ -247,7 +250,8 @@ final class DateTimeConverters {
 	}
 
 
-	private static class LongToInstantConverter implements Converter<Long, Instant> {
+    @IgnoreJRERequirement
+    private static class LongToInstantConverter implements Converter<Long, Instant> {
 
 		@Override
 		public Instant convert(Long source) {
@@ -256,6 +260,7 @@ final class DateTimeConverters {
 	}
 
 
+    @IgnoreJRERequirement
 	private static class InstantToLongConverter implements Converter<Instant, Long> {
 
 		@Override

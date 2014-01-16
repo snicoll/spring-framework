@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import javax.websocket.*;
 import javax.websocket.ClientEndpointConfig.Configurator;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.task.AsyncListenableTaskExecutor;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -129,6 +130,7 @@ public class StandardWebSocketClient extends AbstractWebSocketClient {
 		return result;
 	}
 
+    @IgnoreJRERequirement // fine as this part is JDK7 dependent anyway
 	private InetAddress getLocalHost() {
 		try {
 			return InetAddress.getLocalHost();

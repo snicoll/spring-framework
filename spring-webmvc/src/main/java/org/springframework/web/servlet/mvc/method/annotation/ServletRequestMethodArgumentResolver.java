@@ -28,6 +28,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -127,6 +128,7 @@ public class ServletRequestMethodArgumentResolver implements HandlerMethodArgume
 	/**
 	 * Inner class to avoid a hard-coded dependency on Java 8's {@link java.time.ZoneId}.
 	 */
+    @IgnoreJRERequirement // JSR-310
 	private static class ZoneIdResolver {
 
 		public static Object resolveZoneId(HttpServletRequest request) {

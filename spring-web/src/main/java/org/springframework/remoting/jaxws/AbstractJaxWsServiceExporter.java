@@ -26,6 +26,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.WebServiceProvider;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -189,6 +190,7 @@ public abstract class AbstractJaxWsServiceExporter implements BeanFactoryAware, 
 	 * @see Endpoint#create(Object)
 	 * @see Endpoint#create(String, Object)
 	 */
+    @IgnoreJRERequirement // Endpoint#create with WebServiceFeature[]
 	protected Endpoint createEndpoint(Object bean) {
 		if (this.endpointFeatures != null || this.webServiceFeatures != null) {
 			WebServiceFeature[] endpointFeaturesToUse = this.endpointFeatures;

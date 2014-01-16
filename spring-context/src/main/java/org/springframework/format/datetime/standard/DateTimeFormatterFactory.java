@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.TimeZone;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @see #setDateTimeStyle
  * @see DateTimeFormatterFactoryBean
  */
+@IgnoreJRERequirement // JSR-310
 public class DateTimeFormatterFactory {
 
 	private String pattern;

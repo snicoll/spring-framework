@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.format.Parser;
 
 /**
@@ -43,6 +44,7 @@ import org.springframework.format.Parser;
  * @see java.time.OffsetDateTime#parse(CharSequence, java.time.format.DateTimeFormatter)
  * @see java.time.OffsetTime#parse(CharSequence, java.time.format.DateTimeFormatter)
  */
+@IgnoreJRERequirement // JSR-310
 public final class TemporalAccessorParser implements Parser<TemporalAccessor> {
 
 	private final Class<? extends TemporalAccessor> temporalAccessorType;

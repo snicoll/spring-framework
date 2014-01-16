@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.Locale;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.format.Formatter;
 
 /**
@@ -31,6 +32,7 @@ import org.springframework.format.Formatter;
  * @since 4.0
  * @see java.time.Instant#parse
  */
+@IgnoreJRERequirement // JSR-310
 public class InstantFormatter implements Formatter<Instant> {
 
 	@Override

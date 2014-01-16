@@ -22,6 +22,7 @@ import java.io.IOException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -44,6 +45,7 @@ import org.springframework.util.FileCopyUtils;
  * @see org.springframework.remoting.caucho.HessianProxyFactoryBean
  * @see org.springframework.remoting.httpinvoker.SimpleHttpInvokerServiceExporter
  */
+@IgnoreJRERequirement // Sun's HTTP server
 public class SimpleHessianServiceExporter extends HessianExporter implements HttpHandler {
 
 	/**

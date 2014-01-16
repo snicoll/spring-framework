@@ -16,6 +16,8 @@
 
 package org.springframework.core;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -28,6 +30,7 @@ import java.lang.reflect.Parameter;
  * @since 4.0
  * @see java.lang.reflect.Parameter#getName()
  */
+@IgnoreJRERequirement // Java8 only
 public class StandardReflectionParameterNameDiscoverer implements ParameterNameDiscoverer {
 
 	@Override

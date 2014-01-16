@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.convert.converter.Converter;
 
 /**
@@ -35,6 +36,7 @@ import org.springframework.core.convert.converter.Converter;
  * @since 4.0.1
  * @see java.util.GregorianCalendar#from(java.time.ZonedDateTime)
  */
+@IgnoreJRERequirement // JSR-310
 final class ZonedDateTimeToCalendarConverter implements Converter<ZonedDateTime, Calendar> {
 
 	@Override

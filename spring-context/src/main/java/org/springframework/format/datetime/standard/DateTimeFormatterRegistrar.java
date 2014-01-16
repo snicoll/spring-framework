@@ -28,6 +28,7 @@ import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.format.FormatterRegistrar;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -46,6 +47,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
  * @see org.springframework.format.datetime.DateFormatterRegistrar
  * @see org.springframework.format.datetime.joda.DateTimeFormatterFactoryBean
  */
+@IgnoreJRERequirement  // JSR-310
 public class DateTimeFormatterRegistrar implements FormatterRegistrar {
 
 	private static enum Type {DATE, TIME, DATE_TIME}

@@ -19,6 +19,7 @@ package org.springframework.format.datetime.standard;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.NamedThreadLocal;
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.core.NamedThreadLocal;
  * @author Juergen Hoeller
  * @since 4.0
  */
+@IgnoreJRERequirement // JSR-310
 public final class DateTimeContextHolder {
 
 	private static final ThreadLocal<DateTimeContext> dateTimeContextHolder =

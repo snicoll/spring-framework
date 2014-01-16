@@ -19,6 +19,7 @@ package org.springframework.core.convert.support;
 import java.time.ZoneId;
 import java.util.TimeZone;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.convert.converter.Converter;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.core.convert.converter.Converter;
  * @since 4.0
  * @see TimeZone#getTimeZone(java.time.ZoneId)
  */
+@IgnoreJRERequirement // JSR-310
 final class ZoneIdToTimeZoneConverter implements Converter<ZoneId, TimeZone> {
 
 	@Override

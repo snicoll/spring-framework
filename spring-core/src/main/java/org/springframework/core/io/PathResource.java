@@ -28,6 +28,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.util.Assert;
 
 /**
@@ -39,6 +40,7 @@ import org.springframework.util.Assert;
  * @since 4.0
  * @see java.nio.file.Path
  */
+@IgnoreJRERequirement // Java8 only
 public class PathResource extends AbstractResource implements WritableResource {
 
 	private final Path path;
