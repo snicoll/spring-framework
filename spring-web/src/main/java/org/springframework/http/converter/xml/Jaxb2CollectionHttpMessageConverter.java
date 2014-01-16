@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
@@ -56,6 +57,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
  * @author Rossen Stoyanchev
  * @since 3.2
  */
+@IgnoreJRERequirement // Java6 only
 public class Jaxb2CollectionHttpMessageConverter<T extends Collection>
 		extends AbstractJaxb2HttpMessageConverter<T> implements GenericHttpMessageConverter<T> {
 

@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.util.Assert;
 
@@ -33,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Arjen Poutsma
  * @since 3.0
  */
+@IgnoreJRERequirement // Java6 only
 public abstract class AbstractJaxb2HttpMessageConverter<T> extends AbstractXmlHttpMessageConverter<T> {
 
 	private final ConcurrentMap<Class, JAXBContext> jaxbContexts = new ConcurrentHashMap<Class, JAXBContext>(64);

@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.remoting.rmi.RemoteInvocationSerializingExporter;
 import org.springframework.remoting.support.RemoteInvocation;
 import org.springframework.remoting.support.RemoteInvocationResult;
@@ -51,6 +52,7 @@ import org.springframework.remoting.support.RemoteInvocationResult;
  * @see org.springframework.remoting.caucho.SimpleHessianServiceExporter
  * @see org.springframework.remoting.caucho.SimpleBurlapServiceExporter
  */
+@IgnoreJRERequirement // Sun's HTTP server
 public class SimpleHttpInvokerServiceExporter extends RemoteInvocationSerializingExporter
 		implements HttpHandler {
 

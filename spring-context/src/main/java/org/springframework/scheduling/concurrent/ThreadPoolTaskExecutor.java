@@ -29,6 +29,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.util.Assert;
@@ -176,6 +177,7 @@ public class ThreadPoolTaskExecutor extends ExecutorConfigurationSupport impleme
 	}
 
 
+    @IgnoreJRERequirement // allowCoreThreadTimeout is Java6 only
 	protected ExecutorService initializeExecutor(
 			ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
 

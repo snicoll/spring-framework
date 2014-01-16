@@ -30,6 +30,7 @@ import java.sql.SQLTransactionRollbackException;
 import java.sql.SQLTransientConnectionException;
 import java.sql.SQLTransientException;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -56,6 +57,7 @@ import org.springframework.jdbc.BadSqlGrammarException;
  * @see java.sql.SQLTransientException
  * @see java.sql.SQLRecoverableException
  */
+@IgnoreJRERequirement // java6 only
 public class SQLExceptionSubclassTranslator extends AbstractFallbackSQLExceptionTranslator {
 
 	public SQLExceptionSubclassTranslator() {

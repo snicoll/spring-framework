@@ -28,6 +28,7 @@ import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Simple exporter for JAX-WS services, autodetecting annotated service beans
@@ -46,6 +47,7 @@ import org.apache.commons.logging.LogFactory;
  * @see javax.xml.ws.Endpoint#publish(Object)
  * @see SimpleJaxWsServiceExporter
  */
+@IgnoreJRERequirement // Java6 only and Sun's HTTP server
 public class SimpleHttpServerJaxWsServiceExporter extends AbstractJaxWsServiceExporter {
 
 	protected final Log logger = LogFactory.getLog(getClass());

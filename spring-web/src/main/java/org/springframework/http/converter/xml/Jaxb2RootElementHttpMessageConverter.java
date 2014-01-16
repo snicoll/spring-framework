@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -58,6 +59,7 @@ import org.springframework.util.ClassUtils;
  * @author Rossen Stoyanchev
  * @since 3.0
  */
+@IgnoreJRERequirement // Java6 only
 public class Jaxb2RootElementHttpMessageConverter extends AbstractJaxb2HttpMessageConverter<Object> {
 
 	private boolean processExternalEntities = false;

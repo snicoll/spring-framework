@@ -23,6 +23,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.handler.HandlerResolver;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
@@ -132,6 +133,7 @@ public class LocalJaxWsServiceFactory {
 	 * @see #setServiceName
 	 * @see #setWsdlDocumentUrl
 	 */
+    @IgnoreJRERequirement // checked
 	public Service createJaxWsService() {
 		Assert.notNull(this.serviceName, "No service name specified");
 		Service service = (this.wsdlDocumentUrl != null ?

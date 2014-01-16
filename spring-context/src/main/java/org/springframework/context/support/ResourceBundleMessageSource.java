@@ -32,6 +32,7 @@ import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.JdkVersion;
 import org.springframework.util.Assert;
@@ -404,6 +405,7 @@ public class ResourceBundleMessageSource extends AbstractMessageSource implement
 	 * @see ResourceBundle#getBundle(String, java.util.Locale, ClassLoader, java.util.ResourceBundle.Control)
 	 * @see MessageSourceControl
 	 */
+    @IgnoreJRERequirement
 	private class ControlBasedResourceBundleFactory {
 
 		public ResourceBundle getBundle(String basename, Locale locale) {
@@ -417,6 +419,7 @@ public class ResourceBundleMessageSource extends AbstractMessageSource implement
 	 * adding support for custom file encodings, deactivating the fallback to the
 	 * system locale and activating ResourceBundle's native cache, if desired.
 	 */
+    @IgnoreJRERequirement
 	private class MessageSourceControl extends ResourceBundle.Control {
 
 		@Override

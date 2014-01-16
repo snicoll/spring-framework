@@ -22,6 +22,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
@@ -42,6 +43,7 @@ import org.springframework.util.StringUtils;
  * @see #setEntityResolver(org.xml.sax.EntityResolver)
  * @see #setErrorHandler(org.xml.sax.ErrorHandler)
  */
+@IgnoreJRERequirement // Java6 only
 class StaxStreamXMLReader extends AbstractStaxXMLReader {
 
 	private static final String DEFAULT_XML_VERSION = "1.0";

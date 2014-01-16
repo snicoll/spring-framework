@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -41,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @see #setEntityResolver(org.xml.sax.EntityResolver)
  * @see #setErrorHandler(org.xml.sax.ErrorHandler)
  */
+@IgnoreJRERequirement // Java6 only
 abstract class AbstractStaxXMLReader extends AbstractXMLReader {
 
 	private static final String NAMESPACES_FEATURE_NAME = "http://xml.org/sax/features/namespaces";
@@ -209,6 +211,7 @@ abstract class AbstractStaxXMLReader extends AbstractXMLReader {
 	 * @see Locator
 	 * @see Location
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private static class StaxLocator implements Locator {
 
 		private Location location;

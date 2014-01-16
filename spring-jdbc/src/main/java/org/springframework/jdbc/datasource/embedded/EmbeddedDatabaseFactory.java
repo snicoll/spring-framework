@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.jdbc.datasource.init.DatabasePopulator;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.util.Assert;
@@ -223,10 +224,12 @@ public class EmbeddedDatabaseFactory {
 			this.dataSource.setLoginTimeout(seconds);
 		}
 
+        @IgnoreJRERequirement // Java6 only
 		public <T> T unwrap(Class<T> iface) throws SQLException {
 			return this.dataSource.unwrap(iface);
 		}
 
+        @IgnoreJRERequirement // Java6 only
 		public boolean isWrapperFor(Class<?> iface) throws SQLException {
 			return this.dataSource.isWrapperFor(iface);
 		}

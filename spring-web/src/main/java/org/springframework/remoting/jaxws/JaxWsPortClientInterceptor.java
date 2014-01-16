@@ -34,6 +34,7 @@ import javax.xml.ws.soap.SOAPFaultException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -62,6 +63,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.remoting.RemoteAccessException
  * @see org.springframework.jndi.JndiObjectFactoryBean
  */
+@IgnoreJRERequirement // Java6 only
 public class JaxWsPortClientInterceptor extends LocalJaxWsServiceFactory
 		implements MethodInterceptor, BeanClassLoaderAware, InitializingBean {
 
@@ -538,6 +540,7 @@ public class JaxWsPortClientInterceptor extends LocalJaxWsServiceFactory
 	 * Inner class in order to avoid a hard-coded JAX-WS 2.1 dependency.
 	 * JAX-WS 2.0, as used in Java EE 5, didn't have WebServiceFeatures yet...
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private class FeaturePortProvider {
 
 		public Object getPortStub(Service service, QName portQName, Object[] features) {

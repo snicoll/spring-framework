@@ -52,6 +52,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -250,6 +251,7 @@ public class MBeanClientInterceptor
 	 * Ensures that an {@code MBeanServerConnection} is configured and attempts
 	 * to detect a local connection if one is not supplied.
 	 */
+    @IgnoreJRERequirement // checked by JmxUtils.isMXBeanSupportAvailable()
 	public void prepare() {
 		synchronized (this.preparationMonitor) {
 			if (this.server != null) {

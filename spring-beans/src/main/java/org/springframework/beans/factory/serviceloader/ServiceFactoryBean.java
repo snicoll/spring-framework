@@ -19,6 +19,7 @@ package org.springframework.beans.factory.serviceloader;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
  * @since 2.5
  * @see java.util.ServiceLoader
  */
+@IgnoreJRERequirement // Java6 only
 public class ServiceFactoryBean extends AbstractServiceLoaderBasedFactoryBean implements BeanClassLoaderAware {
 
 	@Override

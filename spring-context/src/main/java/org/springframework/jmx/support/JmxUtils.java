@@ -32,6 +32,7 @@ import javax.management.ObjectName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.jmx.MBeanServerNotFoundException;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -331,6 +332,7 @@ public abstract class JmxUtils {
 	/**
 	 * Inner class to avoid a Java 6 dependency.
 	 */
+    @IgnoreJRERequirement
 	private static class MXBeanChecker {
 
 		public static Boolean evaluateMXBeanAnnotation(Class<?> iface) {

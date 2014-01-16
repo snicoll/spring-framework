@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -893,6 +894,7 @@ class ConstructorResolver {
 	/**
 	 * Inner class to avoid a Java 6 dependency.
 	 */
+    @IgnoreJRERequirement
 	private static class ConstructorPropertiesChecker {
 
 		public static String[] evaluate(Constructor<?> candidate, int paramCount) {

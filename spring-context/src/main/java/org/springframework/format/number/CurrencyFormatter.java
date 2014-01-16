@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.util.Currency;
 import java.util.Locale;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -88,6 +89,7 @@ public class CurrencyFormatter extends AbstractNumberFormatter {
 		return decimal;
 	}
 
+    @IgnoreJRERequirement // roundingMode is Java6 only
 	protected NumberFormat getNumberFormat(Locale locale) {
 		DecimalFormat format = (DecimalFormat) NumberFormat.getCurrencyInstance(locale);
 		format.setParseBigDecimal(true);

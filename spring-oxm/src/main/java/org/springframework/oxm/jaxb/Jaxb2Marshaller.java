@@ -71,6 +71,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -123,6 +124,7 @@ import org.springframework.util.xml.StaxUtils;
  * @see #setUnmarshallerListener(javax.xml.bind.Unmarshaller.Listener)
  * @see #setAdapters(XmlAdapter[])
  */
+@IgnoreJRERequirement // Java6 only
 public class Jaxb2Marshaller implements MimeMarshaller, MimeUnmarshaller, GenericMarshaller, GenericUnmarshaller,
 		BeanClassLoaderAware, InitializingBean {
 
@@ -882,6 +884,7 @@ public class Jaxb2Marshaller implements MimeMarshaller, MimeUnmarshaller, Generi
 	}
 
 
+    @IgnoreJRERequirement // Java6 only
 	private static class Jaxb2AttachmentMarshaller extends AttachmentMarshaller {
 
 		private final MimeContainer mimeContainer;
@@ -935,7 +938,7 @@ public class Jaxb2Marshaller implements MimeMarshaller, MimeUnmarshaller, Generi
 		}
 	}
 
-
+    @IgnoreJRERequirement // Java6 only
 	private static class Jaxb2AttachmentUnmarshaller extends AttachmentUnmarshaller {
 
 		private final MimeContainer mimeContainer;

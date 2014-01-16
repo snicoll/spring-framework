@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPFault;
 import javax.xml.ws.soap.SOAPFaultException;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.remoting.soap.SoapFaultException;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.remoting.soap.SoapFaultException;
  * @since 2.5
  */
 @SuppressWarnings("serial")
+@IgnoreJRERequirement // Java6 only
 public class JaxWsSoapFaultException extends SoapFaultException {
 
 	/**

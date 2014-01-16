@@ -29,6 +29,7 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.util.Assert;
 
 /**
@@ -39,6 +40,7 @@ import org.springframework.util.Assert;
  * @since 3.0.5
  * @see StaxUtils#createEventStreamWriter(javax.xml.stream.XMLEventWriter, javax.xml.stream.XMLEventFactory)
  */
+@IgnoreJRERequirement // Java6 only
 class XMLEventStreamWriter implements XMLStreamWriter {
 
 	private static final String DEFAULT_ENCODING = "UTF-8";

@@ -19,6 +19,7 @@ package org.springframework.util.xml;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -31,6 +32,7 @@ import org.xml.sax.SAXException;
  * @author Arjen Poutsma
  * @since 3.0
  */
+@IgnoreJRERequirement // Java6 only
 abstract class AbstractStaxContentHandler implements ContentHandler {
 
 	private SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext();

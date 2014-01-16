@@ -22,6 +22,7 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.core.JdkVersion;
 import org.springframework.jdbc.support.rowset.ResultSetWrappingSqlRowSet;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -107,6 +108,7 @@ public class SqlRowSetResultSetExtractor implements ResultSetExtractor<SqlRowSet
 	/**
 	 * Inner class to avoid a hard dependency on JDBC 4.1 RowSetProvider class.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private static class StandardCachedRowSetFactory implements CachedRowSetFactory {
 
 		private final RowSetFactory rowSetFactory;
@@ -129,6 +131,7 @@ public class SqlRowSetResultSetExtractor implements ResultSetExtractor<SqlRowSet
 	/**
 	 * Inner class to avoid a hard dependency on Sun's CachedRowSetImpl class.
 	 */
+    @IgnoreJRERequirement
 	private static class SunCachedRowSetFactory implements CachedRowSetFactory {
 
 		public CachedRowSet createCachedRowSet() throws SQLException {

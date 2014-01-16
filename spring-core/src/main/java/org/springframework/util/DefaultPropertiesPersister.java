@@ -16,6 +16,8 @@
 
 package org.springframework.util;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -70,6 +72,7 @@ public class DefaultPropertiesPersister implements PropertiesPersister {
 		props.load(is);
 	}
 
+    @IgnoreJRERequirement // safe check
 	public void load(Properties props, Reader reader) throws IOException {
 		if (loadFromReaderAvailable) {
 			// On JDK 1.6+
@@ -152,6 +155,7 @@ public class DefaultPropertiesPersister implements PropertiesPersister {
 		props.store(os, header);
 	}
 
+    @IgnoreJRERequirement // safe check
 	public void store(Properties props, Writer writer, String header) throws IOException {
 		if (storeToWriterAvailable) {
 			// On JDK 1.6+

@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -396,6 +396,7 @@ public class ResourceHttpRequestHandler extends WebContentGenerator implements H
 	/**
 	 * Inner class to avoid hard-coded JAF dependency.
 	 */
+	@IgnoreJRERequirement
 	private static class ActivationMediaTypeFactory {
 
 		private static final FileTypeMap fileTypeMap;

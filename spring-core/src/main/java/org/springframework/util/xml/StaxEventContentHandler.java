@@ -29,6 +29,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.XMLEventConsumer;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -43,6 +44,7 @@ import org.springframework.util.StringUtils;
  * @see XMLEvent
  * @see XMLEventConsumer
  */
+@IgnoreJRERequirement // Java6 only
 class StaxEventContentHandler extends AbstractStaxContentHandler {
 
 	private final XMLEventFactory eventFactory;

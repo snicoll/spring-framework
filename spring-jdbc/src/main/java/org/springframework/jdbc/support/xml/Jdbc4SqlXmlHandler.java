@@ -27,6 +27,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.w3c.dom.Document;
 
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -44,6 +45,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
  * @see java.sql.ResultSet#getSQLXML
  * @see java.sql.PreparedStatement#setSQLXML
  */
+@IgnoreJRERequirement // Java6 only
 public class Jdbc4SqlXmlHandler implements SqlXmlHandler {
 
 	//-------------------------------------------------------------------------
@@ -139,6 +141,7 @@ public class Jdbc4SqlXmlHandler implements SqlXmlHandler {
 	/**
 	 * Internal base class for {@link SqlXmlValue} implementations.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private static abstract class AbstractJdbc4SqlXmlValue implements SqlXmlValue {
 
 		private SQLXML xmlObject;

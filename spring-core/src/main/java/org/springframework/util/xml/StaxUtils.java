@@ -27,6 +27,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stax.StAXResult;
 import javax.xml.transform.stax.StAXSource;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
 
@@ -43,6 +44,7 @@ import org.springframework.util.ClassUtils;
  * @author Juergen Hoeller
  * @since 3.0
  */
+@IgnoreJRERequirement // safe check
 public abstract class StaxUtils {
 
 	// JAXP 1.4 is only available on JDK 1.6+
@@ -335,6 +337,7 @@ public abstract class StaxUtils {
 	/**
 	 * Inner class to avoid a static JAXP 1.4 dependency.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private static class Jaxp14StaxHandler {
 
 		private static Source createStaxSource(XMLStreamReader streamReader) {

@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.util.FileCopyUtils;
 
@@ -46,6 +47,7 @@ import org.springframework.util.FileCopyUtils;
  * @see java.sql.Connection#createBlob()
  * @see java.sql.Connection#createClob()
  */
+@IgnoreJRERequirement // java6 only
 public class TemporaryLobCreator implements LobCreator {
 
 	protected static final Log logger = LogFactory.getLog(TemporaryLobCreator.class);

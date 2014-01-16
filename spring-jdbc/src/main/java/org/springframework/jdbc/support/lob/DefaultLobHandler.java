@@ -30,6 +30,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /**
  * Default implementation of the {@link LobHandler} interface.
@@ -203,6 +204,7 @@ public class DefaultLobHandler extends AbstractLobHandler {
 	 * Default LobCreator implementation as an inner class.
 	 * Can be subclassed in DefaultLobHandler extensions.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	protected class DefaultLobCreator implements LobCreator {
 
 		public void setBlobAsBytes(PreparedStatement ps, int paramIndex, byte[] content)

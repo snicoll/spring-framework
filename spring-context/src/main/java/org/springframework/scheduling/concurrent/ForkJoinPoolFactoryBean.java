@@ -18,6 +18,7 @@ package org.springframework.scheduling.concurrent;
 
 import java.util.concurrent.ForkJoinPool;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Juergen Hoeller
  * @since 3.1
  */
+@IgnoreJRERequirement
 public class ForkJoinPoolFactoryBean implements FactoryBean<ForkJoinPool>, InitializingBean, DisposableBean {
 
 	private int parallelism = Runtime.getRuntime().availableProcessors();

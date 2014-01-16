@@ -44,6 +44,7 @@ import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceRef;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -513,6 +514,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	 * Class representing injection information about an annotated field
 	 * or setter method, supporting the @Resource annotation.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private class ResourceElement extends LookupElement {
 
 		protected final boolean shareable;
@@ -557,6 +559,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	 * Class representing injection information about an annotated field
 	 * or setter method, supporting the @WebServiceRef annotation.
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private class WebServiceRefElement extends LookupElement {
 
 		private final Class<?> elementType;

@@ -27,6 +27,7 @@ import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.WebServiceProvider;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -54,6 +55,7 @@ import org.springframework.util.ReflectionUtils;
  * @see SimpleJaxWsServiceExporter
  * @see SimpleHttpServerJaxWsServiceExporter
  */
+@IgnoreJRERequirement // Java6 only
 public abstract class AbstractJaxWsServiceExporter implements BeanFactoryAware, InitializingBean, DisposableBean {
 
 	private Map<String, Object> endpointProperties;
@@ -212,6 +214,7 @@ public abstract class AbstractJaxWsServiceExporter implements BeanFactoryAware, 
 	 * Inner class in order to avoid a hard-coded JAX-WS 2.2 dependency.
 	 * JAX-WS 2.0 and 2.1 didn't have WebServiceFeatures for endpoints yet...
 	 */
+    @IgnoreJRERequirement // Java6 only
 	private class FeatureEndpointProvider {
 
 		public Endpoint createEndpoint(String bindingType, Object implementor, Object[] features) {

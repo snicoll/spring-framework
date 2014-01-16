@@ -21,6 +21,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -34,6 +35,7 @@ import org.springframework.util.StringUtils;
  * @see XMLStreamWriter
  * @since 3.0
  */
+@IgnoreJRERequirement // Java6 only
 class StaxStreamContentHandler extends AbstractStaxContentHandler {
 
 	private final XMLStreamWriter streamWriter;

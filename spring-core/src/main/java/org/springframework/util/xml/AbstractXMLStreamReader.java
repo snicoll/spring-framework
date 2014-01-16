@@ -21,6 +21,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.util.Assert;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.util.Assert;
  * @author Arjen Poutsma
  * @since 3.0
  */
+@IgnoreJRERequirement // Java6 only
 abstract class AbstractXMLStreamReader implements XMLStreamReader {
 
 	public String getElementText() throws XMLStreamException {

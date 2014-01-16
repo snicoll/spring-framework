@@ -16,6 +16,8 @@
 
 package org.springframework.jdbc.support.nativejdbc;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,6 +46,7 @@ import java.sql.Statement;
  * @see org.springframework.jdbc.core.JdbcTemplate#setNativeJdbcExtractor
  * @see org.springframework.jdbc.support.lob.OracleLobHandler#setNativeJdbcExtractor
  */
+@IgnoreJRERequirement
 public class Jdbc4NativeJdbcExtractor extends NativeJdbcExtractorAdapter {
 
 	private Class<? extends Connection> connectionType = Connection.class;

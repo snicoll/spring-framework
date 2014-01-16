@@ -16,6 +16,8 @@
 
 package org.springframework.util.xml;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.util.Iterator;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -38,6 +40,7 @@ import javax.xml.stream.events.XMLEvent;
  * @since 3.0
  * @see StaxUtils#createEventStreamReader(javax.xml.stream.XMLEventReader)
  */
+@IgnoreJRERequirement // Java6 only
 class XMLEventStreamReader extends AbstractXMLStreamReader {
 
 	private XMLEvent event;

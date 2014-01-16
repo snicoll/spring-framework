@@ -16,6 +16,8 @@
 
 package org.springframework.remoting.jaxws;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.WebServiceProvider;
@@ -42,6 +44,7 @@ import javax.xml.ws.WebServiceProvider;
  * @see javax.xml.ws.Endpoint#publish(String)
  * @see SimpleHttpServerJaxWsServiceExporter
  */
+@IgnoreJRERequirement // Java6 only
 public class SimpleJaxWsServiceExporter extends AbstractJaxWsServiceExporter {
 
 	public static final String DEFAULT_BASE_ADDRESS = "http://localhost:8080/";

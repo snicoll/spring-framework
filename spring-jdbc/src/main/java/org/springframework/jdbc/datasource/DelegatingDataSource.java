@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -110,6 +111,7 @@ public class DelegatingDataSource implements DataSource, InitializingBean {
 	//---------------------------------------------------------------------
 
 	@SuppressWarnings("unchecked")
+    @IgnoreJRERequirement // Java6 only
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		if (iface.isInstance(this)) {
 			return (T) this;
@@ -117,6 +119,7 @@ public class DelegatingDataSource implements DataSource, InitializingBean {
 		return getTargetDataSource().unwrap(iface);
 	}
 
+    @IgnoreJRERequirement // Java6 only
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return (iface.isInstance(this) || getTargetDataSource().isWrapperFor(iface));
 	}

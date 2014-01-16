@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.datasource.AbstractDataSource;
 import org.springframework.util.Assert;
@@ -168,6 +169,7 @@ public abstract class AbstractRoutingDataSource extends AbstractDataSource imple
 
 	@Override
 	@SuppressWarnings("unchecked")
+    @IgnoreJRERequirement // Java6 only
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		if (iface.isInstance(this)) {
 			return (T) this;
@@ -176,6 +178,7 @@ public abstract class AbstractRoutingDataSource extends AbstractDataSource imple
 	}
 
 	@Override
+    @IgnoreJRERequirement // Java6 only
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return (iface.isInstance(this) || determineTargetDataSource().isWrapperFor(iface));
 	}
