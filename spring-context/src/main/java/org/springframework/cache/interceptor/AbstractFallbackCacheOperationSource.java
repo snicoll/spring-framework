@@ -20,15 +20,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Abstract implementation of {@link CacheOperation} that caches
@@ -52,7 +48,8 @@ import org.springframework.util.ObjectUtils;
  * @author Juergen Hoeller
  * @since 3.1
  */
-public abstract class AbstractFallbackCacheOperationSource implements CacheOperationSource {
+public abstract class AbstractFallbackCacheOperationSource
+		extends MethodOperationCache<Collection<CacheOperation>> implements CacheOperationSource {
 
 	/**
 	 * Canonical value held in cache to indicate no caching attribute was
@@ -67,14 +64,6 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 	 */
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	/**
-	 * Cache of CacheOperations, keyed by DefaultCacheKey (Method + target Class).
-	 * <p>As this base class is not marked Serializable, the cache will be recreated
-	 * after serialization - provided that the concrete subclass is Serializable.
-	 */
-	final Map<Object, Collection<CacheOperation>> attributeCache =
-			new ConcurrentHashMap<Object, Collection<CacheOperation>>(1024);
-
 
 	/**
 	 * Determine the caching attribute for this method invocation.
@@ -88,7 +77,7 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 	public Collection<CacheOperation> getCacheOperations(Method method, Class<?> targetClass) {
 		// First, see if we have a cached value.
 		Object cacheKey = getCacheKey(method, targetClass);
-		Collection<CacheOperation> cached = this.attributeCache.get(cacheKey);
+		Collection<CacheOperation> cached = this.cache.get(cacheKey);
 		if (cached != null) {
 			if (cached == NULL_CACHING_ATTRIBUTE) {
 				return null;
@@ -102,28 +91,16 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 			Collection<CacheOperation> cacheOps = computeCacheOperations(method, targetClass);
 			// Put it in the cache.
 			if (cacheOps == null) {
-				this.attributeCache.put(cacheKey, NULL_CACHING_ATTRIBUTE);
+				this.cache.put(cacheKey, NULL_CACHING_ATTRIBUTE);
 			}
 			else {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Adding cacheable method '" + method.getName() + "' with attribute: " + cacheOps);
 				}
-				this.attributeCache.put(cacheKey, cacheOps);
+				this.cache.put(cacheKey, cacheOps);
 			}
 			return cacheOps;
 		}
-	}
-
-	/**
-	 * Determine a cache key for the given method and target class.
-	 * <p>Must not produce same key for overloaded methods.
-	 * Must produce same key for different instances of the same method.
-	 * @param method the method (never {@code null})
-	 * @param targetClass the target class (may be {@code null})
-	 * @return the cache key (never {@code null})
-	 */
-	protected Object getCacheKey(Method method, Class<?> targetClass) {
-		return new DefaultCacheKey(method, targetClass);
 	}
 
 	private Collection<CacheOperation> computeCacheOperations(Method method, Class<?> targetClass) {
@@ -187,39 +164,5 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 	 */
 	protected boolean allowPublicMethodsOnly() {
 		return false;
-	}
-
-
-	/**
-	 * Default cache key for the CacheOperation cache.
-	 */
-	private static class DefaultCacheKey {
-
-		private final Method method;
-
-		private final Class<?> targetClass;
-
-		public DefaultCacheKey(Method method, Class<?> targetClass) {
-			this.method = method;
-			this.targetClass = targetClass;
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (this == other) {
-				return true;
-			}
-			if (!(other instanceof DefaultCacheKey)) {
-				return false;
-			}
-			DefaultCacheKey otherKey = (DefaultCacheKey) other;
-			return (this.method.equals(otherKey.method) && ObjectUtils.nullSafeEquals(this.targetClass,
-					otherKey.targetClass));
-		}
-
-		@Override
-		public int hashCode() {
-			return this.method.hashCode() * 29 + (this.targetClass != null ? this.targetClass.hashCode() : 0);
-		}
 	}
 }

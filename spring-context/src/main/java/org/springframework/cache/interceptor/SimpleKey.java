@@ -30,11 +30,12 @@ import org.springframework.util.StringUtils;
  * @see SimpleKeyGenerator
  */
 @SuppressWarnings("serial")
-public final class SimpleKey implements Serializable {
+public class SimpleKey implements Serializable {
 
 	public static final SimpleKey EMPTY = new SimpleKey();
 
 	private final Object[] params;
+	private final int hashCode;
 
 
 	/**
@@ -45,22 +46,22 @@ public final class SimpleKey implements Serializable {
 		Assert.notNull(elements, "Elements must not be null");
 		this.params = new Object[elements.length];
 		System.arraycopy(elements, 0, this.params, 0, elements.length);
+		this.hashCode = Arrays.hashCode(this.params);
 	}
 
 
 	@Override
-	public boolean equals(Object obj) {
+	public final boolean equals(Object obj) {
 		return (this == obj || (obj instanceof SimpleKey && Arrays.equals(this.params, ((SimpleKey) obj).params)));
 	}
 
 	@Override
-	public int hashCode() {
-		return Arrays.hashCode(this.params);
+	public final int hashCode() {
+		return hashCode;
 	}
 
 	@Override
 	public String toString() {
-		return "SimpleKey [" + StringUtils.arrayToCommaDelimitedString(this.params) + "]";
+		return getClass().getSimpleName() + " [" + StringUtils.arrayToCommaDelimitedString(this.params) + "]";
 	}
-
 }
