@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.interceptor;
+package org.springframework.cache.jcache.interceptor;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -22,24 +22,22 @@ import java.lang.reflect.Method;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import org.springframework.cache.interceptor.CacheOperationInvoker;
+
 /**
  * AOP Alliance MethodInterceptor for declarative cache
- * management using the common Spring caching infrastructure
- * ({@link org.springframework.cache.Cache}).
- *
- * <p>Derives from the {@link CacheAspectSupport} class which
+ * management using JSR-107 caching annotations.
+ * <p>Derives from the {@link JCacheAspectSupport} class which
  * contains the integration with Spring's underlying caching API.
- * CacheInterceptor simply calls the relevant superclass methods
- * in the correct order.
+ * JCacheInterceptor simply calls the relevant superclass method.
+ * <p>JCacheInterceptors are thread-safe.
  *
- * <p>CacheInterceptors are thread-safe.
- *
- * @author Costin Leau
- * @author Juergen Hoeller
- * @since 3.1
+ * @author Stephane Nicoll
+ * @see org.springframework.cache.interceptor.CacheInterceptor
  */
 @SuppressWarnings("serial")
-public class CacheInterceptor extends CacheAspectSupport implements MethodInterceptor, Serializable {
+public class JCacheInterceptor extends JCacheAspectSupport
+		implements MethodInterceptor, Serializable {
 
 	@Override
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
@@ -50,7 +48,8 @@ public class CacheInterceptor extends CacheAspectSupport implements MethodInterc
 			public Object invoke() {
 				try {
 					return invocation.proceed();
-				} catch (Throwable ex) {
+				}
+				catch (Throwable ex) {
 					throw new ThrowableWrapper(ex);
 				}
 			}
@@ -58,7 +57,8 @@ public class CacheInterceptor extends CacheAspectSupport implements MethodInterc
 
 		try {
 			return execute(aopAllianceInvoker, invocation.getThis(), method, invocation.getArguments());
-		} catch (CacheOperationInvoker.ThrowableWrapper th) {
+		}
+		catch (CacheOperationInvoker.ThrowableWrapper th) {
 			throw th.getOriginal();
 		}
 	}
