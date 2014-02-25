@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.jcache.support;
+package org.springframework.cache.jcache.config;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.springframework.context.annotation.AdviceMode;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
+ *
  * @author Stephane Nicoll
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface EnableJCaching {
+public class JCacheStandaloneConfigTests extends AbstractJCacheAnnotationTests {
 
-	// NOTE: temporary hack to trigger proxy configuration
-
-	boolean proxyTargetClass() default false;
-
-	AdviceMode mode() default AdviceMode.PROXY;
+	@Override
+	protected ApplicationContext getApplicationContext() {
+		return new GenericXmlApplicationContext(
+				"/org/springframework/cache/jcache/config/jCacheStandaloneConfig.xml");
+	}
 }

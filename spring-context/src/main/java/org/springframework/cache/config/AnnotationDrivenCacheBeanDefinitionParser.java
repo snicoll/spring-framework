@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2012 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.cache.annotation.AnnotationCacheOperationSource;
 import org.springframework.cache.interceptor.BeanFactoryCacheOperationSourceAdvisor;
 import org.springframework.cache.interceptor.CacheInterceptor;
+import org.springframework.util.ClassUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -43,7 +44,13 @@ import org.w3c.dom.Element;
  * '{@code proxy-target-class}' attribute to '{@code true}', which will
  * result in class-based proxies being created.
  *
+ * <p>If the JSR-107 API and Spring's JCache implementation are present,
+ * the necessary infrastructure beans required to handle methods annotated
+ * with {@code CacheResult}, {@code CachePut}, {@code CacheRemove} or
+ * {@code CacheRemoveAll} are also registered.
+ *
  * @author Costin Leau
+ * @author Stephane Nicoll
  * @since 3.1
  */
 class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser {
@@ -99,9 +106,20 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 	 */
 	private static class AopAutoProxyConfigurer {
 
+		private static final boolean jsr107Present = ClassUtils.isPresent(
+				"javax.cache.Cache", AopAutoProxyConfigurer.class.getClassLoader());
+		private static final boolean jCacheImplPresent =ClassUtils.isPresent(
+				JCACHE_OPERATION_SOURCE_CLASS, AopAutoProxyConfigurer.class.getClassLoader());
+
 		public static void configureAutoProxyCreator(Element element, ParserContext parserContext) {
 			AopNamespaceUtils.registerAutoProxyCreatorIfNecessary(parserContext, element);
+			configureSpringCaching(element, parserContext);
+			if (jsr107Present && jCacheImplPresent) { // Register JCache advisor
+				configureJCache(element, parserContext);
+			}
+		}
 
+		private static void configureSpringCaching(Element element, ParserContext parserContext) {
 			if (!parserContext.getRegistry().containsBeanDefinition(CACHE_ADVISOR_BEAN_NAME)) {
 				Object eleSource = parserContext.extractSource(element);
 
@@ -136,6 +154,45 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 				compositeDef.addNestedComponent(new BeanComponentDefinition(sourceDef, sourceName));
 				compositeDef.addNestedComponent(new BeanComponentDefinition(interceptorDef, interceptorName));
 				compositeDef.addNestedComponent(new BeanComponentDefinition(advisorDef, CACHE_ADVISOR_BEAN_NAME));
+				parserContext.registerComponent(compositeDef);
+			}
+		}
+
+		private static void configureJCache(Element element, ParserContext parserContext) {
+			if (!parserContext.getRegistry().containsBeanDefinition(JCACHE_ADVISOR_BEAN_NAME)) {
+				Object eleSource = parserContext.extractSource(element);
+
+				// Create the CacheOperationSource definition.
+				RootBeanDefinition sourceDef = new RootBeanDefinition(JCACHE_OPERATION_SOURCE_CLASS);
+				sourceDef.setSource(eleSource);
+				sourceDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+				parseCacheManagerProperty(element, sourceDef);
+				CacheNamespaceHandler.parseKeyGenerator(element, sourceDef);
+				String sourceName = parserContext.getReaderContext().registerWithGeneratedName(sourceDef);
+
+				// Create the CacheInterceptor definition.
+				RootBeanDefinition interceptorDef = new RootBeanDefinition(JCACHE_INTERCEPTOR_CLASS);
+				interceptorDef.setSource(eleSource);
+				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+				interceptorDef.getPropertyValues().add("cacheOperationSource", new RuntimeBeanReference(sourceName));
+				String interceptorName = parserContext.getReaderContext().registerWithGeneratedName(interceptorDef);
+
+				// Create the CacheAdvisor definition.
+				RootBeanDefinition advisorDef = new RootBeanDefinition(JCACHE_ADVISOR_FACTORY_CLASS);
+				advisorDef.setSource(eleSource);
+				advisorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+				advisorDef.getPropertyValues().add("cacheOperationSource", new RuntimeBeanReference(sourceName));
+				advisorDef.getPropertyValues().add("adviceBeanName", interceptorName);
+				if (element.hasAttribute("order")) {
+					advisorDef.getPropertyValues().add("order", element.getAttribute("order"));
+				}
+				parserContext.getRegistry().registerBeanDefinition(JCACHE_ADVISOR_BEAN_NAME, advisorDef);
+
+				CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(element.getTagName(),
+						eleSource);
+				compositeDef.addNestedComponent(new BeanComponentDefinition(sourceDef, sourceName));
+				compositeDef.addNestedComponent(new BeanComponentDefinition(interceptorDef, interceptorName));
+				compositeDef.addNestedComponent(new BeanComponentDefinition(advisorDef, JCACHE_ADVISOR_BEAN_NAME));
 				parserContext.registerComponent(compositeDef);
 			}
 		}

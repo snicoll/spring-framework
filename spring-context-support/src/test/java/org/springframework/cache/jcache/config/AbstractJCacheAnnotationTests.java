@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.jcache.interceptor;
+package org.springframework.cache.jcache.config;
 
 import static org.junit.Assert.*;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.jcache.interceptor.SimpleGeneratedCacheKey;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -41,8 +44,6 @@ public abstract class AbstractJCacheAnnotationTests {
 	private CacheManager cacheManager;
 
 	protected abstract ApplicationContext getApplicationContext();
-
-	protected abstract boolean isEmpty(Cache cache);
 
 	@Before
 	public void setUp() {
@@ -459,6 +460,11 @@ public abstract class AbstractJCacheAnnotationTests {
 		}
 		// This will be remove anyway as the earlyRemove has removed the cache before
 		assertTrue(isEmpty(cache));
+	}
+
+	protected boolean isEmpty(Cache cache) {
+		ConcurrentHashMap<?, ?> nativeCache = (ConcurrentHashMap<?, ?>) cache.getNativeCache();
+		return nativeCache.isEmpty();
 	}
 
 

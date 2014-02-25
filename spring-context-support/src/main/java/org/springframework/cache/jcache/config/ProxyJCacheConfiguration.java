@@ -14,61 +14,63 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.jcache.support;
+package org.springframework.cache.jcache.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.jcache.interceptor.BeanFactoryJCacheOperationSourceAdvisor;
 import org.springframework.cache.jcache.interceptor.DefaultJCacheOperationSource;
 import org.springframework.cache.jcache.interceptor.JCacheInterceptor;
 import org.springframework.cache.jcache.interceptor.JCacheOperationSource;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
-import org.springframework.core.Ordered;
 
 /**
- * Temporary configuration to enable JSR-107 caching. To be merged with the standard
- * caching mechanism.
+ * {@code @Configuration} class that registers the Spring infrastructure beans necessary
+ * to enable proxy-based annotation-driven JSR-107 cache management.
+ * <p>Can safely used alongside Spring's caching support.
+ *
  * @author Stephane Nicoll
+ * @since 4.1
+ * @see org.springframework.cache.annotation.EnableCaching
+ * @see org.springframework.cache.annotation.CachingConfigurationSelector
  */
 @Configuration
-public class BasicJCacheProxyConfiguration {
+public class ProxyJCacheConfiguration extends AbstractJCacheConfiguration {
 
-	@Autowired
-	@Qualifier("cacheManager")
-	private CacheManager cacheManager;
-
-	@Autowired(required = false)
-	@Qualifier("keyGenerator")
-	private KeyGenerator keyGenerator;
-
-	@Bean
+	@Bean(name = AnnotationConfigUtils.JCACHE_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryJCacheOperationSourceAdvisor cacheAdvisor() {
 		BeanFactoryJCacheOperationSourceAdvisor advisor =
 				new BeanFactoryJCacheOperationSourceAdvisor();
 		advisor.setCacheOperationSource(cacheOperationSource());
 		advisor.setAdvice(cacheInterceptor());
-		advisor.setOrder(Ordered.LOWEST_PRECEDENCE);
+		advisor.setOrder(this.enableCaching.<Integer>getNumber("order"));
 		return advisor;
 	}
 
-	@Bean
+	@Bean(name = "jCacheOperationSource")
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public JCacheOperationSource cacheOperationSource() {
 		DefaultJCacheOperationSource source = new DefaultJCacheOperationSource();
-		source.setCacheManager(cacheManager);
+		if (this.cacheManager != null) {
+			source.setCacheManager(cacheManager);
+		}
 		if (keyGenerator != null) {
 			source.setKeyGenerator(keyGenerator);
 		}
+		if (this.cacheResolver != null) {
+			source.setCacheResolver(cacheResolver);
+		}
+		if (this.exceptionCacheResolver != null) {
+			source.setExceptionCacheResolver(exceptionCacheResolver);
+		}
+
 		return source;
 	}
 
-	@Bean
+	@Bean(name = "jCacheInterceptor")
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public JCacheInterceptor cacheInterceptor() {
 		JCacheInterceptor interceptor = new JCacheInterceptor();

@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.cache.Cache;
+import org.springframework.cache.jcache.config.JCacheableService;
 import org.springframework.cache.jcache.support.TestableCacheResolverFactory;
 
 
@@ -181,7 +182,8 @@ public class AnnotatedJCacheableService implements JCacheableService<Long> {
 		long count = exceptionCounter.getAndIncrement();
 		if (matchFilter) {
 			throw new UnsupportedOperationException("Expected exception (" + count + ")");
-		} else {
+		}
+		else {
 			throw new NullPointerException("Expected exception (" + count + ")");
 		}
 	}

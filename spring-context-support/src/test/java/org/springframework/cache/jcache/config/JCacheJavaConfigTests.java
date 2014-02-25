@@ -14,43 +14,54 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.jcache.interceptor;
+package org.springframework.cache.jcache.config;
+
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.Test;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
-import org.springframework.cache.jcache.support.BasicJCacheProxyConfiguration;
-import org.springframework.cache.jcache.support.EnableJCaching;
+import org.springframework.cache.interceptor.CacheResolver;
+import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.cache.interceptor.SimpleCacheResolver;
+import org.springframework.cache.interceptor.SimpleKeyGenerator;
+import org.springframework.cache.jcache.interceptor.AnnotatedJCacheableService;
+import org.springframework.cache.jcache.interceptor.DefaultJCacheOperationSource;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.AutoProxyRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
  * @author Stephane Nicoll
  */
-public class JCacheAnnotationTests extends AbstractJCacheAnnotationTests {
+public class JCacheJavaConfigTests extends AbstractJCacheAnnotationTests {
 
 	@Override
 	protected ApplicationContext getApplicationContext() {
 		return new AnnotationConfigApplicationContext(EnableCachingConfig.class);
 	}
 
-	@Override
-	protected boolean isEmpty(Cache cache) {
-		ConcurrentHashMap<?, ?> nativeCache = (ConcurrentHashMap<?, ?>) cache.getNativeCache();
-		return nativeCache.isEmpty();
+	@Test
+	public void fullCachingConfig() throws Exception {
+		AnnotationConfigApplicationContext context =
+				new AnnotationConfigApplicationContext(FullCachingConfig.class);
+		DefaultJCacheOperationSource cos = context.getBean(DefaultJCacheOperationSource.class);
+		assertSame(context.getBean(KeyGenerator.class), cos.getDefaultKeyGenerator());
+		assertSame(context.getBean("cacheResolver", CacheResolver.class),
+				cos.getDefaultCacheResolver());
+		assertSame(context.getBean("exceptionCacheResolver", CacheResolver.class),
+				cos.getDefaultExceptionCacheResolver());
 	}
 
 	@Configuration
-	@EnableJCaching
-	@Import({AutoProxyRegistrar.class, BasicJCacheProxyConfiguration.class})
+	@EnableCaching
 	public static class EnableCachingConfig {
 
 		@Bean
@@ -74,4 +85,35 @@ public class JCacheAnnotationTests extends AbstractJCacheAnnotationTests {
 			return new ConcurrentMapCache("default");
 		}
 	}
+
+	@Configuration
+	@EnableCaching
+	public static class FullCachingConfig implements JCacheConfigurer {
+
+
+		@Override
+		@Bean
+		public CacheManager cacheManager() {
+			return new NoOpCacheManager();
+		}
+
+		@Override
+		@Bean
+		public KeyGenerator keyGenerator() {
+			return new SimpleKeyGenerator();
+		}
+
+		@Override
+		@Bean
+		public CacheResolver cacheResolver() {
+			return new SimpleCacheResolver(cacheManager());
+		}
+
+		@Override
+		@Bean
+		public CacheResolver exceptionCacheResolver() {
+			return new SimpleCacheResolver(cacheManager());
+		}
+	}
+
 }

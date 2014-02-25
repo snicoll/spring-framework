@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cache.jcache.interceptor;
+package org.springframework.cache.jcache.config;
 
 /**
  * @author Stephane Nicoll

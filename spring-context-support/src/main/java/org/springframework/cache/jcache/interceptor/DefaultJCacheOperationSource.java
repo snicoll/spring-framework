@@ -111,17 +111,17 @@ public class DefaultJCacheOperationSource extends AnnotationCacheOperationSource
 	}
 
 	@Override
-	protected CacheResolver getDefaultCacheResolver() {
+	public CacheResolver getDefaultCacheResolver() {
 		return cacheResolver;
 	}
 
 	@Override
-	protected CacheResolver getDefaultExceptionCacheResolver() {
+	public CacheResolver getDefaultExceptionCacheResolver() {
 		return exceptionCacheResolver;
 	}
 
 	@Override
-	protected KeyGenerator getDefaultKeyGenerator() {
+	public KeyGenerator getDefaultKeyGenerator() {
 		return keyGenerator;
 	}
 }
