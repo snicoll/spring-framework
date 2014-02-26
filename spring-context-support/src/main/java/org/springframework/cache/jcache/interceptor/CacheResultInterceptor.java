@@ -22,7 +22,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheOperationInvocationContext;
 import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.cache.jcache.model.CacheResultOperation;
-import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.SerializationUtils;
 import org.springframework.util.filter.ExceptionTypeFilter;
 
@@ -44,21 +43,20 @@ public class CacheResultInterceptor extends AbstractKeyCacheInterceptor<CacheRes
 		Cache cache = resolveCache(context);
 		Cache exceptionCache = resolveExceptionCache(context);
 
-		Cache.ValueWrapper result;
 		if (!operation.isAlwaysInvoked()) {
-			result = cache.get(cacheKey);
-			if (result != null) {
-				return result.get();
+			Cache.ValueWrapper cachedValue = cache.get(cacheKey);
+			if (cachedValue != null) {
+				return cachedValue.get();
 			}
 			checkForCachedException(exceptionCache, cacheKey);
 		}
 
 		try {
-			result = new SimpleValueWrapper(invoker.invoke());
-			if (result.get() != null) {
-				cache.put(cacheKey, result);
+			Object invocationResult = invoker.invoke();
+			if (invocationResult != null) {
+				cache.put(cacheKey, invocationResult);
 			}
-			return result;
+			return invocationResult;
 		} catch (Invoker.ThrowableWrapper wrapper) {
 			cacheException(exceptionCache, operation.getExceptionTypeFilter(), cacheKey, wrapper.original);
 			throw wrapper.original;

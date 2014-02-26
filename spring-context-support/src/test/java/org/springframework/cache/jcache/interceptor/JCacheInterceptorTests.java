@@ -38,7 +38,7 @@ import org.springframework.util.ReflectionUtils;
  */
 public class JCacheInterceptorTests extends AbstractJCacheTests {
 
-	private final Invoker dummyInvoker = new DummyInvoker();
+	private final Invoker dummyInvoker = new DummyInvoker(null);
 
 	@Test
 	public void severalCachesNotSupported() {
@@ -88,6 +88,22 @@ public class JCacheInterceptorTests extends AbstractJCacheTests {
 		createOperationSource(null, defaultCacheResolver, defaultExceptionCacheResolver, defaultKeyGenerator);
 	}
 
+	@Test
+	public void cacheResultReturnsProperType() throws Throwable {
+		JCacheInterceptor interceptor = createInterceptor(createOperationSource(
+				cacheManager, defaultCacheResolver,
+				defaultExceptionCacheResolver, defaultKeyGenerator));
+
+		AnnotatedJCacheableService service = new AnnotatedJCacheableService(cacheManager.getCache("default"));
+		Method m = ReflectionUtils.findMethod(AnnotatedJCacheableService.class, "cache", String.class);
+
+		Invoker invoker = new DummyInvoker(0L);
+		Object execute = interceptor.execute(invoker, service, m, new Object[]{"myId"});
+		assertNotNull("result cannot be null.", execute);
+		assertEquals("Wrong result type", Long.class, execute.getClass());
+		assertEquals("Wrong result", 0L, execute);
+	}
+
 	protected JCacheOperationSource createOperationSource(CacheManager cacheManager,
 														  CacheResolver cacheResolver,
 														  CacheResolver exceptionCacheResolver,
@@ -130,9 +146,15 @@ public class JCacheInterceptorTests extends AbstractJCacheTests {
 
 	private static class DummyInvoker implements Invoker {
 
+		private final Object result;
+
+		private DummyInvoker(Object result) {
+			this.result = result;
+		}
+
 		@Override
 		public Object invoke() throws ThrowableWrapper {
-			return null;
+			return result;
 		}
 	}
 }
