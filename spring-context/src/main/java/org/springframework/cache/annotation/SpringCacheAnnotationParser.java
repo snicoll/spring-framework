@@ -106,6 +106,7 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 		cuo.setKey(caching.key());
 		cuo.setKeyGenerator(caching.keyGenerator());
 		cuo.setCacheManager(caching.cacheManager());
+		cuo.setCacheResolver(caching.cacheResolver());
 		cuo.setName(ae.toString());
 
 		defaultConfig.applyDefault(cuo);
@@ -122,6 +123,7 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 		ceo.setKey(caching.key());
 		ceo.setKeyGenerator(caching.keyGenerator());
 		ceo.setCacheManager(caching.cacheManager());
+		ceo.setCacheResolver(caching.cacheResolver());
 		ceo.setCacheWide(caching.allEntries());
 		ceo.setBeforeInvocation(caching.beforeInvocation());
 		ceo.setName(ae.toString());
@@ -141,6 +143,7 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 		cuo.setKey(caching.key());
 		cuo.setKeyGenerator(caching.keyGenerator());
 		cuo.setCacheManager(caching.cacheManager());
+		cuo.setCacheResolver(caching.cacheResolver());
 		cuo.setName(ae.toString());
 
 		defaultConfig.applyDefault(cuo);
@@ -191,8 +194,8 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 				throw new IllegalStateException("Multiple @CacheConfig annotations found on '"+target.getName()+"'");
 			}
 			CacheConfig annotation = annotations.iterator().next();
-			return new DefaultCacheConfig(annotation.cacheManager(),
-					annotation.keyGenerator(), annotation.value());
+			return new DefaultCacheConfig(annotation.value(), annotation.keyGenerator(),
+					annotation.cacheManager(), annotation.cacheResolver());
 		}
 		return new DefaultCacheConfig();
 	}
@@ -233,9 +236,16 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 					"These attributes are mutually exclusive: either set the SpEL expression used to" +
 					"compute the key at runtime or set the name of the KeyGenerator bean to use.");
 		}
+		if (StringUtils.hasText(operation.getCacheManager()) && StringUtils.hasText(operation.getCacheResolver())) {
+			throw new IllegalStateException("Invalid cache annotation configuration on '"
+					+ ae.toString() + "'. Both 'cacheManager' and 'cacheResolver' attributes have been set. " +
+					"These attributes are mutually exclusive: the cache manager is used to configure a" +
+					"default cache resolver if none is set. If a cache resolver is set, the cache manager" +
+					"won't be used.");
+		}
 		if (operation.getCacheNames().isEmpty()) {
 			throw new IllegalStateException("No cache names could be detected on '"
-					+ ae.toString()+ "'. Make sure to set the value parameter on the annotation or" +
+					+ ae.toString()+ "'. Make sure to set the value parameter on the annotation or " +
 					"declare a @CacheConfig at the class-level with the default cache name(s) to use.");
 		}
 	}
@@ -254,18 +264,21 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 	 * Provides default settings for a given set of cache operations.
 	 */
 	static class DefaultCacheConfig {
-		private final String cacheManager;
-		private final String keyGenerator;
 		private final String[] cacheNames;
+		private final String keyGenerator;
+		private final String cacheManager;
+		private final String cacheResolver;
 
-		private DefaultCacheConfig(String cacheManager, String keyGenerator, String[] cacheNames) {
-			this.cacheManager = cacheManager;
-			this.keyGenerator = keyGenerator;
+		private DefaultCacheConfig(String[] cacheNames, String keyGenerator,
+								   String cacheManager, String cacheResolver) {
 			this.cacheNames = cacheNames;
+			this.keyGenerator = keyGenerator;
+			this.cacheManager = cacheManager;
+			this.cacheResolver = cacheResolver;
 		}
 
 		public DefaultCacheConfig() {
-			this(null, null, null);
+			this(null, null, null, null);
 		}
 
 		/**
@@ -274,16 +287,25 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 		 * @param operation the operation to update
 		 */
 		public void applyDefault(CacheOperation operation) {
-			if (!StringUtils.hasText(operation.getCacheManager()) && StringUtils.hasText(cacheManager)) {
-				operation.setCacheManager(cacheManager);
+			if (operation.getCacheNames().isEmpty() && cacheNames != null) {
+				operation.setCacheNames(cacheNames);
 			}
 			if (!StringUtils.hasText(operation.getKey()) && !StringUtils.hasText(operation.getKeyGenerator())
 					&& StringUtils.hasText(keyGenerator)) {
 				operation.setKeyGenerator(keyGenerator);
 			}
-			if (operation.getCacheNames().isEmpty() && cacheNames != null) {
-				operation.setCacheNames(cacheNames);
+
+			if (isSet(operation.getCacheManager()) || isSet(operation.getCacheResolver())) {
+				// One of these is set so we should not inherit anything
+			} else if (isSet(cacheResolver)) {
+				operation.setCacheResolver(cacheResolver);
+			} else if (isSet(cacheManager)) {
+				operation.setCacheManager(cacheManager);
 			}
+
+		}
+		private boolean isSet(String s) {
+			return StringUtils.hasText(s);
 		}
 	}
 

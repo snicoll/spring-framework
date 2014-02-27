@@ -20,7 +20,7 @@ import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 import org.springframework.cache.interceptor.CacheInterceptor;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.context.support.GenericXmlApplicationContext;
 public class AnnotationNamespaceDrivenTests extends AbstractAnnotationTests {
 
 	@Override
-	protected ApplicationContext getApplicationContext() {
+	protected ConfigurableApplicationContext getApplicationContext() {
 		return new GenericXmlApplicationContext(
 				"/org/springframework/cache/config/annotationDrivenCacheNamespace.xml");
 	}

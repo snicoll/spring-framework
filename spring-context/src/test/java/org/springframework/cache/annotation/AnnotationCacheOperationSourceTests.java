@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2014 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,24 +138,55 @@ public class AnnotationCacheOperationSourceTests {
 	}
 
 	@Test
-	public void fullClassLevelWithCustomKeyManager() {
-		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelKeyGenerator", 1);
+	public void testCustomCacheResolver() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClass.class, "customCacheResolver", 1);
 		CacheOperation cacheOperation = ops.iterator().next();
-		assertSharedConfig(cacheOperation, "classCacheManager", "custom", "classCacheName");
+		assertEquals("Custom cache resolver not set", "custom", cacheOperation.getCacheResolver());
 	}
 
 	@Test
-	public void fullClassLevelWithCustomCacheManager() {
-		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelCacheManager", 1);
+	public void testCustomCacheResolverInherited() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClass.class, "customCacheResolverInherited", 1);
 		CacheOperation cacheOperation = ops.iterator().next();
-		assertSharedConfig(cacheOperation, "custom", "classKeyGenerator", "classCacheName");
+		assertEquals("Custom cache resolver not set", "custom", cacheOperation.getCacheResolver());
+	}
+
+	@Test
+	public void testCacheResolverAndCacheManagerCannotBeSetTogether() {
+		try {
+			getOps(AnnotatedClass.class, "invalidCacheResolverAndCacheManagerSet");
+			fail("Should have failed to parse @Cacheable annotation");
+		} catch (IllegalStateException e) {
+			// expected
+		}
 	}
 
 	@Test
 	public void fullClassLevelWithCustomCacheName() {
 		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelCacheName", 1);
 		CacheOperation cacheOperation = ops.iterator().next();
-		assertSharedConfig(cacheOperation, "classCacheManager", "classKeyGenerator", "custom");
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "", "classCacheResolver" , "custom");
+	}
+
+	@Test
+	public void fullClassLevelWithCustomKeyManager() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelKeyGenerator", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "custom", "", "classCacheResolver" , "classCacheName");
+	}
+
+	@Test
+	public void fullClassLevelWithCustomCacheManager() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelCacheManager", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "custom", "", "classCacheName");
+	}
+
+	@Test
+	public void fullClassLevelWithCustomCacheResolver() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithFullDefault.class, "methodLevelCacheResolver", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "", "custom" , "classCacheName");
 	}
 
 	@Test
@@ -168,7 +199,28 @@ public class AnnotationCacheOperationSourceTests {
 	public void customClassLevelWithCustomCacheName() {
 		Collection<CacheOperation> ops = getOps(AnnotatedClassWithCustomDefault.class, "methodLevelCacheName", 1);
 		CacheOperation cacheOperation = ops.iterator().next();
-		assertSharedConfig(cacheOperation, "classCacheManager", "classKeyGenerator", "custom");
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "", "classCacheResolver", "custom");
+	}
+
+	@Test
+	public void partialClassLevelWithCustomCacheManager() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithSomeDefault.class, "methodLevelCacheManager", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "custom", "", "classCacheName");
+	}
+
+	@Test
+	public void partialClassLevelWithCustomCacheResolver() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithSomeDefault.class, "methodLevelCacheResolver", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "", "custom", "classCacheName");
+	}
+
+	@Test
+	public void partialClassLevelWithNoCustomization() {
+		Collection<CacheOperation> ops = getOps(AnnotatedClassWithSomeDefault.class, "noCustomization", 1);
+		CacheOperation cacheOperation = ops.iterator().next();
+		assertSharedConfig(cacheOperation, "classKeyGenerator", "classCacheManager", "", "classCacheName");
 	}
 
 	@Test
@@ -177,10 +229,11 @@ public class AnnotationCacheOperationSourceTests {
 		getOps(MultipleCacheConfig.class, "willNotWork");
 	}
 
-	private void assertSharedConfig(CacheOperation actual, String cacheManager,
-									String keyGenerator, String... cacheNames) {
-		assertEquals("Wrong cache manager", cacheManager, actual.getCacheManager());
+	private void assertSharedConfig(CacheOperation actual, String keyGenerator, String cacheManager,
+									String cacheResolver, String... cacheNames) {
 		assertEquals("Wrong key manager",  keyGenerator, actual.getKeyGenerator());
+		assertEquals("Wrong cache manager", cacheManager, actual.getCacheManager());
+		assertEquals("Wrong cache resolver", cacheResolver, actual.getCacheResolver());
 		for (String cacheName : cacheNames) {
 			assertTrue("Cache '"+cacheName+"' not found (got "+actual.getCacheNames(),
 					actual.getCacheNames().contains(cacheName));
@@ -210,6 +263,10 @@ public class AnnotationCacheOperationSourceTests {
 		public void customCacheManager() {
 		}
 
+		@Cacheable(value = "test", cacheResolver = "custom")
+		public void customCacheResolver() {
+		}
+
 		@EvictFoo
 		public void singleStereotype() {
 		}
@@ -236,14 +293,27 @@ public class AnnotationCacheOperationSourceTests {
 		public void customCacheManagerInherited() {
 		}
 
+		@CacheableFooCustomCacheResolver
+		public void customCacheResolverInherited() {
+		}
+
+		@Cacheable(value = "test", cacheManager = "custom", cacheResolver = "custom")
+		public void invalidCacheResolverAndCacheManagerSet() {
+		}
+
 		@Cacheable // cache name can be inherited from CacheConfig. There's none here
 		public void noCacheNameSpecified() {
 		}
 	}
 
 	@CacheConfig(value = "classCacheName",
-			cacheManager = "classCacheManager", keyGenerator = "classKeyGenerator")
+			keyGenerator = "classKeyGenerator",
+			cacheManager = "classCacheManager", cacheResolver = "classCacheResolver")
 	private static class AnnotatedClassWithFullDefault {
+
+		@Cacheable("custom")
+		public void methodLevelCacheName() {
+		}
 
 		@Cacheable(keyGenerator = "custom")
 		public void methodLevelKeyGenerator() {
@@ -253,8 +323,8 @@ public class AnnotationCacheOperationSourceTests {
 		public void methodLevelCacheManager() {
 		}
 
-		@Cacheable("custom")
-		public void methodLevelCacheName() {
+		@Cacheable(cacheResolver = "custom")
+		public void methodLevelCacheResolver() {
 		}
 	}
 
@@ -264,6 +334,28 @@ public class AnnotationCacheOperationSourceTests {
 		@Cacheable("custom")
 		public void methodLevelCacheName() {
 		}
+	}
+
+	@CacheConfig(value = "classCacheName",
+			keyGenerator = "classKeyGenerator",
+			cacheManager = "classCacheManager")
+	private static class AnnotatedClassWithSomeDefault {
+
+		@Cacheable(cacheManager = "custom")
+		public void methodLevelCacheManager() {
+
+		}
+
+		@Cacheable(cacheResolver = "custom")
+		public void methodLevelCacheResolver() {
+
+		}
+
+		@Cacheable
+		public void noCustomization() {
+
+		}
+
 	}
 
 	@CacheConfigFoo
@@ -296,6 +388,12 @@ public class AnnotationCacheOperationSourceTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
+	@Cacheable(value = "foo", cacheResolver = "custom")
+	public @interface CacheableFooCustomCacheResolver {
+	}
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
 	@CacheEvict(value = "foo")
 	public @interface EvictFoo {
 	}
@@ -308,7 +406,8 @@ public class AnnotationCacheOperationSourceTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
-	@CacheConfig(cacheManager = "classCacheManager", keyGenerator = "classKeyGenerator")
+	@CacheConfig(keyGenerator = "classKeyGenerator",
+			cacheManager = "classCacheManager", cacheResolver = "classCacheResolver")
 	public @interface CacheConfigFoo {
 	}
 }

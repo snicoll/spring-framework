@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 
 import org.aspectj.lang.annotation.SuppressAjWarnings;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cache.interceptor.CacheAspectSupport;
 import org.springframework.cache.interceptor.CacheOperationSource;
 
@@ -37,7 +38,7 @@ import org.springframework.cache.interceptor.CacheOperationSource;
  * @author Costin Leau
  * @since 3.1
  */
-public abstract aspect AbstractCacheAspect extends CacheAspectSupport {
+public abstract aspect AbstractCacheAspect extends CacheAspectSupport implements DisposableBean {
 
 	protected AbstractCacheAspect() {
 	}
@@ -49,6 +50,11 @@ public abstract aspect AbstractCacheAspect extends CacheAspectSupport {
 	 */
 	protected AbstractCacheAspect(CacheOperationSource... cos) {
 		setCacheOperationSources(cos);
+	}
+
+	@Override
+	public void destroy() {
+		clearMetadataCache(); // An aspect is basically a singleton
 	}
 
 	@SuppressAjWarnings("adviceDidNotMatch")

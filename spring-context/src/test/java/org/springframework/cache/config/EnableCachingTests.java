@@ -16,22 +16,18 @@
 
 package org.springframework.cache.config;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.CacheTestUtils;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.support.NoOpCacheManager;
-import org.springframework.cache.support.SimpleCacheManager;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +42,7 @@ public class EnableCachingTests extends AbstractAnnotationTests {
 
 	/** hook into superclass suite of tests */
 	@Override
-	protected ApplicationContext getApplicationContext() {
+	protected ConfigurableApplicationContext getApplicationContext() {
 		return new AnnotationConfigApplicationContext(EnableCachingConfig.class);
 	}
 
@@ -118,12 +114,7 @@ public class EnableCachingTests extends AbstractAnnotationTests {
 		@Override
 		@Bean
 		public CacheManager cacheManager() {
-			SimpleCacheManager cm = new SimpleCacheManager();
-			cm.setCaches(Arrays.asList(
-					new ConcurrentMapCache("default"),
-					new ConcurrentMapCache("primary"),
-					new ConcurrentMapCache("secondary")));
-			return cm;
+			return CacheTestUtils.createSimpleCacheManager("default", "primary", "secondary");
 		}
 
 		@Bean
@@ -149,9 +140,7 @@ public class EnableCachingTests extends AbstractAnnotationTests {
 
 		@Bean
 		public CacheManager customCacheManager() {
-			SimpleCacheManager cm = new SimpleCacheManager();
-			cm.setCaches(Arrays.asList(new ConcurrentMapCache("default")));
-			return cm;
+			return CacheTestUtils.createSimpleCacheManager("default");
 		}
 	}
 
