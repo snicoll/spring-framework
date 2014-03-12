@@ -58,7 +58,7 @@ import org.springframework.util.ClassUtils;
  * @see #doShutdown()
  */
 public abstract class AbstractJmsListeningContainer extends JmsDestinationAccessor
-		implements SmartLifecycle, BeanNameAware, DisposableBean {
+		implements MessageListenerContainer, SmartLifecycle, BeanNameAware, DisposableBean {
 
 	private String clientId;
 
