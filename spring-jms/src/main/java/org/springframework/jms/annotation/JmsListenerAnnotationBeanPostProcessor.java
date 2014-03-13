@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
@@ -97,7 +98,7 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				JmsListener jmsListener = method.getAnnotation(JmsListener.class);
+				JmsListener jmsListener = AnnotationUtils.getAnnotation(method, JmsListener.class);
 				if (jmsListener != null) {
 					processJmsListener(jmsListener, method, bean);
 				}

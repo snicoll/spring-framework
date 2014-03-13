@@ -18,6 +18,11 @@ package org.springframework.jms.annotation;
 
 import static org.junit.Assert.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.junit.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
@@ -25,8 +30,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.JmsListenerContainerTestFactory;
+import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.jms.config.MessageListenerTestContainer;
+import org.springframework.stereotype.Component;
 
 /**
  *
@@ -36,7 +43,8 @@ public class JmsListenerAnnotationBeanPostProcessorTests {
 
 	@Test
 	public void simpleMessageListener() {
-		final ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+		final ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(Config.class,
+				SimpleMessageListenerTestBean.class);
 
 		JmsListenerContainerTestFactory factory = context.getBean(JmsListenerContainerTestFactory.class);
 		assertEquals("one container should have been registered", 1, factory.getContainers().size());
@@ -46,14 +54,41 @@ public class JmsListenerAnnotationBeanPostProcessorTests {
 
 		context.close(); // Close and stop the listeners
 		assertTrue("Should have been stopped " + container, container.isStopped());
-
 	}
 
+	@Test
+	public void metaAnnotationIsDiscovered() {
+		final ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(Config.class,
+				MetaAnnotationTestBean.class);
+
+		JmsListenerContainerTestFactory factory = context.getBean(JmsListenerContainerTestFactory.class);
+		assertEquals("one container should have been registered", 1, factory.getContainers().size());
+		JmsListenerEndpoint endpoint = factory.getContainers().get(0).getEndpoint();
+		assertEquals("metaTestQueue", endpoint.getDestination());
+	}
+
+	@Component
 	static class SimpleMessageListenerTestBean {
 
 		@JmsListener(destination = "testQueue")
 		public void handleIt(String body) {
 		}
+
+	}
+
+	@Component
+	static class MetaAnnotationTestBean {
+
+		@FooListener
+		public void handleIt(String body) {
+		}
+	}
+
+
+	@JmsListener(destination = "metaTestQueue")
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	static @interface FooListener {
 
 	}
 
@@ -70,11 +105,6 @@ public class JmsListenerAnnotationBeanPostProcessorTests {
 		@Bean
 		public JmsListenerEndpointRegistry jmsListenerEndpointRegistry() {
 			return new JmsListenerEndpointRegistry();
-		}
-
-		@Bean
-		public SimpleMessageListenerTestBean target() {
-			return new SimpleMessageListenerTestBean();
 		}
 
 		@Bean
