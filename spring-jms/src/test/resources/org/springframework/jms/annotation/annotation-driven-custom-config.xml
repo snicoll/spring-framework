@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:jms="http://www.springframework.org/schema/jms"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd
+	   http://www.springframework.org/schema/jms
+	   http://www.springframework.org/schema/jms/spring-jms-4.1.xsd">
+
+	<jms:annotation-driven registry="customRegistry"/>
+
+	<bean class="org.springframework.jms.annotation.AbstractJmsAnnotationDrivenTests$CustomBean"/>
+
+	<bean id="customRegistry" class="org.springframework.jms.config.JmsListenerEndpointRegistry">
+		<property name="jmsListenerContainerFactories">
+			<list>
+				<ref bean="defaultFactory"/>
+				<ref bean="customFactory"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="defaultFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory">
+		<property name="id" value="default"/>
+	</bean>
+	<bean id="customFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory">
+		<property name="id" value="custom"/>
+	</bean>
+
+	<bean id="simpleMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter"/>
+
+	<bean class="org.springframework.jms.annotation.AnnotationDrivenNamespaceTests$CustomJmsListenerConfigurer">
+		<property name="messageListener" ref="simpleMessageListener"/>
+	</bean>
+
+
+</beans>

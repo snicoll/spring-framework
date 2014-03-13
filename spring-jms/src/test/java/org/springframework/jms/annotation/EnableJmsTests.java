@@ -16,12 +16,9 @@
 
 package org.springframework.jms.annotation;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import org.junit.Rule;
@@ -40,68 +37,39 @@ import org.springframework.jms.config.JmsListenerContainerTestFactory;
 import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
-import org.springframework.stereotype.Component;
+import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 
 /**
  *
  * @author Stephane Nicoll
  */
-public class EnableJmsTests {
+public class EnableJmsTests extends AbstractJmsAnnotationDrivenTests {
 
 	@Rule
 	public final ExpectedException thrown = ExpectedException.none();
 
+	@Override
 	@Test
-	public void defaultConfiguration() {
+	public void sampleConfiguration() {
 		ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
 				EnableJmsConfig.class, SampleBean.class);
-
-		JmsListenerContainerTestFactory defaultFactory =
-				context.getBean("defaultFactory", JmsListenerContainerTestFactory.class);
-		JmsListenerContainerTestFactory simpleFactory =
-				context.getBean("simpleFactory", JmsListenerContainerTestFactory.class);
-		assertEquals(1, defaultFactory.getContainers().size());
-		assertEquals(1, simpleFactory.getContainers().size());
+		testSampleConfiguration(context);
 	}
 
-	@Test
-	public void customConfiguration() {
-		ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
-				EnableJmsCustomConfig.class, CustomBean.class);
-
-		JmsListenerContainerTestFactory defaultFactory =
-				context.getBean("defaultFactory", JmsListenerContainerTestFactory.class);
-		JmsListenerContainerTestFactory customFactory =
-				context.getBean("customFactory", JmsListenerContainerTestFactory.class);
-		assertEquals(1, defaultFactory.getContainers().size());
-		assertEquals(1, customFactory.getContainers().size());
-
-		assertEquals("Wrong listener set in custom endpoint", context.getBean("simpleMessageListener"),
-				defaultFactory.getContainers().get(0).getEndpoint().getListener());
-
-		JmsListenerEndpointRegistry customRegistry =
-				context.getBean("customRegistry", JmsListenerEndpointRegistry.class);
-		assertEquals("Wrong number of containers in the registry", 2,
-				customRegistry.getContainers().size());
-		assertNotNull("Container with custom id on the annotation should be found",
-				customRegistry.getContainer("listenerId"));
-		assertNotNull("Container created with custom id should be found",
-				customRegistry.getContainer("myCustomEndpointId"));
-
-	}
-
+	@Override
 	@Test
 	public void fullConfiguration() {
 		ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
 				EnableJmsConfig.class, FullBean.class);
-		JmsListenerContainerTestFactory simpleFactory =
-				context.getBean("simpleFactory", JmsListenerContainerTestFactory.class);
-		assertEquals(1, simpleFactory.getContainers().size());
-		JmsListenerEndpoint endpoint = simpleFactory.getContainers().get(0).getEndpoint();
-		assertEquals("simple", endpoint.getFactoryId());
-		assertEquals("queueIn", endpoint.getDestination());
-		assertEquals("mySelector", endpoint.getSelector());
-		assertEquals("mySubscription", endpoint.getSubscription());
+		testFullConfiguration(context);
+	}
+
+	@Override
+	@Test
+	public void customConfiguration() {
+		ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
+				EnableJmsCustomConfig.class, CustomBean.class);
+		testCustomConfiguration(context);
 	}
 
 	@Test
@@ -114,7 +82,6 @@ public class EnableJmsTests {
 				EnableJmsConfig.class, CustomBean.class);
 
 	}
-
 
 	@EnableJms
 	@Configuration
@@ -168,44 +135,8 @@ public class EnableJmsTests {
 
 		@Bean
 		public MessageListener simpleMessageListener() {
-			return new MessageListener() {
-				@Override
-				public void onMessage(Message message) {
-					// do something with the message
-				}
-			};
+			return new MessageListenerAdapter();
 		}
-	}
-
-	@Component
-	static class FullBean {
-
-		@JmsListener(factoryId = "simple", destination = "queueIn", responseDestination = "queueOut",
-				selector = "mySelector", subscription = "mySubscription")
-		public String fullHandle(String msg) {
-			return "reply";
-		}
-	}
-
-	@Component
-	static class SampleBean {
-
-		@JmsListener(destination = "myQueue")
-		public void defaultHandle(String msg) {
-		}
-
-		@JmsListener(factoryId = "simple", destination = "myQueue")
-		public void simpleHandle(String msg) {
-		}
-	}
-
-	@Component
-	static class CustomBean {
-
-		@JmsListener(id="listenerId", factoryId = "custom", destination = "myQueue")
-		public void customHandle(String msg) {
-		}
-
 	}
 
 }

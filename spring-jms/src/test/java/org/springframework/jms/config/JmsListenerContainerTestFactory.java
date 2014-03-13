@@ -27,11 +27,14 @@ import org.springframework.jms.listener.MessageListenerContainer;
  */
 public class JmsListenerContainerTestFactory implements JmsListenerContainerFactory {
 
-	private final String id;
+	private String id;
 
 	private final List<MessageListenerTestContainer> containers =
 			new ArrayList<MessageListenerTestContainer>();
 
+
+	protected JmsListenerContainerTestFactory() {
+	}
 
 	public JmsListenerContainerTestFactory(String id) {
 		this.id = id;
@@ -40,6 +43,10 @@ public class JmsListenerContainerTestFactory implements JmsListenerContainerFact
 	@Override
 	public String getId() {
 		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public List<MessageListenerTestContainer> getContainers() {

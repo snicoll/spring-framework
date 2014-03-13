@@ -117,6 +117,22 @@ import org.springframework.context.annotation.Import;
  *     public JmsListenerEndpointRegistry jmsListenerEndpointRegistry() {
  *         //... customize the factories to use
  *     }
+ *
+ *     &#064;Bean
+ *     public MyService myService() {
+ *         return new MyService();
+ *     }
+ * }</pre>
+ *
+ * For reference, the example above can be compared to the following Spring XML
+ * configuration:
+ * <pre class="code">
+ * {@code <beans>
+ *     <jms:annotation-driven registry="jmsListenerEndpointRegistry"/>
+ *     <bean id="jmsListenerEndpointRegistry"  <!-- customize the factories to use -->
+ *           class="org.springframework.jms.config.JmsListenerEndpointRegistry"/>
+ *     <bean id="myService" class="com.acme.foo.MyService"/>
+ * </beans>
  * }</pre>
  *
  *
@@ -143,6 +159,9 @@ import org.springframework.context.annotation.Import;
  *     // JMS infrastructure setup
  * }</pre>
  *
+ * Note that all beans implementing {@code JmsListenerConfigurer} will be detected and
+ * invoked in a similar fashion. The example above can be translated in a regular bean
+ * definition registered in the context in case you use the namespace configuration.
  *
  * @author Stephane Nicoll
  * @since 4.1
