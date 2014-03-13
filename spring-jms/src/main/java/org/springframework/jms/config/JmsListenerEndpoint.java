@@ -29,6 +29,8 @@ public class JmsListenerEndpoint {
 
 	private MessageListener listener;
 
+	private String id;
+
 	private String factoryId;
 
 	private String destination;
@@ -47,6 +49,17 @@ public class JmsListenerEndpoint {
 
 	public void setListener(MessageListener listener) {
 		this.listener = listener;
+	}
+
+	/**
+	 * Return the id of the listener container.
+	 */
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	/**

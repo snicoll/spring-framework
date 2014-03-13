@@ -78,6 +78,16 @@ public class EnableJmsTests {
 
 		assertEquals("Wrong listener set in custom endpoint", context.getBean("simpleMessageListener"),
 				defaultFactory.getContainers().get(0).getEndpoint().getListener());
+
+		JmsListenerEndpointRegistry customRegistry =
+				context.getBean("customRegistry", JmsListenerEndpointRegistry.class);
+		assertEquals("Wrong number of containers in the registry", 2,
+				customRegistry.getContainers().size());
+		assertNotNull("Container with custom id on the annotation should be found",
+				customRegistry.getContainer("listenerId"));
+		assertNotNull("Container created with custom id should be found",
+				customRegistry.getContainer("myCustomEndpointId"));
+
 	}
 
 	@Test
@@ -134,6 +144,7 @@ public class EnableJmsTests {
 
 			// Also register a custom endpoint
 			JmsListenerEndpoint endpoint = new JmsListenerEndpoint();
+			endpoint.setId("myCustomEndpointId");
 			endpoint.setFactoryId("default");
 			endpoint.setDestination("myQueue");
 			endpoint.setListener(simpleMessageListener());
@@ -191,7 +202,7 @@ public class EnableJmsTests {
 	@Component
 	static class CustomBean {
 
-		@JmsListener(factoryId = "custom", destination = "myQueue")
+		@JmsListener(id="listenerId", factoryId = "custom", destination = "myQueue")
 		public void customHandle(String msg) {
 		}
 

@@ -44,6 +44,13 @@ import java.lang.annotation.Target;
 public @interface JmsListener {
 
 	/**
+	 * The unique identifier of the container managing this endpoint.
+	 * <p>if none is specified an auto-generated one is provided.
+	 * @see org.springframework.jms.config.JmsListenerEndpointRegistry#getContainer(String)
+	 */
+	String id() default "";
+
+	/**
 	 * The identifier of the {@link org.springframework.jms.config.JmsListenerContainerFactory}
 	 * to use to create the message listener container responsible to serve this endpoint.
 	 * <p>By default, the "default" factory is used.

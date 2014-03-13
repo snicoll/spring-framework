@@ -19,15 +19,14 @@ package org.springframework.jms.config;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.listener.MessageListenerContainer;
+import org.springframework.util.Assert;
 
 /**
  * Create the necessary {@link MessageListenerContainer} instances
@@ -36,9 +35,11 @@ import org.springframework.jms.listener.MessageListenerContainer;
  * lifecycle of the application context.
  * <p>Contrary to {@link MessageListenerContainer} created manually,
  * containers managed by this instances are not registered in the
- * application context and cannot be located for autowiring. Use
+ * application context and are not candidates for autowiring. Use
  * {@link #getContainers()} if you need to access the containers
- * of this instance for management purposes.
+ * of this instance for management purposes. If you need to access
+ * a particular container, use {@link #getContainer(String)} with the
+ * id of the endpoint.
  *
  * @author Stephane Nicoll
  * @since 4.1
@@ -51,8 +52,8 @@ public class JmsListenerEndpointRegistry implements DisposableBean {
 	private Map<String, JmsListenerContainerFactory> factories
 			= new HashMap<String, JmsListenerContainerFactory>();
 
-	private final Set<MessageListenerContainer> containers =
-			new HashSet<MessageListenerContainer>();
+	private final Map<String, MessageListenerContainer> containers =
+			new HashMap<String, MessageListenerContainer>();
 
 	/**
 	 * Set the {@link JmsListenerContainerFactory} instances to use by
@@ -78,20 +79,41 @@ public class JmsListenerEndpointRegistry implements DisposableBean {
 	}
 
 	/**
-	 * Return the managed {@link MessageListenerContainer} instance(s).
+	 * Return the {@link MessageListenerContainer} with the specified id or
+	 * {@code null} if no such container exists.
+	 *
+	 * @param id the id of the container
+	 * @return the container or {@code null} if no container with that id exists
+	 * @see org.springframework.jms.config.JmsListenerEndpoint#getId()
 	 */
-	public Set<MessageListenerContainer> getContainers() {
-		return Collections.unmodifiableSet(containers);
+	public MessageListenerContainer getContainer(String id) {
+		Assert.notNull(id, "the container identifier must be set.");
+		return containers.get(id);
 	}
 
 	/**
-	 * Add a {@link JmsListenerEndpoint}.
+	 * Return the managed {@link MessageListenerContainer} instance(s).
+	 */
+	public Collection<MessageListenerContainer> getContainers() {
+		return Collections.unmodifiableCollection(containers.values());
+	}
+
+	/**
+	 * Create a message listener container for the given {@link JmsListenerEndpoint}.
 	 * <p>This create the necessary infrastructure to honor that endpoint
 	 * with regards to its configuration.
 	 * @param endpoint the endpoint to add
 	 * @see #getContainers()
+	 * @see #getContainer(String)
 	 */
-	public void addJmsListenerEndpoint(JmsListenerEndpoint endpoint) {
+	public void createJmsListenerContainer(JmsListenerEndpoint endpoint) {
+		Assert.notNull(endpoint, "endpoint must be set");
+
+		String id = endpoint.getId();
+		Assert.notNull(id, "endpoint id must be set.");
+		Assert.state(!containers.containsKey(id), "another endpoint is already " +
+				"registered with id '" + id + "'");
+
 		String factoryId = endpoint.getFactoryId();
 		JmsListenerContainerFactory factory = getFactories().get(factoryId);
 		if (factory == null) {
@@ -100,14 +122,14 @@ public class JmsListenerEndpointRegistry implements DisposableBean {
 					+ JmsListenerContainerFactory.class.getName() + "' implementation is "
 					+ "registered with that id.");
 		}
-		MessageListenerContainer container = createContainer(factory, endpoint);
-		containers.add(container);
+		MessageListenerContainer container = doCreateJmsListenerContainer(factory, endpoint);
+		containers.put(id, container);
 	}
 
 	/**
 	 * Create and start a new container using the specified factory.
 	 */
-	protected MessageListenerContainer createContainer(JmsListenerContainerFactory factory,
+	protected MessageListenerContainer doCreateJmsListenerContainer(JmsListenerContainerFactory factory,
 			JmsListenerEndpoint endpoint) {
 		MessageListenerContainer container = factory.createMessageListenerContainer(endpoint);
 		initializeContainer(container);

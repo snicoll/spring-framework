@@ -18,6 +18,7 @@ package org.springframework.jms.annotation;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
@@ -62,6 +63,8 @@ import org.springframework.util.StringUtils;
  */
 public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor, Ordered,
 		ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
+
+	private final AtomicInteger counter = new AtomicInteger();
 
 	private ApplicationContext applicationContext;
 
@@ -130,12 +133,14 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		MessageListenerMethodAdapter listener = new MessageListenerMethodAdapter(bean, method);
 		JmsListenerEndpoint endpoint = new JmsListenerEndpoint();
 		endpoint.setListener(listener);
-		if (StringUtils.hasText(jmsListener.factoryId())) {
-			endpoint.setFactoryId(jmsListener.factoryId());
+		if (StringUtils.hasText(jmsListener.id())) {
+			endpoint.setId(jmsListener.id());
 		}
-		if (StringUtils.hasText(jmsListener.destination())) {
-			endpoint.setDestination(jmsListener.destination());
+		else {
+			endpoint.setId(generateEndpointId(jmsListener));
 		}
+		endpoint.setFactoryId(jmsListener.factoryId());
+		endpoint.setDestination(jmsListener.destination());
 		if (StringUtils.hasText(jmsListener.selector())) {
 			endpoint.setSelector(jmsListener.selector());
 		}
@@ -176,6 +181,11 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		catch (Exception e) {
 			throw new BeanInitializationException(e.getMessage(), e);
 		}
+	}
+
+	private String generateEndpointId(JmsListener jmsListener) {
+		return "org.springframework.jms.listener-" + jmsListener.factoryId()
+				+ "#" + counter.getAndIncrement();
 	}
 
 }

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 /**
  * Helper bean for registering {@link JmsListenerEndpoint} with a {@link JmsListenerEndpointRegistry}.
@@ -53,6 +54,8 @@ public class JmsListenerEndpointRegistrar implements InitializingBean {
 	 * Add a jms endpoint.
 	 */
 	public void addEndpoint(JmsListenerEndpoint endpoint) {
+		Assert.notNull(endpoint, "endpoint must be set");
+		Assert.notNull(endpoint.getId(), "endpoint id must be set.");
 		this.endpoints.add(endpoint);
 	}
 
@@ -63,7 +66,7 @@ public class JmsListenerEndpointRegistrar implements InitializingBean {
 
 	protected void startAllEndpoints() throws Exception {
 		for (JmsListenerEndpoint endpoint : endpoints) {
-			endpointRegistry.addJmsListenerEndpoint(endpoint);
+			endpointRegistry.createJmsListenerContainer(endpoint);
 		}
 	}
 
