@@ -476,6 +476,7 @@ project("spring-jms") {
 		compile(project(":spring-context"))
 		compile(project(":spring-tx"))
 		provided("javax.jms:jms-api:1.1-rev-1")
+		optional(project(":spring-messaging"))
 		optional(project(":spring-oxm"))
 		optional("aopalliance:aopalliance:1.0")
 		optional("javax.transaction:javax.transaction-api:1.2")
