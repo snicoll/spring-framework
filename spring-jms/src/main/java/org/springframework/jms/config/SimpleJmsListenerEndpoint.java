@@ -16,28 +16,28 @@
 
 package org.springframework.jms.config;
 
-import org.springframework.jms.listener.MessageListenerContainer;
+import javax.jms.MessageListener;
 
 /**
- * Factory of {@link MessageListenerContainer} based on a
- * {@link JmsListenerEndpoint} definition.
+ * A {@link JmsListenerEndpoint} simply providing the {@link MessageListener} to
+ * invoke to process an incoming message for this endpoint.
  *
  * @author Stephane Nicoll
  * @since 4.1
  */
-public interface JmsListenerContainerFactory {
+public class SimpleJmsListenerEndpoint extends JmsListenerEndpoint {
+
+	private MessageListener listener;
 
 	/**
-	 * Return the id of this instance.
-	 * @see org.springframework.jms.annotation.JmsListener#factoryId()
+	 * Return the {@link MessageListener} to invoke when a message matching
+	 * the endpoint is received.
 	 */
-	String getId();
+	public MessageListener getListener() {
+		return listener;
+	}
 
-	/**
-	 * Create a {@link MessageListenerContainer} for the given
-	 * {@linkplain JmsListenerEndpoint endpoint}.
-	 * @param endpoint the endpoint to configure
-	 * @return the created container
-	 */
-	MessageListenerContainer createMessageListenerContainer(JmsListenerEndpoint endpoint);
+	public void setListener(MessageListener listener) {
+		this.listener = listener;
+	}
 }

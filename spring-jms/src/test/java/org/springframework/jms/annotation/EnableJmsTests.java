@@ -34,9 +34,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerTestFactory;
-import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
+import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 
 /**
@@ -110,7 +110,7 @@ public class EnableJmsTests extends AbstractJmsAnnotationDrivenTests {
 			registrar.setEndpointRegistry(customRegistry());
 
 			// Also register a custom endpoint
-			JmsListenerEndpoint endpoint = new JmsListenerEndpoint();
+			SimpleJmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
 			endpoint.setId("myCustomEndpointId");
 			endpoint.setFactoryId("default");
 			endpoint.setDestination("myQueue");

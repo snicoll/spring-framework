@@ -16,22 +16,22 @@
 
 package org.springframework.jms.config;
 
-import javax.jms.MessageListener;
-
 /**
- * Model for a JMS listener endpoint. Can be used against a
+ * Base model for a JMS listener endpoint. Can be used against a
  * {@link org.springframework.jms.annotation.JmsListenerConfigurer JmsListenerConfigurer} to
  * register endpoints programmatically.
  *
  * @author Stephane Nicoll
+ * @see MethodJmsListenerEndpoint
+ * @see SimpleJmsListenerEndpoint
  */
-public class JmsListenerEndpoint {
-
-	private MessageListener listener;
+public abstract class JmsListenerEndpoint {
 
 	private String id;
 
 	private String factoryId;
+
+	private boolean queue = true;
 
 	private String destination;
 
@@ -39,17 +39,6 @@ public class JmsListenerEndpoint {
 
 	private String selector;
 
-	/**
-	 * Return the {@link MessageListener} to invoke when a message matching
-	 * the endpoint is received.
-	 */
-	public MessageListener getListener() {
-		return listener;
-	}
-
-	public void setListener(MessageListener listener) {
-		this.listener = listener;
-	}
 
 	/**
 	 * Return the id of the listener container.
@@ -72,6 +61,20 @@ public class JmsListenerEndpoint {
 
 	public void setFactoryId(String factoryId) {
 		this.factoryId = factoryId;
+	}
+
+	/**
+	 * Return {@code true} if this endpoint is managed by a queue.
+	 */
+	public boolean isQueue() {
+		return queue;
+	}
+
+	/**
+	 * Specify if the destination is a queue.
+	 */
+	public void setQueue(boolean queue) {
+		this.queue = queue;
 	}
 
 	/**

@@ -31,10 +31,9 @@ import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
-import org.springframework.jms.config.MessageListenerMethodAdapter;
+import org.springframework.jms.config.MethodJmsListenerEndpoint;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -130,9 +129,9 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 			}
 		}
 
-		MessageListenerMethodAdapter listener = new MessageListenerMethodAdapter(bean, method);
-		JmsListenerEndpoint endpoint = new JmsListenerEndpoint();
-		endpoint.setListener(listener);
+		MethodJmsListenerEndpoint endpoint = new MethodJmsListenerEndpoint();
+		endpoint.setBean(bean);
+		endpoint.setMethod(method);
 		if (StringUtils.hasText(jmsListener.id())) {
 			endpoint.setId(jmsListener.id());
 		}
@@ -141,6 +140,7 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		}
 		endpoint.setFactoryId(jmsListener.factoryId());
 		endpoint.setDestination(jmsListener.destination());
+		endpoint.setQueue(jmsListener.queue());
 		if (StringUtils.hasText(jmsListener.selector())) {
 			endpoint.setSelector(jmsListener.selector());
 		}
@@ -148,7 +148,7 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 			endpoint.setSubscription(jmsListener.subscription());
 		}
 		if (StringUtils.hasText(jmsListener.responseDestination())) {
-			listener.setDefaultResponseQueueName(jmsListener.responseDestination());
+			endpoint.setResponseDestination(jmsListener.responseDestination());
 		}
 		registrar.addEndpoint(endpoint);
 

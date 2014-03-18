@@ -47,7 +47,7 @@ public class JmsListenerEndpointRegistrarTests {
 	@Test
 	public void addNullEndpointId() {
 		thrown.expect(IllegalArgumentException.class);
-		registrar.addEndpoint(new JmsListenerEndpoint());
+		registrar.addEndpoint(new SimpleJmsListenerEndpoint());
 	}
 
 }

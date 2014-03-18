@@ -22,8 +22,8 @@ import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
+import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
 /**
  *
@@ -62,7 +62,7 @@ public class AnnotationDrivenNamespaceTests extends AbstractJmsAnnotationDrivenT
 
 		@Override
 		public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
-			JmsListenerEndpoint endpoint = new JmsListenerEndpoint();
+			SimpleJmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
 			endpoint.setId("myCustomEndpointId");
 			endpoint.setFactoryId("default");
 			endpoint.setDestination("myQueue");

@@ -37,6 +37,8 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 
 	private String id;
 
+	private MessageListenerFactory messageListenerFactory;
+
 	private ConnectionFactory connectionFactory;
 
 	private DestinationResolver destinationResolver;
@@ -66,6 +68,13 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 	@Override
 	public String getId() {
 		return id;
+	}
+
+	/**
+	 * Set the {@link MessageListenerFactory} to use.
+	 */
+	public void setMessageListenerFactory(MessageListenerFactory messageListenerFactory) {
+		this.messageListenerFactory = messageListenerFactory;
 	}
 
 	/**
@@ -170,7 +179,7 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 
 		initializeContainer(instance);
 
-		instance.setMessageListener(endpoint.getListener());
+		instance.setMessageListener(messageListenerFactory.createMessageListener(endpoint));
 		if (endpoint.getDestination() != null) {
 			instance.setDestinationName(endpoint.getDestination());
 		}

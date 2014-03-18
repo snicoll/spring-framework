@@ -65,6 +65,12 @@ public @interface JmsListener {
 	String destination();
 
 	/**
+	 * Specify if the {@link #destination()} refers to a queue or not. Refer to a
+	 * queue by default.
+	 */
+	boolean queue() default true;
+
+	/**
 	 * The name for the durable subscription, if any.
 	 */
 	String subscription() default "";

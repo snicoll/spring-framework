@@ -33,6 +33,7 @@ import org.springframework.jms.config.JmsListenerContainerTestFactory;
 import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.jms.config.MessageListenerTestContainer;
+import org.springframework.jms.config.MethodJmsListenerEndpoint;
 import org.springframework.stereotype.Component;
 
 /**
@@ -49,7 +50,13 @@ public class JmsListenerAnnotationBeanPostProcessorTests {
 		JmsListenerContainerTestFactory factory = context.getBean(JmsListenerContainerTestFactory.class);
 		assertEquals("one container should have been registered", 1, factory.getContainers().size());
 		MessageListenerTestContainer container = factory.getContainers().get(0);
-		assertNotNull(container.getEndpoint().getListener());
+
+		JmsListenerEndpoint endpoint = container.getEndpoint();
+		assertEquals("Wrong endpoint type", MethodJmsListenerEndpoint.class, endpoint.getClass());
+		MethodJmsListenerEndpoint methodEndpoint = (MethodJmsListenerEndpoint) endpoint;
+		assertNotNull(methodEndpoint.getBean());
+		assertNotNull(methodEndpoint.getMethod());
+		assertTrue(methodEndpoint.isQueue());
 		assertTrue("Should have been started " + container, container.isStarted());
 
 		context.close(); // Close and stop the listeners

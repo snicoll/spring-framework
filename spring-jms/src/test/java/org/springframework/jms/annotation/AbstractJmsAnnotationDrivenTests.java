@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.jms.config.JmsListenerContainerTestFactory;
 import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
+import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 import org.springframework.stereotype.Component;
 
 /**
@@ -101,9 +102,10 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 				context.getBean("customFactory", JmsListenerContainerTestFactory.class);
 		assertEquals(1, defaultFactory.getContainers().size());
 		assertEquals(1, customFactory.getContainers().size());
-
+		JmsListenerEndpoint endpoint = defaultFactory.getContainers().get(0).getEndpoint();
+		assertEquals("Wrong endpoint type", SimpleJmsListenerEndpoint.class, endpoint.getClass());
 		assertEquals("Wrong listener set in custom endpoint", context.getBean("simpleMessageListener"),
-				defaultFactory.getContainers().get(0).getEndpoint().getListener());
+				((SimpleJmsListenerEndpoint)endpoint).getListener());
 
 		JmsListenerEndpointRegistry customRegistry =
 				context.getBean("customRegistry", JmsListenerEndpointRegistry.class);
