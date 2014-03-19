@@ -16,10 +16,6 @@
 
 package org.springframework.jms.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,38 +31,37 @@ public class JmsListenerEndpointRegistryTests {
 
 	private final JmsListenerEndpointRegistry registry = new JmsListenerEndpointRegistry();
 
-	@Before
-	public void setup() {
-		List<JmsListenerContainerFactory> factories = new ArrayList<JmsListenerContainerFactory>();
-		factories.add(new JmsListenerContainerTestFactory("default"));
-		factories.add(new JmsListenerContainerTestFactory("simple"));
-		registry.setJmsListenerContainerFactories(factories);
-	}
+	private final JmsListenerContainerTestFactory containerFactory = new JmsListenerContainerTestFactory();
 
 	@Test
 	public void createWithNullEndpoint() {
 		thrown.expect(IllegalArgumentException.class);
-		registry.createJmsListenerContainer(null);
+		registry.createJmsListenerContainer(null, containerFactory);
 	}
 
 	@Test
 	public void createWithNullEndpointId() {
 		thrown.expect(IllegalArgumentException.class);
-		registry.createJmsListenerContainer(new SimpleJmsListenerEndpoint());
+		registry.createJmsListenerContainer(new SimpleJmsListenerEndpoint(), containerFactory);
+	}
+
+	@Test
+	public void createWithNullContainerFactory() {
+		thrown.expect(IllegalArgumentException.class);
+		registry.createJmsListenerContainer(createEndpoint("foo", "myDestination"), null);
 	}
 
 	@Test
 	public void createWithDuplicateEndpointId() {
-		registry.createJmsListenerContainer(createEndpoint("test", "default", "queue"));
+		registry.createJmsListenerContainer(createEndpoint("test", "queue"), containerFactory);
 
 		thrown.expect(IllegalStateException.class);
-		registry.createJmsListenerContainer(createEndpoint("test", "default", "queue"));
+		registry.createJmsListenerContainer(createEndpoint("test", "queue"), containerFactory);
 	}
 
-	private JmsListenerEndpoint createEndpoint(String id, String factoryId, String destinationName) {
+	private JmsListenerEndpoint createEndpoint(String id, String destinationName) {
 		JmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
 		endpoint.setId(id);
-		endpoint.setFactoryId(factoryId);
 		endpoint.setDestination(destinationName);
 		return endpoint;
 	}

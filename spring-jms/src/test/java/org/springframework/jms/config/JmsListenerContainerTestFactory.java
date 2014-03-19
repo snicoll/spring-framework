@@ -27,27 +27,8 @@ import org.springframework.jms.listener.MessageListenerContainer;
  */
 public class JmsListenerContainerTestFactory implements JmsListenerContainerFactory {
 
-	private String id;
-
 	private final List<MessageListenerTestContainer> containers =
 			new ArrayList<MessageListenerTestContainer>();
-
-
-	protected JmsListenerContainerTestFactory() {
-	}
-
-	public JmsListenerContainerTestFactory(String id) {
-		this.id = id;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public List<MessageListenerTestContainer> getContainers() {
 		return containers;

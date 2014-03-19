@@ -22,16 +22,41 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.messaging.handler.annotation.MessageMapping;
+
 /**
  * Annotation that marks a method to be the target of a JMS message
- * listener on the specified {@link #destination()}. The {@link #factoryId()}
+ * listener on the specified {@link #destination()}. The {@link #containerFactory()}
  * identifies the {@link org.springframework.jms.config.JmsListenerContainerFactory}
- * to use to build the listener container.
+ * to use to build the jms listener container. It may be omitted as long
+ * as a <em>default</em> container factory has been defined.
  *
  * <p>Processing of {@code @JmsListener} annotations is performed by
  * registering a {@link JmsListenerAnnotationBeanPostProcessor}. This can be
  * done manually or, more conveniently, through the {@code <jms:annotation-driven/>}
  * element or {@link EnableJms} annotation.
+ *
+ * <p>Method annotated with this annotation are allowed to have flexible signatures
+ * similar to what {@link MessageMapping} provides, that is
+ * <ul>
+ *  <li>{@link javax.jms.Session} to get access to the JMS session</li>
+ *  <li>{@link javax.jms.Message} or one if subclass to get access to the raw JMS message</li>
+ * 	<li>{@link org.springframework.messaging.Message} to use the messaging abstraction counterpart</li>
+ * 	<li>{@link org.springframework.messaging.handler.annotation.Payload @Payload}-annotated method
+ * 	arguments including the support of validation</li>
+ * 	<li>{@link org.springframework.messaging.handler.annotation.Header @Header}-annotated method
+ * 	arguments to extract a specific header value, including standard JMS headers defined by
+ *  {@link org.springframework.jms.support.converter.JmsHeaders JmsHeaders}</li>
+ * 	<li>{@link org.springframework.messaging.handler.annotation.Headers @Headers}-annotated
+ * 	argument that must also be assignable to {@link java.util.Map} for getting access to all
+ * 	headers.</li>
+ * 	<li>{@link org.springframework.messaging.MessageHeaders MessageHeaders} arguments for
+ * 	getting access to all headers.</li>
+ * 	<li>TODO: add JMS specific header accessor</li>
+ * </ul>
+ *
+ * Methods annotated with {@code @JmsListener} can therefore have a protocol independent
+ * signature for a better reusability.
  *
  * @author Stephane Nicoll
  * @since 4.1
@@ -40,6 +65,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@MessageMapping
 @Documented
 public @interface JmsListener {
 
@@ -51,11 +77,11 @@ public @interface JmsListener {
 	String id() default "";
 
 	/**
-	 * The identifier of the {@link org.springframework.jms.config.JmsListenerContainerFactory}
+	 * The bean name of the {@link org.springframework.jms.config.JmsListenerContainerFactory}
 	 * to use to create the message listener container responsible to serve this endpoint.
-	 * <p>By default, the "default" factory is used.
+	 * <p>If not specified, the default container factory is used, if any.
 	 */
-	String factoryId() default "default";
+	String containerFactory() default "";
 
 	/**
 	 * The destination name for this listener, resolved through the container-wide

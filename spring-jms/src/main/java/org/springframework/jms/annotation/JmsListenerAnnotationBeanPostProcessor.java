@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.jms.config.MethodJmsListenerEndpoint;
@@ -48,9 +50,9 @@ import org.springframework.util.StringUtils;
  * annotation.
  *
  * <p>Auto-detects any {@link JmsListenerConfigurer} instances in the container,
- * allowing for customization of the registry to be used or for fine-grained control
- * over endpoint registration. See @{@link EnableJms} Javadoc for complete
- * usage details.
+ * allowing for customization of the registry to be used, the default container
+ * factory or for fine-grained control  over endpoint registration.
+ * See @{@link EnableJms} Javadoc for complete usage details.
  *
  * @author Stephane Nicoll
  * @since 4.1
@@ -69,6 +71,8 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 
 	private JmsListenerEndpointRegistry endpointRegistry;
 
+	private JmsListenerContainerFactory defaultContainerFactory;
+
 	private final JmsListenerEndpointRegistrar registrar = new JmsListenerEndpointRegistrar();
 
 	@Override
@@ -82,6 +86,15 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 	 */
 	public void setEndpointRegistry(JmsListenerEndpointRegistry endpointRegistry) {
 		this.endpointRegistry = endpointRegistry;
+	}
+
+	/**
+	 * Set the default {@link JmsListenerContainerFactory} to use in case a
+	 * {@link JmsListener} does not define any.
+	 * {@linkplain JmsListener#containerFactory() containerFactory}
+	 */
+	public void setDefaultContainerFactory(JmsListenerContainerFactory defaultContainerFactory) {
+		this.defaultContainerFactory = defaultContainerFactory;
 	}
 
 	@Override
@@ -132,13 +145,7 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		MethodJmsListenerEndpoint endpoint = new MethodJmsListenerEndpoint();
 		endpoint.setBean(bean);
 		endpoint.setMethod(method);
-		if (StringUtils.hasText(jmsListener.id())) {
-			endpoint.setId(jmsListener.id());
-		}
-		else {
-			endpoint.setId(generateEndpointId(jmsListener));
-		}
-		endpoint.setFactoryId(jmsListener.factoryId());
+		endpoint.setId(getEndpointId(jmsListener));
 		endpoint.setDestination(jmsListener.destination());
 		endpoint.setQueue(jmsListener.queue());
 		if (StringUtils.hasText(jmsListener.selector())) {
@@ -150,7 +157,21 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		if (StringUtils.hasText(jmsListener.responseDestination())) {
 			endpoint.setResponseDestination(jmsListener.responseDestination());
 		}
-		registrar.addEndpoint(endpoint);
+
+		JmsListenerContainerFactory factory = null;
+		String containerFactoryBeanName = jmsListener.containerFactory();
+		if (StringUtils.hasText(containerFactoryBeanName)) {
+			try {
+				factory = applicationContext.getBean(containerFactoryBeanName, JmsListenerContainerFactory.class);
+			}
+			catch (NoSuchBeanDefinitionException e) {
+				throw new BeanInitializationException("Could not register jms listener endpoint on ["
+						+ method + "], no " + JmsListenerContainerFactory.class.getSimpleName() + " with id '"
+						+ containerFactoryBeanName + "' was found in the application context", e);
+			}
+		}
+
+		registrar.registerEndpoint(endpoint, factory);
 
 	}
 
@@ -173,6 +194,9 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 			}
 			registrar.setEndpointRegistry(endpointRegistry);
 		}
+		if (registrar.getDefaultContainerFactory() == null && defaultContainerFactory != null) {
+			registrar.setDefaultContainerFactory(defaultContainerFactory);
+		}
 
 		// Create all the listeners and starts them
 		try {
@@ -183,9 +207,14 @@ public class JmsListenerAnnotationBeanPostProcessor implements BeanPostProcessor
 		}
 	}
 
-	private String generateEndpointId(JmsListener jmsListener) {
-		return "org.springframework.jms.listener-" + jmsListener.factoryId()
-				+ "#" + counter.getAndIncrement();
+	private String getEndpointId(JmsListener jmsListener) {
+		if (StringUtils.hasText(jmsListener.id())) {
+			return jmsListener.id();
+		}
+		else {
+			return "org.springframework.jms.JmsListenerEndpointContainer#"
+					+ counter.getAndIncrement();
+		}
 	}
 
 }

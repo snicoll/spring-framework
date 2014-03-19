@@ -16,23 +16,19 @@
 
 package org.springframework.jms.annotation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.MessageListener;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerTestFactory;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
@@ -72,12 +68,18 @@ public class EnableJmsTests extends AbstractJmsAnnotationDrivenTests {
 		testCustomConfiguration(context);
 	}
 
+	@Override
+	@Test
+	public void defaultContainerFactoryConfiguration() {
+		ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
+				EnableJmsDefaultContainerFactoryConfig.class, DefaultBean.class);
+		testDefaultContainerFactoryConfiguration(context);
+	}
+
 	@Test
 	public void unknownFactory() {
-		thrown.expect(BeanInitializationException.class);
-		thrown.expectMessage("custom"); // Not found
-		thrown.expectMessage("default");
-		thrown.expectMessage("simple");
+		thrown.expect(BeanCreationException.class);
+		thrown.expectMessage("customFactory"); // Not found
 		new AnnotationConfigApplicationContext(
 				EnableJmsConfig.class, CustomBean.class);
 
@@ -89,12 +91,12 @@ public class EnableJmsTests extends AbstractJmsAnnotationDrivenTests {
 
 		@Bean
 		public JmsListenerContainerTestFactory defaultFactory() {
-			return new JmsListenerContainerTestFactory("default");
+			return new JmsListenerContainerTestFactory();
 		}
 
 		@Bean
 		public JmsListenerContainerTestFactory simpleFactory() {
-			return new JmsListenerContainerTestFactory("simple");
+			return new JmsListenerContainerTestFactory();
 		}
 	}
 
@@ -112,30 +114,37 @@ public class EnableJmsTests extends AbstractJmsAnnotationDrivenTests {
 			// Also register a custom endpoint
 			SimpleJmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
 			endpoint.setId("myCustomEndpointId");
-			endpoint.setFactoryId("default");
 			endpoint.setDestination("myQueue");
 			endpoint.setListener(simpleMessageListener());
-			registrar.addEndpoint(endpoint);
+			registrar.registerEndpoint(endpoint, jmsConfig.defaultFactory());
 		}
 
 		@Bean
 		public JmsListenerEndpointRegistry customRegistry() {
-			JmsListenerEndpointRegistry registry = new JmsListenerEndpointRegistry();
-			List<JmsListenerContainerFactory> factories = new ArrayList<JmsListenerContainerFactory>();
-			factories.add(jmsConfig.defaultFactory());
-			factories.add(customFactory());
-			registry.setJmsListenerContainerFactories(factories);
-			return registry;
+			return new JmsListenerEndpointRegistry();
 		}
 
 		@Bean
 		public JmsListenerContainerTestFactory customFactory() {
-			return new JmsListenerContainerTestFactory("custom");
+			return new JmsListenerContainerTestFactory();
 		}
 
 		@Bean
 		public MessageListener simpleMessageListener() {
 			return new MessageListenerAdapter();
+		}
+	}
+
+	@Configuration
+	@Import(EnableJmsConfig.class)
+	static class EnableJmsDefaultContainerFactoryConfig implements JmsListenerConfigurer {
+
+		@Autowired
+		private EnableJmsConfig jmsConfig;
+
+		@Override
+		public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
+			registrar.setDefaultContainerFactory(jmsConfig.defaultFactory());
 		}
 	}
 

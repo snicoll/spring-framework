@@ -16,6 +16,8 @@
 
 package org.springframework.jms.config;
 
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,22 +34,58 @@ public class JmsListenerEndpointRegistrarTests {
 
 	private final JmsListenerEndpointRegistrar registrar = new JmsListenerEndpointRegistrar();
 
+	private final JmsListenerEndpointRegistry registry = new JmsListenerEndpointRegistry();
+
+	private final JmsListenerContainerTestFactory containerFactory = new JmsListenerContainerTestFactory();
+
 	@Before
 	public void setup() {
-		JmsListenerEndpointRegistry registry = new JmsListenerEndpointRegistry();
 		registrar.setEndpointRegistry(registry);
 	}
 
 	@Test
-	public void addNullEndpoint() {
+	public void registerNullEndpoint() {
 		thrown.expect(IllegalArgumentException.class);
-		registrar.addEndpoint(null);
+		registrar.registerEndpoint(null, containerFactory);
 	}
 
 	@Test
-	public void addNullEndpointId() {
+	public void registerNullEndpointId() {
 		thrown.expect(IllegalArgumentException.class);
-		registrar.addEndpoint(new SimpleJmsListenerEndpoint());
+		registrar.registerEndpoint(new SimpleJmsListenerEndpoint(), containerFactory);
+	}
+
+	@Test
+	public void registerNullContainerFactoryIsAllowed() throws Exception {
+		JmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
+		endpoint.setId("some id");
+		registrar.setDefaultContainerFactory(containerFactory);
+		registrar.registerEndpoint(endpoint, null);
+		registrar.afterPropertiesSet();
+		assertNotNull("Container not created", registry.getContainer("some id"));
+		assertEquals(1, registry.getContainers().size());
+	}
+
+	@Test
+	public void registerNullContainerFactoryWithNoDefault() throws Exception {
+		JmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
+		endpoint.setId("some id");
+		registrar.registerEndpoint(endpoint, null);
+
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage(endpoint.toString());
+		registrar.afterPropertiesSet();
+	}
+
+	@Test
+	public void registerContainerWithoutFactory() throws Exception {
+		JmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
+		endpoint.setId("myEndpoint");
+		registrar.setDefaultContainerFactory(containerFactory);
+		registrar.registerEndpoint(endpoint);
+		registrar.afterPropertiesSet();
+		assertNotNull("Container not created", registry.getContainer("myEndpoint"));
+		assertEquals(1, registry.getContainers().size());
 	}
 
 }

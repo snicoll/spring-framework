@@ -40,4 +40,13 @@ public class SimpleJmsListenerEndpoint extends JmsListenerEndpoint {
 	public void setListener(MessageListener listener) {
 		this.listener = listener;
 	}
+
+	@Override
+	protected StringBuilder getEndpointDescription() {
+		return super.getEndpointDescription()
+				.append(" | listener='")
+				.append(this.listener)
+				.append("'");
+	}
+
 }

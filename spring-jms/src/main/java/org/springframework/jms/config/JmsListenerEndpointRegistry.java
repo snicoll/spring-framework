@@ -24,7 +24,6 @@ import java.util.Map;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.listener.MessageListenerContainer;
 import org.springframework.util.Assert;
 
@@ -49,34 +48,8 @@ import org.springframework.util.Assert;
  */
 public class JmsListenerEndpointRegistry implements DisposableBean {
 
-	private Map<String, JmsListenerContainerFactory> factories
-			= new HashMap<String, JmsListenerContainerFactory>();
-
 	private final Map<String, MessageListenerContainer> containers =
 			new HashMap<String, MessageListenerContainer>();
-
-	/**
-	 * Set the {@link JmsListenerContainerFactory} instances to use by
-	 * this registry. Each {@link JmsListenerEndpoint} defines the
-	 * factory to use through the {@linkplain JmsListenerEndpoint#factoryId
-	 * factoryId} element.
-	 * <p>By default, all instances found in the context are used.
-	 */
-	@Autowired(required = false)
-	public void setJmsListenerContainerFactories(
-			Collection<JmsListenerContainerFactory> jmsListenerContainerFactories) {
-		this.factories.clear();
-		for (JmsListenerContainerFactory factory : jmsListenerContainerFactories) {
-			factories.put(factory.getId(), factory);
-		}
-	}
-
-	/**
-	 * Return the registered {@link JmsListenerContainerFactory} instances.
-	 */
-	protected Map<String, JmsListenerContainerFactory> getFactories() {
-		return factories;
-	}
 
 	/**
 	 * Return the {@link MessageListenerContainer} with the specified id or
@@ -106,31 +79,24 @@ public class JmsListenerEndpointRegistry implements DisposableBean {
 	 * @see #getContainers()
 	 * @see #getContainer(String)
 	 */
-	public void createJmsListenerContainer(JmsListenerEndpoint endpoint) {
-		Assert.notNull(endpoint, "endpoint must be set");
+	public void createJmsListenerContainer(JmsListenerEndpoint endpoint, JmsListenerContainerFactory factory) {
+		Assert.notNull(endpoint, "Endpoint must not be null");
+		Assert.notNull(factory, "Factory must not be null");
 
 		String id = endpoint.getId();
 		Assert.notNull(id, "endpoint id must be set.");
 		Assert.state(!containers.containsKey(id), "another endpoint is already " +
 				"registered with id '" + id + "'");
 
-		String factoryId = endpoint.getFactoryId();
-		JmsListenerContainerFactory factory = getFactories().get(factoryId);
-		if (factory == null) {
-			throw new IllegalStateException("No JMS listener container factory found with id '"
-					+ factoryId + "' among " + getFactories().keySet() + ". Make sure that a '"
-					+ JmsListenerContainerFactory.class.getName() + "' implementation is "
-					+ "registered with that id.");
-		}
-		MessageListenerContainer container = doCreateJmsListenerContainer(factory, endpoint);
+		MessageListenerContainer container = doCreateJmsListenerContainer(endpoint, factory);
 		containers.put(id, container);
 	}
 
 	/**
 	 * Create and start a new container using the specified factory.
 	 */
-	protected MessageListenerContainer doCreateJmsListenerContainer(JmsListenerContainerFactory factory,
-			JmsListenerEndpoint endpoint) {
+	protected MessageListenerContainer doCreateJmsListenerContainer(JmsListenerEndpoint endpoint,
+			JmsListenerContainerFactory factory) {
 		MessageListenerContainer container = factory.createMessageListenerContainer(endpoint);
 		initializeContainer(container);
 		return container;

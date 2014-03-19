@@ -31,7 +31,12 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 /**
+ * A default {@link MessageListenerFactory} taking care of both the
+ * {@link MethodJmsListenerEndpoint} and {@link SimpleJmsListenerEndpoint}.
  *
+ * <p>Method based endpoints are registered in such a way that all the features
+ * of {@link org.springframework.messaging.handler.annotation.MessageMapping}
+ * are being made available
  * @author Stephane Nicoll
  */
 public class DefaultMessageListenerFactory

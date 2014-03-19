@@ -18,8 +18,8 @@ package org.springframework.jms.config;
 
 
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageListener;
 
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
 import org.springframework.jms.listener.MessageListenerContainer;
 import org.springframework.jms.support.destination.DestinationResolver;
@@ -33,9 +33,7 @@ import org.springframework.util.ErrorHandler;
  * @see AbstractMessageListenerContainer
  */
 public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMessageListenerContainer>
-		implements JmsListenerContainerFactory, BeanNameAware {
-
-	private String id;
+		implements JmsListenerContainerFactory {
 
 	private MessageListenerFactory messageListenerFactory;
 
@@ -56,19 +54,6 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 	private Boolean subscriptionDurable;
 
 	private String clientId;
-
-	/**
-	 * Set the id of this factory used as a reference to identify the configuration
-	 * set defined by this instance.
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
 
 	/**
 	 * Set the {@link MessageListenerFactory} to use.
@@ -133,13 +118,6 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 		this.clientId = clientId;
 	}
 
-	@Override
-	public void setBeanName(String name) {
-		if (id == null) {
-			this.id = name;
-		}
-	}
-
 	/**
 	 * Create an empty container instance.
 	 */
@@ -166,7 +144,6 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 			instance.setSessionAcknowledgeMode(sessionAcknowledgeMode);
 		}
 
-
 		if (pubSubDomain != null) {
 			instance.setPubSubDomain(pubSubDomain);
 		}
@@ -179,7 +156,8 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 
 		initializeContainer(instance);
 
-		instance.setMessageListener(messageListenerFactory.createMessageListener(endpoint));
+		MessageListener messageListener = createMessageListener(endpoint);
+		instance.setMessageListener(messageListener);
 		if (endpoint.getDestination() != null) {
 			instance.setDestinationName(endpoint.getDestination());
 		}
@@ -191,6 +169,13 @@ public abstract class AbstractJmsListenerContainerFactory<C extends AbstractMess
 		}
 
 		return instance;
+	}
+
+	/**
+	 * Create the {@link MessageListener} to use for the specified {@link JmsListenerEndpoint}.
+	 */
+	protected MessageListener createMessageListener(JmsListenerEndpoint endpoint) {
+		return messageListenerFactory.createMessageListener(endpoint);
 	}
 
 	/**

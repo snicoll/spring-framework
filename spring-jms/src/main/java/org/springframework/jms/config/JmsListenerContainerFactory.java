@@ -28,12 +28,6 @@ import org.springframework.jms.listener.MessageListenerContainer;
 public interface JmsListenerContainerFactory {
 
 	/**
-	 * Return the id of this instance.
-	 * @see org.springframework.jms.annotation.JmsListener#factoryId()
-	 */
-	String getId();
-
-	/**
 	 * Create a {@link MessageListenerContainer} for the given
 	 * {@linkplain JmsListenerEndpoint endpoint}.
 	 * @param endpoint the endpoint to configure

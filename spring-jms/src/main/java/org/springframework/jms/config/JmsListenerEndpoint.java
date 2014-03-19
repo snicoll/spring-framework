@@ -29,11 +29,9 @@ public abstract class JmsListenerEndpoint {
 
 	private String id;
 
-	private String factoryId;
+	private String destination;
 
 	private boolean queue = true;
-
-	private String destination;
 
 	private String subscription;
 
@@ -52,15 +50,14 @@ public abstract class JmsListenerEndpoint {
 	}
 
 	/**
-	 * Return the id of the {@link JmsListenerContainerFactory} instance to
-	 * use to create the container managing this endpoint.
+	 * Return the name of the destination for this endpoint.
 	 */
-	public String getFactoryId() {
-		return factoryId;
+	public String getDestination() {
+		return destination;
 	}
 
-	public void setFactoryId(String factoryId) {
-		this.factoryId = factoryId;
+	public void setDestination(String destination) {
+		this.destination = destination;
 	}
 
 	/**
@@ -75,17 +72,6 @@ public abstract class JmsListenerEndpoint {
 	 */
 	public void setQueue(boolean queue) {
 		this.queue = queue;
-	}
-
-	/**
-	 * Return the name of the destination for this endpoint.
-	 */
-	public String getDestination() {
-		return destination;
-	}
-
-	public void setDestination(String destination) {
-		this.destination = destination;
 	}
 
 	/**
@@ -111,5 +97,29 @@ public abstract class JmsListenerEndpoint {
 		this.selector = selector;
 	}
 
+	@Override
+	public String toString() {
+		return getEndpointDescription().toString();
+	}
+
+	/**
+	 * Return a description for this endpoint.
+	 * <p>Available to subclasses, for inclusion in their {@code toString()} result.
+	 */
+	protected StringBuilder getEndpointDescription() {
+		StringBuilder result = new StringBuilder();
+		return result.append(getClass().getSimpleName())
+				.append("[")
+				.append(this.id)
+				.append("] destination=")
+				.append(this.destination)
+				.append(" | queue='")
+				.append(this.queue)
+				.append("' | subscription='")
+				.append(this.subscription)
+				.append(" | selector='")
+				.append(this.selector)
+				.append("'");
+	}
 
 }

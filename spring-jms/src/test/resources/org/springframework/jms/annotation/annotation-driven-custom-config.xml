@@ -11,26 +11,16 @@
 
 	<bean class="org.springframework.jms.annotation.AbstractJmsAnnotationDrivenTests$CustomBean"/>
 
-	<bean id="customRegistry" class="org.springframework.jms.config.JmsListenerEndpointRegistry">
-		<property name="jmsListenerContainerFactories">
-			<list>
-				<ref bean="defaultFactory"/>
-				<ref bean="customFactory"/>
-			</list>
-		</property>
-	</bean>
+	<bean id="customRegistry" class="org.springframework.jms.config.JmsListenerEndpointRegistry"/>
 
-	<bean id="defaultFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory">
-		<property name="id" value="default"/>
-	</bean>
-	<bean id="customFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory">
-		<property name="id" value="custom"/>
-	</bean>
+	<bean id="defaultFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory"/>
+	<bean id="customFactory" class="org.springframework.jms.config.JmsListenerContainerTestFactory"/>
 
 	<bean id="simpleMessageListener" class="org.springframework.jms.listener.adapter.MessageListenerAdapter"/>
 
 	<bean class="org.springframework.jms.annotation.AnnotationDrivenNamespaceTests$CustomJmsListenerConfigurer">
 		<property name="messageListener" ref="simpleMessageListener"/>
+		<property name="containerFactory" ref="defaultFactory"/>
 	</bean>
 
 

@@ -36,9 +36,9 @@ import org.springframework.context.annotation.Import;
  * &#064;EnableJms
  * public class AppConfig {
  *     &#064;Bean
- *     public JmsListenerContainerFactory jmsListenerContainerFactory() {
+ *     public JmsListenerContainerFactory myJmsListenerContainerFactory() {
  *       DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
- *       factory.setId("default");
+ *       factory.setMessageListenerFactory(messageListenerFactory());
  *       factory.setConnectionFactory(connectionFactory());
  *       factory.setDestinationResolver(destinationResolver());
  *       factory.setConcurrency("5");
@@ -48,8 +48,7 @@ import org.springframework.context.annotation.Import;
  * }</pre>
  *
  * The {@code JmsListenerContainerFactory} gathers the settings to be applied on a set
- * of endpoints. It is identified by an <em>id</em> that is used to match the proper
- * instance against the {@linkplain JmsListener#factoryId() factoryId}.
+ * of endpoints.
  *
  * <p>{@code @EnableJms} enables detection of @{@link JmsListener} annotations on
  * any Spring-managed bean in the container. For example, given a class {@code MyService}
@@ -58,13 +57,16 @@ import org.springframework.context.annotation.Import;
  * package com.acme.foo;
  *
  * public class MyService {
- *     &#064;JmsListener(destination="myQueue")
+ *     &#064;JmsListener(containerFactory = "myJmsListenerContainerFactory", destination="myQueue")
  *     public void process(String msg) {
  *         // process incoming message
  *     }
  * }</pre>
  *
- * the following configuration would ensure that every time a {@link javax.jms.Message}
+ * The container to use is identified by the {@link JmsListener#containerFactory() containerFactory}
+ * attribute defining the name of the {@code JmsListenerContainerFactory} bean to use.
+ *
+ * <p>the following configuration would ensure that every time a {@link javax.jms.Message}
  * is received on the {@link javax.jms.Destination} named "myQueue", {@code MyService.process()}
  * is called with the content of the message
  *
@@ -81,8 +83,8 @@ import org.springframework.context.annotation.Import;
  * }</pre>
  *
  * Alternatively, if {@code MyService} were annotated with {@code @Component}, the
- * following configuration would ensure that its {@code @JmsListener} method is
- * invoked with a matching incoming message:
+ * following configuration would ensure that its {@code @JmsListener} annotated
+ * method is invoked with a matching incoming message:
  *
  * <pre class="code">
  * &#064;Configuration
@@ -93,16 +95,16 @@ import org.springframework.context.annotation.Import;
  *
  * The {@code JmsListenerContainerFactory} is responsible to create the actual message
  * container for the annotated method. It is identified by the
- * {@link JmsListener#factoryId() factoryId}. Note that those containers are not
+ * {@link JmsListener#containerFactory() containerFactory}. Note that those containers are not
  * registered against the application context but can be easily located for management
  * purposes using the {@link org.springframework.jms.config.JmsListenerEndpointRegistry}.
  *
- * <p>By default, all factory instances found in the context are detected. When more
- * control is desired, a {@code @Configuration} class may implement
+ * <p>When more control is desired, a {@code @Configuration} class may implement
  * {@link JmsListenerConfigurer}. This allows access to the underlying
  * {@link org.springframework.jms.config.JmsListenerEndpointRegistrar JmsListenerEndpointRegistrar}
- * instance. The following example demonstrates how to customize the
- * {@code JmsListenerContainerFactory} instances to use
+ * instance. The following example demonstrates how to specify a default
+ * {@code JmsListenerContainerFactory} so that {@link JmsListener#containerFactory()} may be
+ * omitted for endpoints willing to use the <em>default</em> container factory.
  *
  * <pre class="code">
  * &#064;Configuration
@@ -110,12 +112,12 @@ import org.springframework.context.annotation.Import;
  * public class AppConfig implements JmsListenerConfigurer {
  *     &#064;Override
  *     public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
- *         registrar.setEndpointRegistry(jmsListenerEndpointRegistry());
+ *         registrar.setDefaultContainerFactory(myJmsListenerContainerFactory());
  *     }
  *
  *     &#064;Bean
- *     public JmsListenerEndpointRegistry jmsListenerEndpointRegistry() {
- *         //... customize the factories to use
+ *     public JmsListenerContainerFactory myJmsListenerContainerFactory() {
+ *         // factory settings
  *     }
  *
  *     &#064;Bean
@@ -128,13 +130,51 @@ import org.springframework.context.annotation.Import;
  * configuration:
  * <pre class="code">
  * {@code <beans>
- *     <jms:annotation-driven registry="jmsListenerEndpointRegistry"/>
- *     <bean id="jmsListenerEndpointRegistry"  <!-- customize the factories to use -->
- *           class="org.springframework.jms.config.JmsListenerEndpointRegistry"/>
+ *     <jms:annotation-driven default-container-factory="myJmsListenerContainerFactory"/>
+ *     <bean id="myJmsListenerContainerFactory"
+ *           class="org.springframework.jms.config.DefaultJmsListenerContainerFactory">
+ *           // factory settings
+ *     </bean>
  *     <bean id="myService" class="com.acme.foo.MyService"/>
  * </beans>
  * }</pre>
  *
+ * It is also possible to specify a custom {@link org.springframework.jms.config.JmsListenerEndpointRegistry
+ * JmsListenerEndpointRegistry} in case you need more control on the way the containers are
+ * created and managed
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableJms
+ * public class AppConfig implements JmsListenerConfigurer {
+ *     &#064;Override
+ *     public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
+ *         registrar.setEndpointRegistry(myJmsListenerEndpointRegistry());
+ *     }
+ *
+ *     &#064;Bean
+ *     public JmsListenerEndpointRegistry myJmsListenerEndpointRegistry() {
+ *         // registry configuration
+ *     }
+ *
+ *     &#064;Bean
+ *     public MyService myService() {
+ *         return new MyService();
+ *     }
+ * }</pre>
+ *
+ * For reference, the example above can be compared to the following Spring XML
+ * configuration:
+ * <pre class="code">
+ * {@code <beans>
+ *     <jms:annotation-driven registry="myJmsListenerEndpointRegistry"/>
+ *     <bean id="myJmsListenerEndpointRegistry"
+ *           class="org.springframework.jms.config.JmsListenerEndpointRegistry">
+ *           // registry configuration
+ *     </bean>
+ *     <bean id="myService" class="com.acme.foo.MyService"/>
+ * </beans>
+ * }</pre>
  *
  * Implementing {@code JmsListenerConfigurer} also allows for fine-grained
  * control over endpoints registration via the {@code JmsListenerEndpointRegistrar}.
@@ -146,14 +186,19 @@ import org.springframework.context.annotation.Import;
  * public class AppConfig implements JmsListenerConfigurer {
  *     &#064;Override
  *     public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
- *         JmsListenerEndpoint myEndpoint = new JmsListenerEndpoint();
+ *         JmsListenerEndpoint myEndpoint = new SimpleJmsListenerEndpoint();
  *         // ... configure the endpoint
- *         registrar.addEndpoint(endpoint);
+ *         registrar.registerEndpoint(endpoint, anotherJmsListenerContainerFactory());
  *     }
  *
  *     &#064;Bean
  *     public MyService myService() {
  *         return new MyService();
+ *     }
+ *
+ *     &#064;Bean
+ *     public JmsListenerContainerFactory anotherJmsListenerContainerFactory() {
+ *         // ...
  *     }
  *
  *     // JMS infrastructure setup

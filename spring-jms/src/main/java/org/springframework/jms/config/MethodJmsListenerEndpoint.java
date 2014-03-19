@@ -59,4 +59,15 @@ public class MethodJmsListenerEndpoint extends JmsListenerEndpoint {
 	public void setResponseDestination(String responseDestination) {
 		this.responseDestination = responseDestination;
 	}
+
+	@Override
+	protected StringBuilder getEndpointDescription() {
+		return super.getEndpointDescription()
+				.append(" | bean='")
+				.append(this.bean)
+				.append("'")
+				.append(" | method='")
+				.append(this.method)
+				.append("'");
+	}
 }

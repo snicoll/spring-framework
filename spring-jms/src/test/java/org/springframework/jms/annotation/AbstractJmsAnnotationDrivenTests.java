@@ -42,6 +42,8 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 	@Test
 	public abstract void customConfiguration();
 
+	@Test
+	public abstract void defaultContainerFactoryConfiguration();
 
 	/**
 	 * Test for {@link SampleBean} discovery.
@@ -58,11 +60,11 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 	@Component
 	static class SampleBean {
 
-		@JmsListener(destination = "myQueue")
+		@JmsListener(containerFactory = "defaultFactory", destination = "myQueue")
 		public void defaultHandle(String msg) {
 		}
 
-		@JmsListener(factoryId = "simple", destination = "myQueue")
+		@JmsListener(containerFactory = "simpleFactory", destination = "myQueue")
 		public void simpleHandle(String msg) {
 		}
 	}
@@ -75,8 +77,9 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 				context.getBean("simpleFactory", JmsListenerContainerTestFactory.class);
 		assertEquals(1, simpleFactory.getContainers().size());
 		JmsListenerEndpoint endpoint = simpleFactory.getContainers().get(0).getEndpoint();
-		assertEquals("simple", endpoint.getFactoryId());
+		assertEquals("listener1", endpoint.getId());
 		assertEquals("queueIn", endpoint.getDestination());
+		assertTrue(endpoint.isQueue());
 		assertEquals("mySelector", endpoint.getSelector());
 		assertEquals("mySubscription", endpoint.getSubscription());
 	}
@@ -84,8 +87,8 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 	@Component
 	static class FullBean {
 
-		@JmsListener(factoryId = "simple", destination = "queueIn", responseDestination = "queueOut",
-				selector = "mySelector", subscription = "mySubscription")
+		@JmsListener(id = "listener1", containerFactory = "simpleFactory", destination = "queueIn",
+				responseDestination = "queueOut", selector = "mySelector", subscription = "mySubscription")
 		public String fullHandle(String msg) {
 			return "reply";
 		}
@@ -105,7 +108,7 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 		JmsListenerEndpoint endpoint = defaultFactory.getContainers().get(0).getEndpoint();
 		assertEquals("Wrong endpoint type", SimpleJmsListenerEndpoint.class, endpoint.getClass());
 		assertEquals("Wrong listener set in custom endpoint", context.getBean("simpleMessageListener"),
-				((SimpleJmsListenerEndpoint)endpoint).getListener());
+				((SimpleJmsListenerEndpoint) endpoint).getListener());
 
 		JmsListenerEndpointRegistry customRegistry =
 				context.getBean("customRegistry", JmsListenerEndpointRegistry.class);
@@ -120,8 +123,25 @@ public abstract class AbstractJmsAnnotationDrivenTests {
 	@Component
 	static class CustomBean {
 
-		@JmsListener(id = "listenerId", factoryId = "custom", destination = "myQueue")
+		@JmsListener(id = "listenerId", containerFactory = "customFactory", destination = "myQueue")
 		public void customHandle(String msg) {
+		}
+	}
+
+	/**
+	 * Test for {@link DefaultBean} that does not define the container
+	 * factory to use as a default is registered.
+	 */
+	public void testDefaultContainerFactoryConfiguration(ApplicationContext context) {
+		JmsListenerContainerTestFactory defaultFactory =
+				context.getBean("defaultFactory", JmsListenerContainerTestFactory.class);
+		assertEquals(1, defaultFactory.getContainers().size());
+	}
+
+	static class DefaultBean {
+
+		@JmsListener(destination = "myQueue")
+		public void handleIt(String msg) {
 		}
 	}
 
