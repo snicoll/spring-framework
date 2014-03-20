@@ -17,8 +17,8 @@
 package org.springframework.jms.config;
 
 import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -39,8 +39,10 @@ import org.junit.rules.TestName;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.jms.StubTextMessage;
 import org.springframework.jms.listener.adapter.MessagingMessageListenerAdapter;
+import org.springframework.jms.support.JmsMessageHeaderAccessor;
 import org.springframework.jms.support.converter.JmsHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -104,7 +106,30 @@ public class DefaultMessageListenerFactoryTests {
 		message.setJMSMessageID("abcd-1234");
 		listener.onMessage(message, session);
 		assertDefaultListenerMethodInvocation();
+	}
 
+	@Test
+	public void resolveMessageHeaders() throws JMSException {
+		MessagingMessageListenerAdapter listener = createDefaultInstance(MessageHeaders.class);
+
+		Session session = mock(Session.class);
+		StubTextMessage message = createSimpleJmsTextMessage("my payload");
+		message.setLongProperty("customLong", 4567L);
+		message.setJMSType("myMessageType");
+		listener.onMessage(message, session);
+		assertDefaultListenerMethodInvocation();
+	}
+
+	@Test
+	public void resolveJmsMessageHeaderAccessor() throws JMSException {
+		MessagingMessageListenerAdapter listener = createDefaultInstance(JmsMessageHeaderAccessor.class);
+
+		Session session = mock(Session.class);
+		StubTextMessage message = createSimpleJmsTextMessage("my payload");
+		message.setBooleanProperty("customBoolean", true);
+		message.setJMSPriority(9);
+		listener.onMessage(message, session);
+		assertDefaultListenerMethodInvocation();
 	}
 
 	@Test
@@ -197,6 +222,20 @@ public class DefaultMessageListenerFactoryTests {
 			assertNotNull("headers not injected", headers);
 			assertEquals("Missing JMS message id header", "abcd-1234", headers.get(JmsHeaders.MESSAGE_ID));
 			assertEquals("Missing custom header", 1234, headers.get("customInt"));
+		}
+
+		public void resolveMessageHeaders(MessageHeaders headers) {
+			invocations.put("resolveMessageHeaders", true);
+			assertNotNull("MessageHeaders not injected", headers);
+			assertEquals("Missing JMS message type header", "myMessageType", headers.get(JmsHeaders.TYPE));
+			assertEquals("Missing custom header", 4567L, (long) headers.get("customLong"), 0.0);
+		}
+
+		public void resolveJmsMessageHeaderAccessor(JmsMessageHeaderAccessor headers) {
+			invocations.put("resolveJmsMessageHeaderAccessor", true);
+			assertNotNull("MessageHeaders not injected", headers);
+			assertEquals("Missing JMS message priority header", Integer.valueOf(9), headers.getPriority());
+			assertEquals("Missing custom header", true, headers.getHeader("customBoolean"));
 		}
 
 		public void resolveObjectPayload(MyBean bean) {

@@ -52,7 +52,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
  * 	headers.</li>
  * 	<li>{@link org.springframework.messaging.MessageHeaders MessageHeaders} arguments for
  * 	getting access to all headers.</li>
- * 	<li>TODO: add JMS specific header accessor</li>
+ *  <li>{@link org.springframework.messaging.support.MessageHeaderAccessor MessageHeaderAccessor}
+ *  or {@link org.springframework.jms.support.JmsMessageHeaderAccessor JmsMessageHeaderAccessor}
+ *  for convenient access to all method arguments.</li>
  * </ul>
  *
  * Methods annotated with {@code @JmsListener} can therefore have a protocol independent
