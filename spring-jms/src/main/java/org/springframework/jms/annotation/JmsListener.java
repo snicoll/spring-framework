@@ -39,22 +39,22 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
  * <p>Method annotated with this annotation are allowed to have flexible signatures
  * similar to what {@link MessageMapping} provides, that is
  * <ul>
- *  <li>{@link javax.jms.Session} to get access to the JMS session</li>
- *  <li>{@link javax.jms.Message} or one if subclass to get access to the raw JMS message</li>
- * 	<li>{@link org.springframework.messaging.Message} to use the messaging abstraction counterpart</li>
- * 	<li>{@link org.springframework.messaging.handler.annotation.Payload @Payload}-annotated method
- * 	arguments including the support of validation</li>
- * 	<li>{@link org.springframework.messaging.handler.annotation.Header @Header}-annotated method
- * 	arguments to extract a specific header value, including standard JMS headers defined by
- *  {@link org.springframework.jms.support.converter.JmsHeaders JmsHeaders}</li>
- * 	<li>{@link org.springframework.messaging.handler.annotation.Headers @Headers}-annotated
- * 	argument that must also be assignable to {@link java.util.Map} for getting access to all
- * 	headers.</li>
- * 	<li>{@link org.springframework.messaging.MessageHeaders MessageHeaders} arguments for
- * 	getting access to all headers.</li>
- *  <li>{@link org.springframework.messaging.support.MessageHeaderAccessor MessageHeaderAccessor}
- *  or {@link org.springframework.jms.support.JmsMessageHeaderAccessor JmsMessageHeaderAccessor}
- *  for convenient access to all method arguments.</li>
+ * <li>{@link javax.jms.Session} to get access to the JMS session</li>
+ * <li>{@link javax.jms.Message} or one if subclass to get access to the raw JMS message</li>
+ * <li>{@link org.springframework.messaging.Message} to use the messaging abstraction counterpart</li>
+ * <li>{@link org.springframework.messaging.handler.annotation.Payload @Payload}-annotated method
+ * arguments including the support of validation</li>
+ * <li>{@link org.springframework.messaging.handler.annotation.Header @Header}-annotated method
+ * arguments to extract a specific header value, including standard JMS headers defined by
+ * {@link org.springframework.jms.support.converter.JmsHeaders JmsHeaders}</li>
+ * <li>{@link org.springframework.messaging.handler.annotation.Headers @Headers}-annotated
+ * argument that must also be assignable to {@link java.util.Map} for getting access to all
+ * headers.</li>
+ * <li>{@link org.springframework.messaging.MessageHeaders MessageHeaders} arguments for
+ * getting access to all headers.</li>
+ * <li>{@link org.springframework.messaging.support.MessageHeaderAccessor MessageHeaderAccessor}
+ * or {@link org.springframework.jms.support.JmsMessageHeaderAccessor JmsMessageHeaderAccessor}
+ * for convenient access to all method arguments.</li>
  * </ul>
  *
  * Methods annotated with {@code @JmsListener} can therefore have a protocol independent
