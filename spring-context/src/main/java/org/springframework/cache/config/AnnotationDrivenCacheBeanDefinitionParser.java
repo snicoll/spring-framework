@@ -128,41 +128,46 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 	private static class SpringCachingConfigurer {
 
 		private static void registerCacheAdvisor(Element element, ParserContext parserContext) {
-			if (!parserContext.getRegistry().containsBeanDefinition(CACHE_ADVISOR_BEAN_NAME)) {
+			String cacheAdvisorBeanName = CACHE_ADVISOR_BEAN_NAME;
+			if (!parserContext.getRegistry().containsBeanDefinition(cacheAdvisorBeanName)) {
 				Object eleSource = parserContext.extractSource(element);
 
 				// Create the CacheOperationSource definition.
+				String cacheOperationSourceBeanName = CACHE_OPERATION_SOURCE_BEAN_NAME;
 				RootBeanDefinition sourceDef = new RootBeanDefinition(AnnotationCacheOperationSource.class);
 				sourceDef.setSource(eleSource);
 				sourceDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-				String sourceName = parserContext.getReaderContext().registerWithGeneratedName(sourceDef);
+				parserContext.getRegistry().registerBeanDefinition(cacheOperationSourceBeanName, sourceDef);
 
 				// Create the CacheInterceptor definition.
+				String cacheInterceptorBeanName = CACHE_INTERCEPTOR_BEAN_NAME;
 				RootBeanDefinition interceptorDef = new RootBeanDefinition(CacheInterceptor.class);
 				interceptorDef.setSource(eleSource);
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 				parseCacheResolution(element, interceptorDef, false);
 				parseErrorHandler(element, interceptorDef);
 				CacheNamespaceHandler.parseKeyGenerator(element, interceptorDef);
-				interceptorDef.getPropertyValues().add("cacheOperationSources", new RuntimeBeanReference(sourceName));
-				String interceptorName = parserContext.getReaderContext().registerWithGeneratedName(interceptorDef);
+				interceptorDef.getPropertyValues().add("cacheOperationSources",
+						new RuntimeBeanReference(cacheOperationSourceBeanName));
+				parserContext.getRegistry().registerBeanDefinition(cacheInterceptorBeanName, interceptorDef);
 
 				// Create the CacheAdvisor definition.
 				RootBeanDefinition advisorDef = new RootBeanDefinition(BeanFactoryCacheOperationSourceAdvisor.class);
 				advisorDef.setSource(eleSource);
 				advisorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-				advisorDef.getPropertyValues().add("cacheOperationSource", new RuntimeBeanReference(sourceName));
-				advisorDef.getPropertyValues().add("adviceBeanName", interceptorName);
+				advisorDef.getPropertyValues().add("cacheOperationSource",
+						new RuntimeBeanReference(cacheOperationSourceBeanName));
+				advisorDef.getPropertyValues().add("adviceBeanName", cacheInterceptorBeanName);
 				if (element.hasAttribute("order")) {
 					advisorDef.getPropertyValues().add("order", element.getAttribute("order"));
 				}
-				parserContext.getRegistry().registerBeanDefinition(CACHE_ADVISOR_BEAN_NAME, advisorDef);
+				parserContext.getRegistry().registerBeanDefinition(cacheAdvisorBeanName, advisorDef);
 
 				CompositeComponentDefinition compositeDef = new CompositeComponentDefinition(element.getTagName(),
 						eleSource);
-				compositeDef.addNestedComponent(new BeanComponentDefinition(sourceDef, sourceName));
-				compositeDef.addNestedComponent(new BeanComponentDefinition(interceptorDef, interceptorName));
-				compositeDef.addNestedComponent(new BeanComponentDefinition(advisorDef, CACHE_ADVISOR_BEAN_NAME));
+				compositeDef.addNestedComponent(new BeanComponentDefinition(sourceDef, cacheOperationSourceBeanName));
+				compositeDef.addNestedComponent(new BeanComponentDefinition(interceptorDef, cacheInterceptorBeanName));
+				compositeDef.addNestedComponent(new BeanComponentDefinition(advisorDef, cacheAdvisorBeanName));
 				parserContext.registerComponent(compositeDef);
 			}
 		}
@@ -198,16 +203,18 @@ class AnnotationDrivenCacheBeanDefinitionParser implements BeanDefinitionParser 
 				Object eleSource = parserContext.extractSource(element);
 
 				// Create the CacheOperationSource definition.
+				String sourceName = JCACHE_OPERATION_SOURCE_BEAN_NAME;
 				BeanDefinition sourceDef = createJCacheOperationSourceBeanDefinition(element, eleSource);
-				String sourceName = parserContext.getReaderContext().registerWithGeneratedName(sourceDef);
+				parserContext.getRegistry().registerBeanDefinition(sourceName, sourceDef);
 
 				// Create the CacheInterceptor definition.
+				String interceptorName = JCACHE_INTERCEPTOR_BEAN_NAME;
 				RootBeanDefinition interceptorDef = new RootBeanDefinition(JCACHE_INTERCEPTOR_CLASS);
 				interceptorDef.setSource(eleSource);
 				interceptorDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 				interceptorDef.getPropertyValues().add("cacheOperationSource", new RuntimeBeanReference(sourceName));
 				parseErrorHandler(element, interceptorDef);
-				String interceptorName = parserContext.getReaderContext().registerWithGeneratedName(interceptorDef);
+				parserContext.getRegistry().registerBeanDefinition(interceptorName, interceptorDef);
 
 				// Create the CacheAdvisor definition.
 				RootBeanDefinition advisorDef = new RootBeanDefinition(JCACHE_ADVISOR_FACTORY_CLASS);

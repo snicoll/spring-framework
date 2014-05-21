@@ -50,7 +50,7 @@ public class ProxyJCacheConfiguration extends AbstractJCacheConfiguration {
 	}
 
 
-	@Bean(name = "jCacheInterceptor")
+	@Bean(name = AnnotationConfigUtils.JCACHE_INTERCEPTOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public JCacheInterceptor cacheInterceptor() {
 		JCacheInterceptor interceptor = new JCacheInterceptor();

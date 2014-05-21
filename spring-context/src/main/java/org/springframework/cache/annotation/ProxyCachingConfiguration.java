@@ -48,13 +48,13 @@ public class ProxyCachingConfiguration extends AbstractCachingConfiguration<Cach
 		return advisor;
 	}
 
-	@Bean
+	@Bean(name=AnnotationConfigUtils.CACHE_OPERATION_SOURCE_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheOperationSource cacheOperationSource() {
 		return new AnnotationCacheOperationSource();
 	}
 
-	@Bean
+	@Bean(name=AnnotationConfigUtils.CACHE_INTERCEPTOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheInterceptor cacheInterceptor() {
 		CacheInterceptor interceptor = new CacheInterceptor();

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cache="http://www.springframework.org/schema/cache"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<cache:annotation-driven/>
+
+	<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+		<property name="caches">
+			<set>
+				<bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="default"/>
+				<bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="primary"/>
+				<bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean" p:name="secondary"/>
+			</set>
+		</property>
+	</bean>
+
+	<bean id="org.springframework.cache.config.internalCacheInterceptor"
+		  class="org.springframework.cache.config.AbstractCustomInterceptorTests$TestCacheInterceptor">
+		<property name="cacheManager" ref="cacheManager"/>
+		<property name="cacheOperationSources" ref="org.springframework.cache.config.internalCacheOperationSource"/>
+	</bean>
+
+	<bean id="service" class="org.springframework.cache.config.DefaultCacheableService"/>
+
+</beans>

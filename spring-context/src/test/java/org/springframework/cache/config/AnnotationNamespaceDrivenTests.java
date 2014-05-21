@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
@@ -40,8 +41,7 @@ public class AnnotationNamespaceDrivenTests extends AbstractAnnotationTests {
 
 	@Test
 	public void testKeyStrategy() {
-		CacheInterceptor ci = ctx.getBean("org.springframework.cache.interceptor.CacheInterceptor#0",
-				CacheInterceptor.class);
+		CacheInterceptor ci = ctx.getBean(AnnotationConfigUtils.CACHE_INTERCEPTOR_BEAN_NAME, CacheInterceptor.class);
 		assertSame(ctx.getBean("keyGenerator"), ci.getKeyGenerator());
 	}
 
@@ -67,8 +67,7 @@ public class AnnotationNamespaceDrivenTests extends AbstractAnnotationTests {
 
 	@Test
 	public void testCacheErrorHandler() {
-		CacheInterceptor ci = ctx.getBean("org.springframework.cache.interceptor.CacheInterceptor#0",
-				CacheInterceptor.class);
+		CacheInterceptor ci = ctx.getBean(AnnotationConfigUtils.CACHE_INTERCEPTOR_BEAN_NAME, CacheInterceptor.class);
 		assertSame(ctx.getBean("errorHandler", CacheErrorHandler.class), ci.getErrorHandler());
 	}
 }

@@ -131,6 +131,18 @@ public class AnnotationConfigUtils {
 			"org.springframework.cache.config.internalCacheAdvisor";
 
 	/**
+	 * The bean name of the internally managed cache interceptor.
+	 */
+	public static final String CACHE_INTERCEPTOR_BEAN_NAME =
+			"org.springframework.cache.config.internalCacheInterceptor";
+
+	/**
+	 * The bean name of the internally managed cache interceptor.
+	 */
+	public static final String CACHE_OPERATION_SOURCE_BEAN_NAME =
+			"org.springframework.cache.config.internalCacheOperationSource";
+
+	/**
 	 * The bean name of the internally managed cache aspect.
 	 */
 	public static final String CACHE_ASPECT_BEAN_NAME =
@@ -153,6 +165,18 @@ public class AnnotationConfigUtils {
 	 */
 	public static final String JCACHE_ADVISOR_BEAN_NAME =
 			"org.springframework.cache.config.internalJCacheAdvisor";
+
+	/**
+	 * The bean name of the internally managed JSR-107 cache interceptor.
+	 */
+	public static final String JCACHE_INTERCEPTOR_BEAN_NAME =
+			"org.springframework.cache.config.internalJCacheInterceptor";
+
+	/**
+	 * The bean name of the internally managed JSR-107 cache operation source.
+	 */
+	public static final String JCACHE_OPERATION_SOURCE_BEAN_NAME =
+			"org.springframework.cache.config.internalJCacheOperationSource";
 
 	/**
 	 * The class name of the JSR-107 cache operation source.

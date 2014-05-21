@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.AbstractCachingConfiguration;
 import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.cache.jcache.interceptor.DefaultJCacheOperationSource;
 import org.springframework.cache.jcache.interceptor.JCacheOperationSource;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
@@ -44,7 +45,7 @@ public class AbstractJCacheConfiguration extends AbstractCachingConfiguration<JC
 		this.exceptionCacheResolver = config.exceptionCacheResolver();
 	}
 
-	@Bean(name = "jCacheOperationSource")
+	@Bean(name = AnnotationConfigUtils.JCACHE_OPERATION_SOURCE_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public JCacheOperationSource cacheOperationSource() {
 		DefaultJCacheOperationSource source = new DefaultJCacheOperationSource();

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cache="http://www.springframework.org/schema/cache"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   		http://www.springframework.org/schema/beans/spring-beans.xsd
+       		http://www.springframework.org/schema/cache
+       		http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<cache:annotation-driven/>
+
+	<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+		<property name="caches">
+			<set>
+				<ref bean="defaultCache"/>
+				<ref bean="exceptionCache"/>
+
+			</set>
+		</property>
+	</bean>
+
+	<bean id="defaultCache"
+		  class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean">
+		<property name="name" value="default"/>
+	</bean>
+
+	<bean id="exceptionCache"
+		  class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean">
+		<property name="name" value="exception"/>
+	</bean>
+
+	<bean id="service" class="org.springframework.cache.jcache.interceptor.AnnotatedJCacheableService">
+		<constructor-arg ref="defaultCache"/>
+	</bean>
+
+	<bean id="org.springframework.cache.config.internalJCacheInterceptor"
+		  class="org.springframework.cache.jcache.config.AbstractJCacheCustomInterceptorTests$TestCacheInterceptor">
+		<property name="cacheOperationSource" ref="org.springframework.cache.config.internalJCacheOperationSource"/>
+	</bean>
+
+</beans>
