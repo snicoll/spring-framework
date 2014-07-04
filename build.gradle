@@ -1017,6 +1017,19 @@ project("spring-framework-bom") {
 	}
 }
 
+project("spring-its:spring-jms2-its") {
+	description = "JMS 2.0 integration tests"
+
+	dependencies {
+		compile(project(":spring-jms")) {
+			exclude group: "javax.jms"
+			exclude group: "org.apache.geronimo.specs", module: "geronimo-jms_1.1_spec"
+			exclude group: "org.apache.activemq"
+		}
+		provided("javax.jms:javax.jms-api:2.0")
+	}
+}
+
 configure(rootProject) {
 	description = "Spring Framework"
 

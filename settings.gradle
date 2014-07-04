@@ -24,6 +24,7 @@ include "spring-webmvc-portlet"
 include "spring-webmvc-tiles3"
 include "spring-websocket"
 include "spring-framework-bom"
+include "spring-its:spring-jms2-its"
 
 // Exposes gradle buildSrc for IDE support
 include "buildSrc"
