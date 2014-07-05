@@ -44,7 +44,15 @@ import org.springframework.util.ObjectUtils;
  */
 class ExpressionEvaluator {
 
+	/**
+	 * Indicate that there is no result variable.
+	 */
 	public static final Object NO_RESULT = new Object();
+
+	/**
+	 * Indicate that the result variable cannot be used at all.
+	 */
+	public static final Object RESULT_UNAVAILABLE = new Object();
 
 
 	private final SpelExpressionParser parser = new SpelExpressionParser();
@@ -91,9 +99,11 @@ class ExpressionEvaluator {
 			final Object result) {
 		CacheExpressionRootObject rootObject = new CacheExpressionRootObject(caches,
 				method, args, target, targetClass);
-		LazyParamAwareEvaluationContext evaluationContext = new LazyParamAwareEvaluationContext(rootObject,
+		CacheEvaluationContext evaluationContext = new CacheEvaluationContext(rootObject,
 				this.paramNameDiscoverer, method, args, targetClass, this.targetMethodCache);
-		if(result != NO_RESULT) {
+		if (result == RESULT_UNAVAILABLE) {
+			evaluationContext.addUnavailableVariable("result");
+		} else if (result != NO_RESULT) {
 			evaluationContext.setVariable("result", result);
 		}
 		return evaluationContext;

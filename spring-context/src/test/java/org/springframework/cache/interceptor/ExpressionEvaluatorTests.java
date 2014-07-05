@@ -29,6 +29,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
@@ -111,6 +112,14 @@ public class ExpressionEvaluatorTests {
 		EvaluationContext context = createEvaluationContext(ExpressionEvaluator.NO_RESULT);
 		Object value = new SpelExpressionParser().parseExpression("#result").getValue(context);
 		assertThat(value, nullValue());
+	}
+
+	@Test
+	public void unavailableReturnValue() throws Exception {
+		EvaluationContext context = createEvaluationContext(ExpressionEvaluator.RESULT_UNAVAILABLE);
+		thrown.expect(SpelEvaluationException.class);
+		thrown.expectMessage("'result'");
+		new SpelExpressionParser().parseExpression("#result").getValue(context);
 	}
 
 	private EvaluationContext createEvaluationContext(Object result) {
