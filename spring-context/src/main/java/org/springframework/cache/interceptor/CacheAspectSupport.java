@@ -35,6 +35,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -71,7 +73,7 @@ import org.springframework.util.StringUtils;
  * @since 3.1
  */
 public abstract class CacheAspectSupport extends AbstractCacheInvoker
-		implements InitializingBean, ApplicationContextAware {
+		implements InitializingBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -166,15 +168,20 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 	}
 
 	public void afterPropertiesSet() {
-		Assert.state(this.cacheResolver != null, "'cacheResolver' is required. Either set the cache resolver " +
-				"to use or set the cache manager to create a default cache resolver based on it.");
 		Assert.state(this.cacheOperationSource != null, "The 'cacheOperationSources' property is required: " +
 				"If there are no cacheable methods, then don't use a cache aspect.");
 		Assert.state(this.getErrorHandler() != null, "The 'errorHandler' is required.");
-		Assert.state(this.applicationContext != null, "The application context was not injected as it should.");
-		this.initialized = true;
 	}
 
+	@Override
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		if (getCacheResolver() == null) { // lazy initialize cache resolver
+			setCacheManager(CacheManagerResolverUtils.resolve(this.applicationContext));
+		}
+		Assert.state(this.cacheResolver != null, "'cacheResolver' is required. Either set the cache resolver " +
+				"to use or set the cache manager to create a default cache resolver based on it.");
+		this.initialized = true;
+	}
 
 	/**
 	 * Convenience method to return a String representation of this Method

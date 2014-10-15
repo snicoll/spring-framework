@@ -17,6 +17,7 @@
 package org.springframework.cache.jcache.interceptor;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 
@@ -28,6 +29,8 @@ import org.springframework.cache.interceptor.CacheResolver;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.interceptor.NamedCacheResolver;
 import org.springframework.cache.jcache.AbstractJCacheTests;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -81,7 +84,7 @@ public class JCacheInterceptorTests extends AbstractJCacheTests {
 	@Test
 	public void cacheManagerMandatoryIfCacheResolverNotSetSet() {
 		thrown.expect(IllegalStateException.class);
-		thrown.expectMessage("'cacheManager' is required");
+		thrown.expectMessage("No bean of type CacheManager could be found.");
 		createOperationSource(null, null, null, defaultKeyGenerator);
 	}
 
@@ -117,6 +120,7 @@ public class JCacheInterceptorTests extends AbstractJCacheTests {
 		source.setExceptionCacheResolver(exceptionCacheResolver);
 		source.setKeyGenerator(keyGenerator);
 		source.afterPropertiesSet();
+		source.onApplicationEvent(new ContextRefreshedEvent(mock(ApplicationContext.class)));
 		return source;
 	}
 
