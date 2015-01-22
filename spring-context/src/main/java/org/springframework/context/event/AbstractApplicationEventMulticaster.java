@@ -220,7 +220,7 @@ public abstract class AbstractApplicationEventMulticaster
 					if (listenerType == null || supportsEvent(listenerType, eventType)) {
 						ApplicationListener<?> listener =
 								beanFactory.getBean(listenerBeanName, ApplicationListener.class);
-						if (!allListeners.contains(listener) && supportsEvent(listener, eventType, sourceType)) {
+						if (!allListeners.contains(listener) && supportsEvent(listener, ResolvableType.forClass(event.getClass()), sourceType)) {
 							if (retriever != null) {
 								retriever.applicationListenerBeans.add(listenerBeanName);
 							}
