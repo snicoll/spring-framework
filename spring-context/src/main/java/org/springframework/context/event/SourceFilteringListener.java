@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.springframework.context.event;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
+import org.springframework.core.ResolvableType;
 
 /**
  * {@link org.springframework.context.ApplicationListener} decorator that filters
@@ -71,7 +72,7 @@ public class SourceFilteringListener implements SmartApplicationListener {
 	}
 
 	@Override
-	public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
+	public boolean supportsEventType(ResolvableType eventType) {
 		return (this.delegate == null || this.delegate.supportsEventType(eventType));
 	}
 

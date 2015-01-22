@@ -16,27 +16,26 @@
 
 package org.springframework.context;
 
+import org.springframework.core.ResolvableType;
+
 /**
- * Interface that encapsulates event publication functionality.
- * Serves as super-interface for ApplicationContext.
+ * Extended variant of the standard {@link ApplicationEventPublisher} interface,
+ * exposing a {@link #publishEvent(ApplicationEvent, ResolvableType)} method that provides
+ * a better support for generic-based events.
  *
- * @author Juergen Hoeller
  * @author Stephane Nicoll
- * @since 1.1.1
- * @see ApplicationContext
- * @see ApplicationEventPublisherAware
- * @see org.springframework.context.ApplicationEvent
- * @see org.springframework.context.event.EventPublicationInterceptor
+ * @since 4.2.0
  */
-public interface ApplicationEventPublisher {
+public interface SmartApplicationEventPublisher extends ApplicationEventPublisher {
 
 	/**
-	 * Notify all <strong>matching</strong> listeners registered with this
+	 * Notify all  <strong>matching</strong> listeners registered with this
 	 * application of an application event. Events may be framework events
 	 * (such as RequestHandledEvent) or application-specific events.
 	 * @param event the event to publish
-	 * @see org.springframework.web.context.support.RequestHandledEvent
+	 * @param eventType the event type
+	 * @see #publishEvent(ApplicationEvent)
 	 */
-	void publishEvent(ApplicationEvent event);
+	void publishEvent(ApplicationEvent event, ResolvableType eventType);
 
 }
