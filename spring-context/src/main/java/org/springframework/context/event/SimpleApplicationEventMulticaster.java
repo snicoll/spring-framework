@@ -39,6 +39,7 @@ import org.springframework.util.ErrorHandler;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
+ * @author Stephane Nicoll
  * @see #setTaskExecutor
  */
 public class SimpleApplicationEventMulticaster extends AbstractApplicationEventMulticaster {
@@ -155,12 +156,19 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 				listener.onApplicationEvent(event);
 			}
 			catch (Throwable err) {
-				errorHandler.handleError(err);
+				errorHandler.handleError(unwrap(err));
 			}
 		}
 		else {
 			listener.onApplicationEvent(event);
 		}
+	}
+
+	private static Throwable unwrap(Throwable ex) {
+		if (ex instanceof EventListenerExecutionException) {
+			return ex.getCause(); // Cause contains the actual exception
+		}
+		return ex;
 	}
 
 }

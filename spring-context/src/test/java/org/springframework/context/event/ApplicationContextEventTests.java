@@ -31,12 +31,14 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.BeanThatBroadcasts;
 import org.springframework.context.BeanThatListens;
+import org.springframework.context.event.test.TestEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.tests.sample.beans.TestBean;
+import org.springframework.util.ErrorHandler;
 
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.*;
@@ -58,19 +60,19 @@ public class ApplicationContextEventTests extends AbstractApplicationEventListen
 
 	@Test
 	public void multicastGenericEvent() {
-		multicastEvent(true, StringEventListener.class, createGenericEvent("test"),
+		multicastEvent(true, StringEventListener.class, createGenericTestEvent("test"),
 				getGenericApplicationEventType("stringEvent"));
 	}
 
 	@Test
 	public void multicastGenericEventWrongType() {
-		multicastEvent(false, StringEventListener.class, createGenericEvent(123L),
+		multicastEvent(false, StringEventListener.class, createGenericTestEvent(123L),
 				getGenericApplicationEventType("longEvent"));
 	}
 
 	@Test // Unfortunate - this should work as well
 	public void multicastGenericEventWildcardSubType() {
-		multicastEvent(false, StringEventListener.class, createGenericEvent("test"),
+		multicastEvent(false, StringEventListener.class, createGenericTestEvent("test"),
 				getGenericApplicationEventType("wildcardEvent"));
 	}
 
@@ -153,6 +155,24 @@ public class ApplicationContextEventTests extends AbstractApplicationEventListen
 
 		willThrow(new RuntimeException()).given(listener).onApplicationEvent(evt);
 		smc.multicastEvent(evt);
+	}
+
+	@Test
+	public void errorHandlerCalledWithActualException() {
+		@SuppressWarnings("unchecked")
+		ApplicationListener<ApplicationEvent> listener = mock(ApplicationListener.class);
+		ApplicationEvent evt = new TestEvent();
+
+		SimpleApplicationEventMulticaster smc = new SimpleApplicationEventMulticaster();
+		ErrorHandler errorHandler = mock(ErrorHandler.class);
+		smc.setErrorHandler(errorHandler);
+		smc.addApplicationListener(listener);
+
+		Exception actualException = new InterruptedException();
+		willThrow(new EventListenerExecutionException("test", actualException))
+				.given(listener).onApplicationEvent(evt);
+		smc.multicastEvent(evt);
+		verify(errorHandler, times(1)).handleError(actualException);
 	}
 
 	@Test

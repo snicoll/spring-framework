@@ -47,6 +47,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.GenericApplicationEvent;
 import org.springframework.context.HierarchicalMessageSource;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.MessageSource;
@@ -108,6 +109,7 @@ import org.springframework.util.ObjectUtils;
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @author Mark Fisher
+ * @author Stephane Nicoll
  * @since January 21, 2001
  * @see #refreshBeanFactory
  * @see #getBeanFactory
@@ -329,14 +331,29 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	@Override
-	public void publishEvent(ApplicationEvent event, ResolvableType eventType) {
+	public void publishEvent(Object event) {
+		publishEvent(event, null);
+	}
+
+	@Override
+	public void publishEvent(Object event, ResolvableType eventType) {
 		Assert.notNull(event, "Event must not be null");
 		if (logger.isTraceEnabled()) {
 			logger.trace("Publishing event in " + getDisplayName() + ": " + event);
 		}
-		getApplicationEventMulticaster().multicastEvent(event, eventType);
+		final ApplicationEvent applicationEvent;
+		if (event instanceof ApplicationEvent) {
+			applicationEvent = (ApplicationEvent) event;
+		}
+		else {
+			applicationEvent = new GenericApplicationEvent<Object>(this, event);
+			if (eventType == null) {
+				eventType = ResolvableType.forClassWithGenerics(GenericApplicationEvent.class, event.getClass());
+			}
+		}
+		getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
 		if (this.parent != null) {
-			this.parent.publishEvent(event, eventType);
+			this.parent.publishEvent(applicationEvent, eventType);
 		}
 	}
 
