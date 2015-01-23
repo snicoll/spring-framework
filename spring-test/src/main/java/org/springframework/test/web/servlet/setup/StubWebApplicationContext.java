@@ -319,7 +319,11 @@ class StubWebApplicationContext implements WebApplicationContext {
 	}
 
 	@Override
-	public void publishEvent(ApplicationEvent event, ResolvableType eventType) {
+	public void publishEvent(Object event) {
+	}
+
+	@Override
+	public void publishEvent(Object event, ResolvableType eventType) {
 	}
 
 	@Override

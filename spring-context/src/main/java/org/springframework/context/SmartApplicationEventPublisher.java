@@ -20,7 +20,7 @@ import org.springframework.core.ResolvableType;
 
 /**
  * Extended variant of the standard {@link ApplicationEventPublisher} interface,
- * exposing a {@link #publishEvent(ApplicationEvent, ResolvableType)} method that provides
+ * exposing a {@link #publishEvent(Object, ResolvableType)} method that provides
  * a better support for generic-based events.
  *
  * @author Stephane Nicoll
@@ -32,10 +32,12 @@ public interface SmartApplicationEventPublisher extends ApplicationEventPublishe
 	 * Notify all  <strong>matching</strong> listeners registered with this
 	 * application of an application event. Events may be framework events
 	 * (such as RequestHandledEvent) or application-specific events.
+	 * <p>If the specified {@code event} is not an {@link ApplicationEvent}, it
+	 * is wrapped in a {@code GenericApplicationEvent}.
 	 * @param event the event to publish
 	 * @param eventType the event type
 	 * @see #publishEvent(ApplicationEvent)
 	 */
-	void publishEvent(ApplicationEvent event, ResolvableType eventType);
+	void publishEvent(Object event, ResolvableType eventType);
 
 }
