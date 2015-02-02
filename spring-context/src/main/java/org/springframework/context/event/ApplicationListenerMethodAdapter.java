@@ -16,6 +16,7 @@
 
 package org.springframework.context.event;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -29,6 +30,8 @@ import org.springframework.context.GenericApplicationEvent;
 import org.springframework.context.expression.AnnotatedElementKey;
 import org.springframework.core.BridgeMethodResolver;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
@@ -39,11 +42,11 @@ import org.springframework.util.StringUtils;
  * {@link SmartApplicationListener} adapter that delegates the processing of
  * an event to an {@link EventListener} annotated method.
  *
- * <p>Unwrap the content of a {@link GenericApplicationEvent} if necessary
- * to allow method declaration to define any arbitrary event type.
- *
- * <p>If a condition is defined, it is evaluated prior to invoking the
- * underlying method.
+ * Delegates to {@link #processEvent(ApplicationEvent)} to give a chance to
+ * sub-classes to deviate from the default. Unwrap the content of a
+ * {@link GenericApplicationEvent} if necessary to allow method declaration
+ * to define any arbitrary event type. If a condition is defined, it is
+ * evaluated prior to invoking the underlying method.
  *
  * @author Stephane Nicoll
  * @since 4.2.0
@@ -68,6 +71,8 @@ public class ApplicationListenerMethodAdapter implements SmartApplicationListene
 
 	private final EventExpressionEvaluator evaluator;
 
+	private String condition;
+
 	public ApplicationListenerMethodAdapter(ApplicationContext applicationContext, String beanName,
 			Class<?> targetClass, Method method) {
 		this.applicationContext = applicationContext;
@@ -82,6 +87,14 @@ public class ApplicationListenerMethodAdapter implements SmartApplicationListene
 
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
+		processEvent(event);
+	}
+
+	/**
+	 * Process the specified {@link ApplicationEvent}, checking if the condition
+	 * match and handling non-null result, if any.
+	 */
+	public void processEvent(ApplicationEvent event) {
 		Object[] args = resolveArguments(event);
 		if (shouldHandle(event, args)) {
 			Object result = doInvoke(args);
@@ -123,8 +136,7 @@ public class ApplicationListenerMethodAdapter implements SmartApplicationListene
 		if (args == null) {
 			return false;
 		}
-		EventListener eventListener = AnnotationUtils.findAnnotation(this.method, EventListener.class);
-		String condition = (eventListener != null ? eventListener.condition() : null);
+		String condition = getCondition();
 		if (StringUtils.hasText(condition)) {
 			EvaluationContext evaluationContext = this.evaluator.createEvaluationContext(event,
 					this.targetClass, this.method, args);
@@ -152,8 +164,12 @@ public class ApplicationListenerMethodAdapter implements SmartApplicationListene
 
 	@Override
 	public int getOrder() {
-		Order order = AnnotationUtils.findAnnotation(this.method, Order.class);
+		Order order = getMethodAnnotation(Order.class);
 		return (order != null ? order.value() : 0);
+	}
+
+	protected <A extends Annotation> A getMethodAnnotation(Class<A> annotationType) {
+		return AnnotationUtils.findAnnotation(this.method, annotationType);
 	}
 
 	/**
@@ -190,6 +206,26 @@ public class ApplicationListenerMethodAdapter implements SmartApplicationListene
 	 */
 	protected Object getTargetBean() {
 		return this.applicationContext.getBean(this.beanName);
+	}
+
+	/**
+	 * Return the condition to use. Matches the {@code condition} attribute of the
+	 * {@link EventListener} annotation or any matching attribute on a meta-annotation.
+	 */
+	protected String getCondition() {
+		if (this.condition == null) {
+			AnnotationAttributes annotationAttributes = AnnotatedElementUtils
+					.getAnnotationAttributes(this.method, EventListener.class.getName());
+			if (annotationAttributes != null) {
+				String value = annotationAttributes.getString("condition");
+				this.condition = (value != null ? value : "");
+			}
+			else { // TODO annotationAttributes null with proxy
+				EventListener eventListener = getMethodAnnotation(EventListener.class);
+				this.condition = (eventListener != null ? eventListener.condition() : null);
+			}
+		}
+		return this.condition;
 	}
 
 	/**
