@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Thomas Risberg
  * @author Juergen Hoeller
+ * @author Kiril Nugmanov
  * @since 2.5
  */
 public class CallMetaDataContext {
@@ -565,7 +566,7 @@ public class CallMetaDataContext {
 		String schemaNameToUse;
 
 		// For Oracle where catalogs are not supported we need to reverse the schema name
-		// and the catalog name since the cataog is used for the package name
+		// and the catalog name since the catalog is used for the package name
 		if (this.metaDataProvider.isSupportsSchemasInProcedureCalls() &&
 				!this.metaDataProvider.isSupportsCatalogsInProcedureCalls()) {
 			schemaNameToUse = this.metaDataProvider.catalogNameToUse(getCatalogName());
@@ -595,7 +596,7 @@ public class CallMetaDataContext {
 					callString += ", ";
 				}
 				if (parameterCount >= 0) {
-					callString += "?";
+					callString += createParameterBinding(parameter);
 				}
 				parameterCount++;
 			}
@@ -603,6 +604,15 @@ public class CallMetaDataContext {
 		callString += ")}";
 
 		return callString;
+	}
+
+	/**
+	 * Build the parameter binding fragment.
+	 * @param parameter call parameter
+	 * @return parameter binding fragment
+	 */
+	protected String createParameterBinding(SqlParameter parameter) {
+		return "?";
 	}
 
 }

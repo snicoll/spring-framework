@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import javax.sql.DataSource;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.metadata.NamedCallMetaDataContext;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import static org.hamcrest.Matchers.*;
@@ -41,7 +43,7 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.tests.Matchers.*;
 
 /**
- * Mock object based tests for SimpleJdbcCall.
+ * Tests for {@link SimpleJdbcCall}.
  *
  * @author Thomas Risberg
  */
@@ -193,7 +195,8 @@ public class SimpleJdbcCallTests {
 
 	}
 
-	@Test public void testAddInvoiceFuncWithMetaDataUsingArrayParams() throws Exception {
+	@Test
+	public void testAddInvoiceFuncWithMetaDataUsingArrayParams() throws Exception {
 		initializeAddInvoiceWithMetaData(true);
 		SimpleJdbcCall adder = new SimpleJdbcCall(dataSource).withFunctionName("add_invoice");
 		Number newId = adder.executeFunction(Number.class, 1103, 3);
@@ -201,6 +204,34 @@ public class SimpleJdbcCallTests {
 		verifyAddInvoiceWithMetaData(true);
 		verify(connection, atLeastOnce()).close();
 
+	}
+
+	@Test
+	public void testCorrectFunctionStatement() throws Exception {
+		initializeAddInvoiceWithMetaData(true);
+		SimpleJdbcCall adder = new SimpleJdbcCall(dataSource).withFunctionName("add_invoice");
+		adder.compile();
+		verifyStatement(adder, "{? = call ADD_INVOICE(?, ?)}");
+	}
+
+	@Test
+	public void testCorrectFunctionStatementNamed() throws Exception {
+		initializeAddInvoiceWithMetaData(true);
+		SimpleJdbcCall adder = new SimpleJdbcCall(dataSource, new NamedCallMetaDataContext()).withFunctionName("add_invoice");
+		adder.compile();
+		verifyStatement(adder, "{? = call ADD_INVOICE(AMOUNT => ?, CUSTID => ?)}");
+	}
+
+	@Test
+	public void testCorrectProcedureStatementNamed() throws Exception {
+		initializeAddInvoiceWithMetaData(false);
+		SimpleJdbcCall adder = new SimpleJdbcCall(dataSource, new NamedCallMetaDataContext()).withProcedureName("add_invoice");
+		adder.compile();
+		verifyStatement(adder, "{call ADD_INVOICE(AMOUNT => ?, CUSTID => ?, NEWID => ?)}");
+	}
+
+	private void verifyStatement(SimpleJdbcCall adder, String expected) {
+		Assert.assertEquals("Incorrect call statement", expected, adder.getCallString());
 	}
 
 	private void initializeAddInvoiceWithoutMetaData(boolean isFunction)
@@ -281,6 +312,5 @@ public class SimpleJdbcCallTests {
 		verify(callableStatement).close();
 		verify(proceduresResultSet).close();
 		verify(procedureColumnsResultSet).close();
-
-}
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public abstract class AbstractJdbcCall {
 	private final JdbcTemplate jdbcTemplate;
 
 	/** Context used to retrieve and manage database metadata */
-	private final CallMetaDataContext callMetaDataContext = new CallMetaDataContext();
+	private final CallMetaDataContext callMetaDataContext;
 
 	/** List of SqlParameter objects */
 	private final List<SqlParameter> declaredParameters = new ArrayList<SqlParameter>();
@@ -84,7 +84,28 @@ public abstract class AbstractJdbcCall {
 	 * @param dataSource the DataSource to be used
 	 */
 	protected AbstractJdbcCall(DataSource dataSource) {
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
+		this(new JdbcTemplate(dataSource));
+	}
+
+	/**
+	 * Constructor to be used when initializing using a {@link DataSource} and {@link CallMetaDataContext}.
+	 * @param dataSource the DataSource to be used
+	 * @param callMetaDataContext context used to retrieve and manage database metadata
+	 */
+	protected AbstractJdbcCall(DataSource dataSource, CallMetaDataContext callMetaDataContext) {
+		this(new JdbcTemplate(dataSource), callMetaDataContext);
+	}
+
+	/**
+	 * Constructor to be used when initializing using a {@link JdbcTemplate} and {@link CallMetaDataContext}.
+	 * @param jdbcTemplate the JdbcTemplate to use
+	 * @param callMetaDataContext context used to retrieve and manage database metadata
+	 */
+	protected AbstractJdbcCall(JdbcTemplate jdbcTemplate, CallMetaDataContext callMetaDataContext) {
+		Assert.notNull(jdbcTemplate, "JdbcTemplate must not be null");
+		Assert.notNull(callMetaDataContext, "CallMetaDataContext must not be null");
+		this.jdbcTemplate = jdbcTemplate;
+		this.callMetaDataContext = callMetaDataContext;
 	}
 
 	/**
@@ -92,10 +113,8 @@ public abstract class AbstractJdbcCall {
 	 * @param jdbcTemplate the JdbcTemplate to use
 	 */
 	protected AbstractJdbcCall(JdbcTemplate jdbcTemplate) {
-		Assert.notNull(jdbcTemplate, "JdbcTemplate must not be null");
-		this.jdbcTemplate = jdbcTemplate;
+		this(jdbcTemplate,  new CallMetaDataContext());
 	}
-
 
 	/**
 	 * Get the configured {@link JdbcTemplate}.
