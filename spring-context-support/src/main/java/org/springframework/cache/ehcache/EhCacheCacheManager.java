@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Status;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.transaction.AbstractTransactionSupportingCacheManager;
 import org.springframework.util.Assert;
@@ -34,9 +35,11 @@ import org.springframework.util.Assert;
  * @author Stephane Nicoll
  * @since 3.1
  */
-public class EhCacheCacheManager extends AbstractTransactionSupportingCacheManager {
+public class EhCacheCacheManager extends AbstractTransactionSupportingCacheManager implements DisposableBean {
 
 	private net.sf.ehcache.CacheManager cacheManager;
+
+	private boolean locallyManaged;
 
 
 	/**
@@ -51,7 +54,36 @@ public class EhCacheCacheManager extends AbstractTransactionSupportingCacheManag
 	 * @param cacheManager the backing EhCache {@link net.sf.ehcache.CacheManager}
 	 */
 	public EhCacheCacheManager(net.sf.ehcache.CacheManager cacheManager) {
+		this(cacheManager, false);
+	}
+
+	/**
+	 * Create a new EhCacheCacheManager for the given backing EhCache CacheManager and
+	 * specify if it is locally managed.
+	 * @param cacheManager the backing EhCache {@link net.sf.ehcache.CacheManager}
+	 * @param locallyManaged {@code true} if the underlying cache manager is handled locally
+	 */
+	private EhCacheCacheManager(net.sf.ehcache.CacheManager cacheManager, boolean locallyManaged) {
 		this.cacheManager = cacheManager;
+		this.locallyManaged = locallyManaged;
+	}
+
+	/**
+	 * Create a new EhCacheCacheManager for a backing EhCache CacheManager that is
+	 * shared with other components.
+	 * @param cacheManager the backing EhCache {@link net.sf.ehcache.CacheManager}
+	 */
+	public static EhCacheCacheManager forSharedCacheManager(net.sf.ehcache.CacheManager cacheManager) {
+		return new EhCacheCacheManager(cacheManager, false);
+	}
+
+	/**
+	 * Create a new EhCacheCacheManager for a backing EhCache CacheManager that is
+	 * locally managed and must be closed on shutdown.
+	 * @param cacheManager the backing EhCache {@link net.sf.ehcache.CacheManager}
+	 */
+	public static EhCacheCacheManager forLocalCacheManager(net.sf.ehcache.CacheManager cacheManager) {
+		return new EhCacheCacheManager(cacheManager, true);
 	}
 
 
@@ -75,6 +107,13 @@ public class EhCacheCacheManager extends AbstractTransactionSupportingCacheManag
 			setCacheManager(EhCacheManagerUtils.buildCacheManager());
 		}
 		super.afterPropertiesSet();
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if (this.locallyManaged) {
+			this.cacheManager.shutdown();
+		}
 	}
 
 

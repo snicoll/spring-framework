@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,14 @@ import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 
 import org.springframework.cache.transaction.AbstractTransactionSupportingCacheManagerTests;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Stephane Nicoll
@@ -35,31 +41,54 @@ public class EhCacheCacheManagerTests extends AbstractTransactionSupportingCache
 
 	@Before
 	public void setup() {
-		nativeCacheManager = new CacheManager(new Configuration().name("EhCacheCacheManagerTests")
+		this.nativeCacheManager = new CacheManager(new Configuration().name("EhCacheCacheManagerTests")
 				.defaultCache(new CacheConfiguration("default", 100)));
 		addNativeCache(CACHE_NAME);
 
-		cacheManager = new EhCacheCacheManager(nativeCacheManager);
-		cacheManager.setTransactionAware(false);
-		cacheManager.afterPropertiesSet();
+		this.cacheManager = new EhCacheCacheManager(this.nativeCacheManager);
+		this.cacheManager.setTransactionAware(false);
+		this.cacheManager.afterPropertiesSet();
 
-		transactionalCacheManager = new EhCacheCacheManager(nativeCacheManager);
-		transactionalCacheManager.setTransactionAware(true);
-		transactionalCacheManager.afterPropertiesSet();
+		this.transactionalCacheManager = new EhCacheCacheManager(this.nativeCacheManager);
+		this.transactionalCacheManager.setTransactionAware(true);
+		this.transactionalCacheManager.afterPropertiesSet();
 	}
 
 	@After
 	public void tearDown() {
-		nativeCacheManager.shutdown();
+		this.nativeCacheManager.shutdown();
+	}
+
+	@Test
+	public void localCacheManagerIsClosed() {
+		ConfigurableApplicationContext context =
+				new AnnotationConfigApplicationContext(LocalEhCacheConfiguration.class);
+		assertNotNull("ehcache manager should have been found",
+				CacheManager.getCacheManager("localCacheManager"));
+		context.close();
+		assertNull("ehcache manager should have been disposed on context shutdown",
+				CacheManager.getCacheManager("localCacheManager"));
+	}
+
+	@Test
+	public void sharedCacheManagerStaysAvailable() {
+		ConfigurableApplicationContext context =
+				new AnnotationConfigApplicationContext(SharedEhCacheConfiguration.class);
+		assertNotNull("ehcache manager should have been found",
+				CacheManager.getCacheManager("sharedCacheManager"));
+		context.close();
+		assertNotNull("ehcache manager should not have been disposed on context shutdown",
+				CacheManager.getCacheManager("sharedCacheManager"));
 	}
 
 
 	@Override
 	protected EhCacheCacheManager getCacheManager(boolean transactionAware) {
 		if (transactionAware) {
-			return transactionalCacheManager;
-		} else {
-			return cacheManager;
+			return this.transactionalCacheManager;
+		}
+		else {
+			return this.cacheManager;
 		}
 	}
 
@@ -70,11 +99,35 @@ public class EhCacheCacheManagerTests extends AbstractTransactionSupportingCache
 
 	@Override
 	protected void addNativeCache(String cacheName) {
-		nativeCacheManager.addCache(cacheName);
+		this.nativeCacheManager.addCache(cacheName);
 	}
 
 	@Override
 	protected void removeNativeCache(String cacheName) {
-		nativeCacheManager.removeCache(cacheName);
+		this.nativeCacheManager.removeCache(cacheName);
 	}
+
+
+	@org.springframework.context.annotation.Configuration
+	static class LocalEhCacheConfiguration {
+
+		@Bean
+		public EhCacheCacheManager cacheManager() {
+			return EhCacheCacheManager.forLocalCacheManager(
+					new CacheManager(new Configuration().name("localCacheManager")
+							.defaultCache(new CacheConfiguration("default", 100))));
+		}
+	}
+
+	@org.springframework.context.annotation.Configuration
+	static class SharedEhCacheConfiguration {
+
+		@Bean
+		public EhCacheCacheManager cacheManager() {
+			return EhCacheCacheManager.forSharedCacheManager(
+					new CacheManager(new Configuration().name("sharedCacheManager")
+							.defaultCache(new CacheConfiguration("default", 100))));
+		}
+	}
+
 }

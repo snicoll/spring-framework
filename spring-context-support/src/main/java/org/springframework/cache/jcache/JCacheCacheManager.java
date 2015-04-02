@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.transaction.AbstractTransactionSupportingCacheManager;
 
@@ -34,11 +35,13 @@ import org.springframework.cache.transaction.AbstractTransactionSupportingCacheM
  * @author Stephane Nicoll
  * @since 3.2
  */
-public class JCacheCacheManager extends AbstractTransactionSupportingCacheManager {
+public class JCacheCacheManager extends AbstractTransactionSupportingCacheManager implements DisposableBean {
 
 	private javax.cache.CacheManager cacheManager;
 
 	private boolean allowNullValues = true;
+
+	private boolean locallyManaged;
 
 
 	/**
@@ -53,7 +56,36 @@ public class JCacheCacheManager extends AbstractTransactionSupportingCacheManage
 	 * @param cacheManager the backing JCache {@link javax.cache.CacheManager}
 	 */
 	public JCacheCacheManager(CacheManager cacheManager) {
+		this(cacheManager, false);
+	}
+
+	/**
+	 * Create a new JCacheCacheManager for the given backing JCache and
+	 * specify if it is locally managed.
+	 * @param cacheManager the backing JCache {@link javax.cache.CacheManager}
+	 * @param locallyManaged {@code true} if the underlying cache manager is handled locally
+	 */
+	private JCacheCacheManager(CacheManager cacheManager, boolean locallyManaged) {
 		this.cacheManager = cacheManager;
+		this.locallyManaged = locallyManaged;
+	}
+
+	/**
+	 * Create a new JCacheCacheManager for a backing JCache that is
+	 * shared with other components.
+	 * @param cacheManager the backing JCache {@link javax.cache.CacheManager}
+	 */
+	public static JCacheCacheManager forSharedCacheManager(CacheManager cacheManager) {
+		return new JCacheCacheManager(cacheManager, false);
+	}
+
+	/**
+	 * Create a new JCacheCacheManager for a backing Jcache that is
+	 * locally managed and must be closed on shutdown.
+	 * @param cacheManager the backing JCache {@link javax.cache.CacheManager}
+	 */
+	public static JCacheCacheManager forLocalCacheManager(CacheManager cacheManager) {
+		return new JCacheCacheManager(cacheManager, true);
 	}
 
 
@@ -95,6 +127,13 @@ public class JCacheCacheManager extends AbstractTransactionSupportingCacheManage
 			setCacheManager(Caching.getCachingProvider().getCacheManager());
 		}
 		super.afterPropertiesSet();
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if (this.locallyManaged) {
+			this.cacheManager.close();
+		}
 	}
 
 
