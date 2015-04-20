@@ -23,27 +23,29 @@ import org.springframework.tests.sample.beans.TestBean;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for {@link DirectFieldAccessor}
+ * Specific {@link DirectFieldAccessor} tests.
  *
  * @author Jose Luis Martin
  * @author Chris Beams
+ * @@author Stephane Nicoll
  */
-public class DirectFieldAccessorTests extends AbstractConfigurablePropertyAccessorTests {
+public class DirectFieldAccessorTests extends AbstractSmartPropertyAccessorTests<DirectFieldAccessor> {
 
 	@Override
-	protected ConfigurablePropertyAccessor createAccessor(Object target) {
+	protected DirectFieldAccessor createAccessor(Object target) {
 		return new DirectFieldAccessor(target);
 	}
+
 
 	@Test
 	public void withShadowedField() throws Exception {
 		@SuppressWarnings("serial")
-		TestBean tb = new TestBean() {
+		TestBean target = new TestBean() {
 			@SuppressWarnings("unused")
 			StringBuilder name = new StringBuilder();
 		};
 
-		DirectFieldAccessor dfa = new DirectFieldAccessor(tb);
+		DirectFieldAccessor dfa = createAccessor(target);
 		assertEquals(StringBuilder.class, dfa.getPropertyType("name"));
 	}
 

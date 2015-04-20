@@ -211,7 +211,7 @@ public final class MethodInvocationProceedingJoinPointTests {
 		itb.setName("foo");
 		itb.getDoctor();
 		itb.getStringArray();
-		itb.getSpouses();
+		itb.getSpouse();
 		itb.setSpouse(new TestBean());
 		try {
 			itb.unreliableFileOperation();

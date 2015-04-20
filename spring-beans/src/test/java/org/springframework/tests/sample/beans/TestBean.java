@@ -58,6 +58,8 @@ public class TestBean implements BeanNameAware, BeanFactoryAware, ITestBean, IOt
 
 	private boolean jedi;
 
+	private ITestBean spouse;
+
 	protected ITestBean[] spouses;
 
 	private String touchy;
@@ -113,7 +115,7 @@ public class TestBean implements BeanNameAware, BeanFactoryAware, ITestBean, IOt
 	}
 
 	public TestBean(ITestBean spouse) {
-		this.spouses = new ITestBean[] {spouse};
+		this.spouse = spouse;
 	}
 
 	public TestBean(String name, int age) {
@@ -122,7 +124,7 @@ public class TestBean implements BeanNameAware, BeanFactoryAware, ITestBean, IOt
 	}
 
 	public TestBean(ITestBean spouse, Properties someProperties) {
-		this.spouses = new ITestBean[] {spouse};
+		this.spouse = spouse;
 		this.someProperties = someProperties;
 	}
 
@@ -210,17 +212,17 @@ public class TestBean implements BeanNameAware, BeanFactoryAware, ITestBean, IOt
 
 	@Override
 	public ITestBean getSpouse() {
-		return (spouses != null ? spouses[0] : null);
+		return this.spouse;
 	}
 
 	@Override
 	public void setSpouse(ITestBean spouse) {
-		this.spouses = new ITestBean[] {spouse};
+		this.spouse = spouse;
 	}
 
 	@Override
 	public ITestBean[] getSpouses() {
-		return spouses;
+		return (spouse != null ? new ITestBean[]{spouse} : null);
 	}
 
 	public String getTouchy() {
