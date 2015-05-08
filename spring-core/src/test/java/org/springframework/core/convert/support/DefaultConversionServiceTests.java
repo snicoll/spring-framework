@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -275,6 +276,16 @@ public class DefaultConversionServiceTests {
 	@Test
 	public void testStringToLocale() {
 		assertEquals(Locale.ENGLISH, conversionService.convert("en", Locale.class));
+	}
+
+	@Test
+	public void testStringToCharset() {
+		assertEquals(Charset.forName("UTF-8"), conversionService.convert("UTF-8", Charset.class));
+	}
+
+	@Test
+	public void testCharsetToString() {
+		assertEquals("UTF-8", conversionService.convert(Charset.forName("UTF-8"), String.class));
 	}
 
 	@Test

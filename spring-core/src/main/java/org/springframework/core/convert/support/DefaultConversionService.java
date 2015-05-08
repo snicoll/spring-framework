@@ -16,6 +16,7 @@
 
 package org.springframework.core.convert.support;
 
+import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -109,6 +110,9 @@ public class DefaultConversionService extends GenericConversionService {
 
 		converterRegistry.addConverter(new StringToLocaleConverter());
 		converterRegistry.addConverter(Locale.class, String.class, new ObjectToStringConverter());
+
+		converterRegistry.addConverter(new StringToCharsetConverter());
+		converterRegistry.addConverter(Charset.class, String.class, new ObjectToStringConverter());
 
 		converterRegistry.addConverter(new StringToPropertiesConverter());
 		converterRegistry.addConverter(new PropertiesToStringConverter());
