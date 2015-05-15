@@ -2466,6 +2466,7 @@ public class DefaultListableBeanFactoryTests {
 	public void testBeanPostProcessorWithWrappedObjectAndCloseable() {
 		DefaultListableBeanFactory lbf = new DefaultListableBeanFactory();
 		RootBeanDefinition bd = new RootBeanDefinition(BeanWithCloseable.class);
+		bd.setDestroyMethodName(AbstractBeanDefinition.INFER_METHOD);
 		lbf.registerBeanDefinition("test", bd);
 		lbf.addBeanPostProcessor(new BeanPostProcessor() {
 			@Override

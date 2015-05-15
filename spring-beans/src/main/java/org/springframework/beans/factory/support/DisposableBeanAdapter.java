@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2014 the original author or authors.
+ * Copyright 2002-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Juergen Hoeller
  * @author Costin Leau
+ * @author Stephane Nicoll
  * @since 2.0
  * @see AbstractBeanFactory
  * @see org.springframework.beans.factory.DisposableBean
@@ -186,8 +187,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	 * interfaces, reflectively calling the "close" method on implementing beans as well.
 	 */
 	private String inferDestroyMethodIfNecessary(Object bean, RootBeanDefinition beanDefinition) {
-		if (AbstractBeanDefinition.INFER_METHOD.equals(beanDefinition.getDestroyMethodName()) ||
-				(beanDefinition.getDestroyMethodName() == null && closeableInterface.isInstance(bean))) {
+		if (AbstractBeanDefinition.INFER_METHOD.equals(beanDefinition.getDestroyMethodName())) {
 			// Only perform destroy method inference or Closeable detection
 			// in case of the bean not explicitly implementing DisposableBean
 			if (!(bean instanceof DisposableBean)) {
@@ -392,12 +392,12 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	 * @param beanDefinition the corresponding bean definition
 	 */
 	public static boolean hasDestroyMethod(Object bean, RootBeanDefinition beanDefinition) {
-		if (bean instanceof DisposableBean || closeableInterface.isInstance(bean)) {
+		if (bean instanceof DisposableBean) {
 			return true;
 		}
 		String destroyMethodName = beanDefinition.getDestroyMethodName();
 		if (AbstractBeanDefinition.INFER_METHOD.equals(destroyMethodName)) {
-			return ClassUtils.hasMethod(bean.getClass(), CLOSE_METHOD_NAME);
+			return closeableInterface.isInstance(bean) || ClassUtils.hasMethod(bean.getClass(), CLOSE_METHOD_NAME);
 		}
 		return (destroyMethodName != null);
 	}
