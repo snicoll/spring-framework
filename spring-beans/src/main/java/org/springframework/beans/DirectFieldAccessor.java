@@ -44,7 +44,7 @@ import org.springframework.util.ReflectionUtils;
  * @see org.springframework.validation.DirectFieldBindingResult
  * @see org.springframework.validation.DataBinder#initDirectFieldAccess()
  */
-public class DirectFieldAccessor extends AbstractPropertyAccessor {
+public class DirectFieldAccessor extends AbstractSmartPropertyAccessor {
 
 	private final Map<String, FieldPropertyHandler> fieldMap = new HashMap<String, FieldPropertyHandler>();
 
