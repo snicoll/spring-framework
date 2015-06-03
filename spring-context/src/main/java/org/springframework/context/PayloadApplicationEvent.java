@@ -16,6 +16,8 @@
 
 package org.springframework.context;
 
+import org.springframework.core.ResolvableType;
+import org.springframework.core.ResolvableTypeProvider;
 import org.springframework.util.Assert;
 
 /**
@@ -28,7 +30,7 @@ import org.springframework.util.Assert;
  * @param <T> the payload type of the event
  */
 @SuppressWarnings("serial")
-public class PayloadApplicationEvent<T> extends ApplicationEvent {
+public class PayloadApplicationEvent<T> extends ApplicationEvent implements ResolvableTypeProvider {
 
 	private final T payload;
 
@@ -44,11 +46,24 @@ public class PayloadApplicationEvent<T> extends ApplicationEvent {
 		this.payload = payload;
 	}
 
+	@Override
+	public ResolvableType getResolvableType() {
+		return ResolvableType.forClassWithGenerics(getClass(), getPayloadResolvableType());
+	}
+
+	protected ResolvableType getPayloadResolvableType() {
+		if (this.payload instanceof ResolvableTypeProvider) {
+			return ((ResolvableTypeProvider) this.payload).getResolvableType();
+		}
+		else {
+			return ResolvableType.forClass(this.payload.getClass());
+		}
+	}
 
 	/**
 	 * Return the payload of the event.
 	 */
-	public T getPayload() {
+	public final T getPayload() {
 		return this.payload;
 	}
 

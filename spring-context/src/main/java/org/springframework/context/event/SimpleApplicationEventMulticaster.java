@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.ResolvableTypeProvider;
 import org.springframework.util.ErrorHandler;
 
 /**
@@ -139,7 +140,12 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	}
 
 	private ResolvableType resolveDefaultEventType(ApplicationEvent event) {
-		return ResolvableType.forType(event.getClass());
+		if (event instanceof ResolvableTypeProvider) {
+			return ((ResolvableTypeProvider) event).getResolvableType();
+		}
+		else {
+			return ResolvableType.forType(event.getClass());
+		}
 	}
 
 	/**
