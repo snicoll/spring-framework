@@ -27,13 +27,16 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.jms.StubTextMessage;
 import org.springframework.jms.support.JmsHeaders;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
@@ -240,6 +243,52 @@ public class MessagingMessageListenerAdapterTests {
 		verify(messageProducer).close();
 	}
 
+	@Test
+	public void replyJackson() throws JMSException {
+		TextMessage reply = testReplyWithJackson("replyJackson",
+				"{\"counter\":42,\"name\":\"Response\",\"description\":\"lengthy description\"}");
+		verify(reply).setObjectProperty("foo", "bar");
+	}
+
+	@Test
+	public void replyJacksonMessageAndJsonView() throws JMSException {
+		TextMessage reply = testReplyWithJackson("replyJacksonMessageAndJsonView",
+				"{\"name\":\"Response\"}");
+		verify(reply).setObjectProperty("foo", "bar");
+	}
+
+	@Test
+	public void replyJacksonPojoAndJsonView() throws JMSException {
+		TextMessage reply = testReplyWithJackson("replyJacksonPojoAndJsonView",
+				"{\"name\":\"Response\"}");
+		verify(reply, never()).setObjectProperty("foo", "bar");
+	}
+
+	public TextMessage testReplyWithJackson(String methodName, String replyContent) throws JMSException {
+		Queue replyDestination = mock(Queue.class);
+		Message<String> request = MessageBuilder.withPayload("Response").build();
+
+		Session session = mock(Session.class);
+		MessageProducer messageProducer = mock(MessageProducer.class);
+		TextMessage responseMessage = mock(TextMessage.class);
+		given(session.createTextMessage(replyContent)).willReturn(responseMessage);
+		given(session.createProducer(replyDestination)).willReturn(messageProducer);
+
+		MessagingMessageListenerAdapter listener =
+				getPayloadInstance(request, methodName, Message.class);
+		MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
+		messageConverter.setTargetType(MessageType.TEXT);
+		listener.setMessageConverter(messageConverter);
+		listener.setDefaultResponseDestination(replyDestination);
+		listener.onMessage(mock(javax.jms.Message.class), session);
+
+		verify(session, times(0)).createQueue(anyString());
+		verify(session).createTextMessage(replyContent);
+		verify(messageProducer).send(responseMessage);
+		verify(messageProducer).close();
+		return responseMessage;
+	}
+
 	protected MessagingMessageListenerAdapter getSimpleInstance(String methodName, Class... parameterTypes) {
 		Method m = ReflectionUtils.findMethod(SampleBean.class, methodName, parameterTypes);
 		return createInstance(m);
@@ -302,12 +351,78 @@ public class MessagingMessageListenerAdapterTests {
 			return new JmsResponse<>(input.getPayload(), null);
 		}
 
+		public Message<SampleResponse> replyJackson(Message<String> input) {
+			return MessageBuilder.withPayload(createSampleResponse(input.getPayload()))
+					.setHeader("foo", "bar").build();
+		}
+
+		@JsonView(Summary.class)
+		public Message<SampleResponse> replyJacksonMessageAndJsonView(Message<String> input) {
+			return MessageBuilder.withPayload(createSampleResponse(input.getPayload()))
+					.setHeader("foo", "bar").build();
+		}
+
+		@JsonView(Summary.class)
+		public SampleResponse replyJacksonPojoAndJsonView(Message<String> input) {
+			return createSampleResponse(input.getPayload());
+		}
+
+		private SampleResponse createSampleResponse(String name) {
+			return new SampleResponse(name, "lengthy description");
+		}
+
 		public void fail(String input) {
 			throw new IllegalArgumentException("Expected test exception");
 		}
 
 		public void wrongParam(Integer i) {
 			throw new IllegalArgumentException("Should not have been called");
+		}
+	}
+
+	interface Summary {};
+	interface Full extends Summary {};
+
+	private static class SampleResponse {
+
+		private int counter = 42;
+
+		@JsonView(Summary.class)
+		private String name;
+
+		@JsonView(Full.class)
+		private String description;
+
+		SampleResponse() {
+		}
+
+		public SampleResponse(String name, String description) {
+			this.name = name;
+			this.description = description;
+		}
+
+		public int getCounter() {
+			return counter;
+		}
+
+		public void setCounter(int counter) {
+			this.counter = counter;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getDescription() {
+			return description;
+		}
+
+		public void setDescription(String description) {
+			this.description = description;
 		}
 	}
 

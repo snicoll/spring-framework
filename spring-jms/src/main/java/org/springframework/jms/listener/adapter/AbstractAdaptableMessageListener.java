@@ -27,6 +27,7 @@ import javax.jms.Session;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.core.MethodParameter;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.jms.support.JmsHeaderMapper;
 import org.springframework.jms.support.JmsUtils;
@@ -35,8 +36,11 @@ import org.springframework.jms.support.converter.MessageConversionException;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessagingMessageConverter;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
+import org.springframework.jms.support.converter.SmartMessageConverter;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.converter.AbstractMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -266,7 +270,7 @@ public abstract class AbstractAdaptableMessageListener
 	 * @see #setMessageConverter
 	 */
 	protected Message buildMessage(Session session, Object result) throws JMSException {
-		Object content = (result instanceof JmsResponse
+		Object content = preProcessResponse(result instanceof JmsResponse
 				? ((JmsResponse<?>) result).getResponse() : result);
 
 		MessageConverter converter = getMessageConverter();
@@ -285,6 +289,16 @@ public abstract class AbstractAdaptableMessageListener
 			}
 			return (Message) content;
 		}
+	}
+
+	/**
+	 * Pre-process the given result before it is converted to a {@link Message}.
+	 * @param result the result of the invocation
+	 * @return the payload response to handle, either the {@code result} argument or any other
+	 * object (for instance wrapping the result).
+	 */
+	protected Object preProcessResponse(Object result) {
+		return result;
 	}
 
 	/**
@@ -413,12 +427,17 @@ public abstract class AbstractAdaptableMessageListener
 		}
 
 		@Override
-		protected Message createMessageForPayload(Object payload, Session session) throws JMSException {
+		protected Message createMessageForPayload(Object payload, Session session, Object conversionHint)
+				throws JMSException {
 			MessageConverter converter = getMessageConverter();
-			if (converter != null) {
-				return converter.toMessage(payload, session);
+			if (converter == null) {
+				throw new IllegalStateException("No message converter, cannot handle '" + payload + "'");
 			}
-			throw new IllegalStateException("No message converter, cannot handle '" + payload + "'");
+			if (converter instanceof SmartMessageConverter) {
+				return ((SmartMessageConverter) converter).toMessage(payload, session, conversionHint);
+
+			}
+			return converter.toMessage(payload, session);
 		}
 	}
 

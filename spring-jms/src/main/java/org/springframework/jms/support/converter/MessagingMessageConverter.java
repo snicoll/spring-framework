@@ -24,6 +24,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jms.support.JmsHeaderMapper;
 import org.springframework.jms.support.SimpleJmsHeaderMapper;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.core.AbstractMessagingTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 
@@ -93,8 +95,11 @@ public class MessagingMessageConverter implements MessageConverter, Initializing
 					Message.class.getName() + "] is handled by this converter");
 		}
 		Message<?> input = (Message<?>) object;
-		javax.jms.Message reply = createMessageForPayload(input.getPayload(), session);
-		this.headerMapper.fromHeaders(input.getHeaders(), reply);
+		MessageHeaders headers = input.getHeaders();
+		Object conversionHint = (headers != null ? headers.get(
+				AbstractMessagingTemplate.CONVERSION_HINT_HEADER) : null);
+		javax.jms.Message reply = createMessageForPayload(input.getPayload(), session, conversionHint);
+		this.headerMapper.fromHeaders(headers, reply);
 		return reply;
 	}
 
@@ -122,9 +127,23 @@ public class MessagingMessageConverter implements MessageConverter, Initializing
 	/**
 	 * Create a JMS message for the specified payload.
 	 * @see MessageConverter#toMessage(Object, Session)
+	 * @deprecated as of 4.2, use {@link #createMessageForPayload(Object, Session, Object)}
 	 */
+	@Deprecated
 	protected javax.jms.Message createMessageForPayload(Object payload, Session session) throws JMSException {
 		return this.payloadConverter.toMessage(payload, session);
+	}
+
+	/**
+	 * Create a JMS message for the specified payload and conversionHint. The conversion
+	 * hint is an extra object passed to the {@link MessageConverter}, e.g. the associated
+	 * {@code MethodParameter} (may be {@code null}}.
+	 * @see MessageConverter#toMessage(Object, Session)
+	 */
+	@SuppressWarnings("deprecation")
+	protected javax.jms.Message createMessageForPayload(Object payload, Session session, Object conversionHint)
+			throws JMSException {
+		return createMessageForPayload(payload, session);
 	}
 
 }
