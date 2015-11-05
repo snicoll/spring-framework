@@ -109,6 +109,7 @@ class CacheAdviceParser extends AbstractSingleBeanDefinitionParser {
 			nameHolder.setSource(parserContext.extractSource(opElement));
 			CacheableOperation op = prop.merge(opElement, parserContext.getReaderContext(), new CacheableOperation());
 			op.setUnless(getAttributeValue(opElement, "unless", ""));
+			op.setSync(Boolean.valueOf(getAttributeValue(opElement, "sync", "false")));
 
 			Collection<CacheOperation> col = cacheOpMap.get(nameHolder);
 			if (col == null) {

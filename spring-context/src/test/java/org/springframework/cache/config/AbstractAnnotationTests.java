@@ -105,6 +105,32 @@ public abstract class AbstractAnnotationTests {
 		assertNull("Cached value should be null", r3);
 	}
 
+	public void testCacheableSync(CacheableService<?> service) throws Exception {
+		Object o1 = new Object();
+
+		Object r1 = service.cacheSync(o1);
+		Object r2 = service.cacheSync(o1);
+		Object r3 = service.cacheSync(o1);
+
+		assertSame(r1, r2);
+		assertSame(r1, r3);
+	}
+
+	public void testCacheableSyncNull(CacheableService<?> service) throws Exception {
+		Object o1 = new Object();
+		assertNull(cm.getCache("testCache").get(o1));
+
+		Object r1 = service.cacheSyncNull(o1);
+		Object r2 = service.cacheSyncNull(o1);
+		Object r3 = service.cacheSyncNull(o1);
+
+		assertSame(r1, r2);
+		assertSame(r1, r3);
+
+		assertEquals(r3, cm.getCache("testCache").get(o1).get());
+		assertNull("Cached value should be null", r3);
+	}
+
 	public void testEvict(CacheableService<?> service) throws Exception {
 		Object o1 = new Object();
 
@@ -306,6 +332,27 @@ public abstract class AbstractAnnotationTests {
 		}
 	}
 
+	public void testCheckedThrowableSync(CacheableService<?> service) throws Exception {
+		String arg = UUID.randomUUID().toString();
+		try {
+			service.throwCheckedSync(arg);
+			fail("Excepted exception");
+		} catch (Exception ex) {
+			assertEquals("Wrong exception type", IOException.class, ex.getClass());
+			assertEquals(arg, ex.getMessage());
+		}
+	}
+
+	public void testUncheckedThrowableSync(CacheableService<?> service) throws Exception {
+		try {
+			service.throwUncheckedSync(Long.valueOf(1));
+			fail("Excepted exception");
+		} catch (RuntimeException ex) {
+			assertEquals("Wrong exception type", UnsupportedOperationException.class, ex.getClass());
+			assertEquals("1", ex.getMessage());
+		}
+	}
+
 	public void testNullArg(CacheableService<?> service) {
 		Object r1 = service.cache(null);
 		assertSame(r1, service.cache(null));
@@ -476,6 +523,16 @@ public abstract class AbstractAnnotationTests {
 	@Test
 	public void testCacheableNull() throws Exception {
 		testCacheableNull(cs);
+	}
+
+	@Test
+	public void testCacheableSync() throws Exception {
+		testCacheableSync(cs);
+	}
+
+	@Test
+	public void testCacheableSyncNull() throws Exception {
+		testCacheableSyncNull(cs);
 	}
 
 	@Test
@@ -671,6 +728,16 @@ public abstract class AbstractAnnotationTests {
 	}
 
 	@Test
+	public void testCheckedExceptionSync() throws Exception {
+		testCheckedThrowableSync(cs);
+	}
+
+	@Test
+	public void testClassCheckedExceptionSync() throws Exception {
+		testCheckedThrowableSync(ccs);
+	}
+
+	@Test
 	public void testUncheckedException() throws Exception {
 		testUncheckedThrowable(cs);
 	}
@@ -678,6 +745,16 @@ public abstract class AbstractAnnotationTests {
 	@Test
 	public void testClassUncheckedException() throws Exception {
 		testUncheckedThrowable(ccs);
+	}
+
+	@Test
+	public void testUncheckedExceptionSync() throws Exception {
+		testUncheckedThrowableSync(cs);
+	}
+
+	@Test
+	public void testClassUncheckedExceptionSync() throws Exception {
+		testUncheckedThrowableSync(ccs);
 	}
 
 	@Test

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -96,6 +97,11 @@ public class NoOpCacheManager implements CacheManager {
 
 		@Override
 		public <T> T get(Object key, Class<T> type) {
+			return null;
+		}
+
+		@Override
+		public <T> T get(Object key, Callable<T> valueLoader) {
 			return null;
 		}
 

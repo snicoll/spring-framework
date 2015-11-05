@@ -22,6 +22,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.Callable;
 
 import org.springframework.core.annotation.AliasFor;
 
@@ -114,5 +115,21 @@ public @interface Cacheable {
 	 * @since 3.2
 	 */
 	String unless() default "";
+
+	/**
+	 * Synchronize the invocation of the underlying method if several threads are
+	 * attempting to load a value for the same key. The synchronization leads to
+	 * a couple of limitations:
+	 * <ol>
+	 * <li>{@link #condition()} and {@link #unless()} are not supported</li>
+	 * <li>Only one cache may be specified</li>
+	 * <li>No other cache-related operation can be combined</li>
+	 * </ol>
+	 * This is an optional feature and the actual cache provider that you are
+	 * using may not support it. Check the documentation for more details.
+	 * @see org.springframework.cache.Cache#get(Object, Callable)
+	 * @since 4.3
+	 */
+	boolean sync() default false;
 
 }

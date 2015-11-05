@@ -64,4 +64,5 @@ public class GuavaCacheTests extends AbstractCacheTests<GuavaCache> {
 		assertEquals(null, wrapper.get());
 		assertEquals(value, cache.get(key).get()); // not changed
 	}
+
 }

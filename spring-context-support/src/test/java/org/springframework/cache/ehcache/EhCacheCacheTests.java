@@ -82,4 +82,5 @@ public class EhCacheCacheTests extends AbstractCacheTests<EhCacheCache> {
 		Thread.sleep(5 * 1000);
 		assertNull(cache.get(key));
 	}
+
 }

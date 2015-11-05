@@ -21,12 +21,17 @@ package org.springframework.cache.config;
  *
  * @author Costin Leau
  * @author Phillip Webb
+ * @author Stephane Nicoll
  */
 public interface CacheableService<T> {
 
 	T cache(Object arg1);
 
 	T cacheNull(Object arg1);
+
+	T cacheSync(Object arg1);
+
+	T cacheSyncNull(Object arg1);
 
 	void invalidate(Object arg1);
 
@@ -71,6 +76,10 @@ public interface CacheableService<T> {
 	T throwChecked(Object arg1) throws Exception;
 
 	T throwUnchecked(Object arg1);
+
+	T throwCheckedSync(Object arg1) throws Exception;
+
+	T throwUncheckedSync(Object arg1);
 
 	// multi annotations
 	T multiCache(Object arg1);
