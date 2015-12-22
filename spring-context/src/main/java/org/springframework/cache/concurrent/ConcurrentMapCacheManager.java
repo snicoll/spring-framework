@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
@@ -44,13 +45,17 @@ import org.springframework.cache.CacheManager;
  * @since 3.1
  * @see ConcurrentMapCache
  */
-public class ConcurrentMapCacheManager implements CacheManager {
+public class ConcurrentMapCacheManager implements CacheManager, BeanClassLoaderAware {
 
 	private final ConcurrentMap<String, Cache> cacheMap = new ConcurrentHashMap<String, Cache>(16);
 
 	private boolean dynamic = true;
 
 	private boolean allowNullValues = true;
+
+	private boolean storeByValue = false;
+
+	private EntrySerializer entrySerializer;
 
 
 	/**
@@ -114,6 +119,37 @@ public class ConcurrentMapCacheManager implements CacheManager {
 		return this.allowNullValues;
 	}
 
+	/**
+	 * Specify whether this cache manager stores a copy of each entry ({@code true}
+	 * or the reference ({@code false} for all of its caches.
+	 * <p>Default is "false" so that the value itself is stored and no serializable
+	 * contract is required on cached values.
+	 * <p>Note: A change of the store-by-value setting will reset all existing caches,
+	 * if any, to reconfigure them with the new store-by-value requirement.
+	 */
+	public void setStoreByValue(boolean storeByValue) {
+		if (storeByValue != this.storeByValue) {
+			this.storeByValue = storeByValue;
+			// Need to recreate all Cache instances with the new store-by-value configuration...
+			for (Map.Entry<String, Cache> entry : this.cacheMap.entrySet()) {
+				entry.setValue(createConcurrentMapCache(entry.getKey()));
+			}
+		}
+	}
+
+	/**
+	 * Return whether this cache manager stores a copy of each entry or
+	 * a reference for all its caches. If store by value is enabled, any
+	 * cache entry must be serializable.
+	 */
+	public boolean isStoreByValue() {
+		return this.storeByValue;
+	}
+
+	@Override
+	public void setBeanClassLoader(ClassLoader classLoader) {
+		this.entrySerializer = new EntrySerializer(classLoader);
+	}
 
 	@Override
 	public Collection<String> getCacheNames() {
@@ -141,7 +177,10 @@ public class ConcurrentMapCacheManager implements CacheManager {
 	 * @return the ConcurrentMapCache (or a decorator thereof)
 	 */
 	protected Cache createConcurrentMapCache(String name) {
-		return new ConcurrentMapCache(name, isAllowNullValues());
+		EntrySerializer serializer = this.storeByValue ? entrySerializer : null;
+		return new ConcurrentMapCache(name, new ConcurrentHashMap<Object, Object>(256),
+				isAllowNullValues(), serializer);
+
 	}
 
 }
