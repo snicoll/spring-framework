@@ -377,6 +377,20 @@ public class AnnotationDrivenEventListenerTests {
 	}
 
 	@Test
+	public void asyncReplyIsProcessed() throws InterruptedException {
+		doLoad(AsyncConfigurationWithReplies.class, AsyncTestBean.class);
+
+		String threadName = Thread.currentThread().getName();
+		AsyncTestBean listener = this.context.getBean(AsyncTestBean.class);
+		this.eventCollector.assertNoEventReceived(listener);
+
+		this.context.publishEvent(threadName);
+		this.countDownLatch.await(2, TimeUnit.SECONDS);
+		this.eventCollector.assertEvent(listener, threadName, 42);
+		this.eventCollector.assertTotalEventsCount(2);
+	}
+
+	@Test
 	public void exceptionPropagated() {
 		load(ExceptionEventListener.class);
 		TestEvent event = new TestEvent(this, "fail");
@@ -736,6 +750,19 @@ public class AnnotationDrivenEventListenerTests {
 	}
 
 
+	@Configuration
+	@Import(BasicConfiguration.class)
+	@EnableAsync(proxyTargetClass = true)
+	static class AsyncConfigurationWithReplies {
+
+		@Bean
+		public CountDownLatch testCountDownLatch() {
+			return new CountDownLatch(2);
+		}
+
+	}
+
+
 	interface SimpleService extends Identifiable {
 
 		void handleIt(TestEvent event);
@@ -766,6 +793,35 @@ public class AnnotationDrivenEventListenerTests {
 			this.eventCollector.addEvent(this, event);
 			this.countDownLatch.countDown();
 		}
+
+	}
+
+
+	@Component
+	static class AsyncTestBean extends AbstractIdentifiable {
+
+		@Autowired
+		private EventCollector eventCollector;
+
+		@Autowired
+		private CountDownLatch countDownLatch;
+
+		@EventListener
+		@Async
+		public Integer handleWithRawReply(String event) {
+			assertTrue(!Thread.currentThread().getName().equals(event));
+			this.eventCollector.addEvent(this, event);
+			this.countDownLatch.countDown();
+			return 42;
+		}
+
+		@EventListener
+		public void handleAsyncReply(Integer event) {
+			this.eventCollector.addEvent(this, event);
+			this.countDownLatch.countDown();
+		}
+
+
 	}
 
 
@@ -867,7 +923,6 @@ public class AnnotationDrivenEventListenerTests {
 			collectEvent(value);
 		}
 	}
-
 
 
 	@EventListener
