@@ -144,6 +144,15 @@ public class LocalContainerEntityManagerFactoryBean extends AbstractEntityManage
 	}
 
 	/**
+	 * Set whether tu use the Spring Components index to identify entity classes
+	 * in the classpath instead of using JPA's standard scanning of jar files with
+	 * {@code persistence.xml} markers in them.
+	 */
+	public void setUseIndex(boolean useIndex) {
+		this.internalPersistenceUnitManager.setUseIndex(true);
+	}
+
+	/**
 	 * Set whether to use Spring-based scanning for entity classes in the classpath
 	 * instead of using JPA's standard scanning of jar files with {@code persistence.xml}
 	 * markers in them. In case of Spring-based scanning, no {@code persistence.xml}

@@ -40,6 +40,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.index.SpringComponentsIndex;
+import org.springframework.context.index.SpringComponentsIndexLoader;
 import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -56,6 +58,7 @@ import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jdbc.datasource.lookup.DataSourceLookup;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.jdbc.datasource.lookup.MapDataSourceLookup;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ResourceUtils;
@@ -84,6 +87,9 @@ import org.springframework.util.ResourceUtils;
  */
 public class DefaultPersistenceUnitManager
 		implements PersistenceUnitManager, ResourceLoaderAware, LoadTimeWeaverAware, InitializingBean {
+
+	private static SpringComponentsIndex index = SpringComponentsIndexLoader
+			.loadIndex(LocalSessionFactoryBean.class.getClassLoader());
 
 	private static final String CLASS_RESOURCE_PATTERN = "/**/*.class";
 
@@ -126,6 +132,8 @@ public class DefaultPersistenceUnitManager
 	private String defaultPersistenceUnitRootLocation = ORIGINAL_DEFAULT_PERSISTENCE_UNIT_ROOT_LOCATION;
 
 	private String defaultPersistenceUnitName = ORIGINAL_DEFAULT_PERSISTENCE_UNIT_NAME;
+
+	private boolean useIndex;
 
 	private String[] packagesToScan;
 
@@ -192,6 +200,15 @@ public class DefaultPersistenceUnitManager
 	 */
 	public void setDefaultPersistenceUnitName(String defaultPersistenceUnitName) {
 		this.defaultPersistenceUnitName = defaultPersistenceUnitName;
+	}
+
+	/**
+	 * Set whether tu use the Spring Components index to identify entity classes
+	 * in the classpath instead of using JPA's standard scanning of jar files with
+	 * {@code persistence.xml} markers in them.
+	 */
+	public void setUseIndex(boolean useIndex) {
+		this.useIndex = useIndex;
 	}
 
 	/**
@@ -471,7 +488,7 @@ public class DefaultPersistenceUnitManager
 	private List<SpringPersistenceUnitInfo> readPersistenceUnitInfos() {
 		List<SpringPersistenceUnitInfo> infos = new LinkedList<>();
 		String defaultName = this.defaultPersistenceUnitName;
-		boolean buildDefaultUnit = (this.packagesToScan != null || this.mappingResources != null);
+		boolean buildDefaultUnit = (this.useIndex || this.packagesToScan != null || this.mappingResources != null);
 		boolean foundDefaultUnit = false;
 
 		PersistenceUnitReader reader = new PersistenceUnitReader(this.resourcePatternResolver, this.dataSourceLookup);
@@ -505,6 +522,13 @@ public class DefaultPersistenceUnitManager
 		SpringPersistenceUnitInfo scannedUnit = new SpringPersistenceUnitInfo();
 		scannedUnit.setPersistenceUnitName(this.defaultPersistenceUnitName);
 		scannedUnit.setExcludeUnlistedClasses(true);
+
+		if (this.useIndex) {
+			Set<String> entities = index.getComponents(Entity.class.getName());
+			for (String entity : entities) {
+				scannedUnit.addManagedClassName(entity);
+			}
+		}
 
 		if (this.packagesToScan != null) {
 			for (String pkg : this.packagesToScan) {

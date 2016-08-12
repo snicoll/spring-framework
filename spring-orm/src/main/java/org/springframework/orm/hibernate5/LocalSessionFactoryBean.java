@@ -19,6 +19,7 @@ package org.springframework.orm.hibernate5;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
 import javax.sql.DataSource;
 
 import org.hibernate.Interceptor;
@@ -35,6 +36,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.index.SpringComponentsIndex;
+import org.springframework.context.index.SpringComponentsIndexLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -61,6 +64,9 @@ import org.springframework.util.Assert;
  */
 public class LocalSessionFactoryBean extends HibernateExceptionTranslator
 		implements FactoryBean<SessionFactory>, ResourceLoaderAware, InitializingBean, DisposableBean {
+
+	private static SpringComponentsIndex index = SpringComponentsIndexLoader
+			.loadIndex(LocalSessionFactoryBean.class.getClassLoader());
 
 	private DataSource dataSource;
 
@@ -97,6 +103,8 @@ public class LocalSessionFactoryBean extends HibernateExceptionTranslator
 	private String[] annotatedPackages;
 
 	private String[] packagesToScan;
+
+	private boolean useIndex;
 
 	private AsyncTaskExecutor bootstrapExecutor;
 
@@ -316,6 +324,13 @@ public class LocalSessionFactoryBean extends HibernateExceptionTranslator
 	}
 
 	/**
+	 * Use the components index to detect your entity classes in the classpath.
+	 */
+	public void setUseIndex(boolean useIndex) {
+		this.useIndex = useIndex;
+	}
+
+	/**
 	 * Specify an asynchronous executor for background bootstrapping,
 	 * e.g. a {@link org.springframework.core.task.SimpleAsyncTaskExecutor}.
 	 * <p>{@code SessionFactory} initialization will then switch into background
@@ -385,7 +400,7 @@ public class LocalSessionFactoryBean extends HibernateExceptionTranslator
 
 
 	@Override
-	public void afterPropertiesSet() throws IOException {
+	public void afterPropertiesSet() throws IOException, ClassNotFoundException {
 		LocalSessionFactoryBuilder sfb = new LocalSessionFactoryBuilder(
 				this.dataSource, getResourceLoader(), getMetadataSources());
 
@@ -475,6 +490,15 @@ public class LocalSessionFactoryBean extends HibernateExceptionTranslator
 
 		if (this.annotatedPackages != null) {
 			sfb.addPackages(this.annotatedPackages);
+		}
+
+		if (this.useIndex) {
+			Set<String> components = index.getComponents("javax.persistence.Entity");
+			for (String component : components) {
+				Class<?> aClass = LocalSessionFactoryBean.class.getClassLoader()
+						.loadClass(component);
+				sfb.addAnnotatedClasses(aClass);
+			}
 		}
 
 		if (this.packagesToScan != null) {
