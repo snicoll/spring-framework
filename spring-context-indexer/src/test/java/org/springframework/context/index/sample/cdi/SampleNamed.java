@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index.sample.cdi;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+import javax.inject.Named;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Test candidate for a CDI {@link Named} bean.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+@Named
+public class SampleNamed {
 }

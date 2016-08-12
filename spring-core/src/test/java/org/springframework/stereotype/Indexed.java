@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.stereotype;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Copy of the standard {@code Indexed} annotation for testing purposes.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Indexed {
 }

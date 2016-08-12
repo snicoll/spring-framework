@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+import java.util.Set;
+import javax.lang.model.element.Element;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Provide the list of stereotypes that match an {@link Element}. If an element
+ * has one more stereotypes, it is referenced in the index of candidate
+ * components and each stereotype can be queried individually.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
+interface StereotypesProvider {
 
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
+	/**
+	 * Return the stereotypes that are present on the given {@link Element}.
+	 * @param element the element to handle
+	 * @return the stereotypes or an empty set if none were found
+	 */
+	Set<String> getStereotypes(Element element);
 
 }

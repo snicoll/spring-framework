@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-package example.scannable;
-
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+package org.springframework.context.index.sample;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Test candidate for a {@code Controller} defined using a meta-annotation.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+@MetaController
+public class SampleMetaController {
 }

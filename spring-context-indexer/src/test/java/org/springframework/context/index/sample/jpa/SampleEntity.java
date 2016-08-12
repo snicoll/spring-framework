@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index.sample.jpa;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+import javax.persistence.Entity;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Test candidate for {@link Entity}.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+@Entity
+public class SampleEntity {
 }

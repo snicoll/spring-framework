@@ -76,6 +76,14 @@ public class AnnotationTypeFilter extends AbstractTypeHierarchyTraversingFilter 
 		this.considerMetaAnnotations = considerMetaAnnotations;
 	}
 
+	/**
+	 * Return the {@link Annotation} that this instance is using to filter
+	 * candidates.
+	 * @since 5.0
+	 */
+	public Class<? extends Annotation> getAnnotationType() {
+		return this.annotationType;
+	}
 
 	@Override
 	protected boolean matchSelf(MetadataReader metadataReader) {

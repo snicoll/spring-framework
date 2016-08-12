@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index.sample;
 
-import java.util.concurrent.Future;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Indexed;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * A test annotation that triggers a dedicated entry in the index.
+ *
+ * @author Stephane Nicoll
  */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Controller
 @Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+public @interface MetaControllerIndexed {
 }

@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index.sample;
 
-import java.util.concurrent.Future;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Indexed;
+import org.springframework.stereotype.Controller;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * Sample meta-annotation.
+ *
+ * @author Stephane Nicoll
  */
-@Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Controller
+public @interface MetaController {
 }

@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-package example.scannable;
+package org.springframework.context.index.sample.type;
 
-import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Indexed;
 
 /**
- * @author Mark Fisher
- * @author Juergen Hoeller
+ * A {@link Repo} that requires an extra stereotype.
+ *
+ * @author Stephane Nicoll
  */
 @Indexed
-public interface FooService {
-
-	String foo(int id);
-
-	@Async
-	Future<String> asyncFoo(int id);
-
-	boolean isInitCalled();
-
+public interface SmartRepo extends Repo {
 }
