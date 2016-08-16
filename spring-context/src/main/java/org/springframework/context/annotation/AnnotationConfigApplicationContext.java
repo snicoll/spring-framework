@@ -52,6 +52,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
 	private final ClassPathBeanDefinitionScanner scanner;
 
+	private final IndexBeanDefinitionScanner indexScanner;
+
 
 	/**
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
@@ -60,6 +62,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext() {
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
+		this.indexScanner = new IndexBeanDefinitionScanner(this);
 	}
 
 	/**
@@ -70,6 +73,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		super(beanFactory);
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
+		this.indexScanner = new IndexBeanDefinitionScanner(this);
 	}
 
 	/**
@@ -120,6 +124,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
 		this.reader.setBeanNameGenerator(beanNameGenerator);
 		this.scanner.setBeanNameGenerator(beanNameGenerator);
+		this.indexScanner.setBeanNameGenerator(beanNameGenerator);
 		getBeanFactory().registerSingleton(
 				AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator);
 	}
@@ -161,6 +166,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public void scan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		this.scanner.scan(basePackages);
+	}
+
+	public void useIndex() {
+		this.indexScanner.scan();
 	}
 
 
