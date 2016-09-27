@@ -57,9 +57,11 @@ public class ClassPathXmlApplicationContextTests {
 	private static final String CONTEXT_A = "test/contextA.xml";
 	private static final String CONTEXT_B = "test/contextB.xml";
 	private static final String CONTEXT_C = "test/contextC.xml";
+	private static final String CONTEXT_D = "test/contextD.xml";
 	private static final String FQ_CONTEXT_A = PATH + CONTEXT_A;
 	private static final String FQ_CONTEXT_B = PATH + CONTEXT_B;
 	private static final String FQ_CONTEXT_C = PATH + CONTEXT_C;
+	private static final String FQ_CONTEXT_D = PATH + CONTEXT_D;
 	private static final String SIMPLE_CONTEXT = "simpleContext.xml";
 	private static final String FQ_SIMPLE_CONTEXT = PATH + "simpleContext.xml";
 	private static final String FQ_ALIASED_CONTEXT_C = PATH + "test/aliased-contextC.xml";
@@ -130,6 +132,24 @@ public class ClassPathXmlApplicationContextTests {
 		assertTrue(ctx.containsBean("logicOne"));
 		assertTrue(ctx.containsBean("logicTwo"));
 		ctx.refresh();
+	}
+
+	@Test
+	public void testCommaSeparatedLocationWithPlaceholder() {
+		System.setProperty("test.placeholder.location",
+				"classpath:org/springframework/context/support/placeholder.properties," +
+						"classpath:org/springframework/context/support/test.properties");
+		try {
+			ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
+					FQ_CONTEXT_D);
+			ctx.refresh();
+			assertEquals(true, ctx.getBean("jedi"));
+		}
+		finally {
+			System.clearProperty("test.placeholder.location");
+
+		}
+
 	}
 
 	@Test
