@@ -30,6 +30,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.MergedAnnotations.SearchStrategy;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -47,6 +48,9 @@ abstract class AnnotationsScanner {
 	private static final Annotation[] NO_ANNOTATIONS = {};
 
 	private static final Method[] NO_METHODS = {};
+
+	private static final Class<?> SERVLET_CONTEXT_CLASS = getClassIfPresent(
+			"javax.servlet.ServletContext");
 
 
 	private static final Map<AnnotatedElement, Annotation[]> declaredAnnotationCache =
@@ -140,8 +144,8 @@ abstract class AnnotationsScanner {
 		int remaining = Integer.MAX_VALUE;
 		int aggregateIndex = 0;
 		Class<?> root = source;
-		while (source != null && source != Object.class
-				&& !hasPlainJavaAnnotationsOnly(source) && remaining > 0) {
+		while (source != null && source != Object.class && remaining > 0
+				&& !hasPlainJavaAnnotationsOnly(source)) {
 			R result = processor.doWithAggregate(context, aggregateIndex);
 			if (result != null) {
 				return result;
@@ -511,7 +515,10 @@ abstract class AnnotationsScanner {
 		String name = type.getName();
 		return type.equals(Ordered.class) ||
 				name.startsWith("java") ||
-				name.startsWith("org.springframework.lang.");
+				name.startsWith("org.springframework.lang.") ||
+				name.startsWith("org.springframework.util.") ||
+				(name.startsWith("com.sun") && !name.contains("Proxy")) ||
+				(SERVLET_CONTEXT_CLASS != null && SERVLET_CONTEXT_CLASS.isAssignableFrom(type));
 	}
 
 	private static boolean isWithoutHierarchy(AnnotatedElement source) {
@@ -529,6 +536,15 @@ abstract class AnnotationsScanner {
 					isWithoutHierarchy(sourceMethod.getDeclaringClass());
 		}
 		return true;
+	}
+
+	private static Class<?> getClassIfPresent(String name) {
+		try {
+			return ClassUtils.forName(name, null);
+		}
+		catch (Throwable ex) {
+			return null;
+		}
 	}
 
 	static void clearCache() {
