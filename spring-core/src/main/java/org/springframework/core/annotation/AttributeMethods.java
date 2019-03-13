@@ -60,7 +60,7 @@ final class AttributeMethods {
 	private final boolean hasNestedAnnotation;
 
 
-	private AttributeMethods(Class<? extends Annotation> annotationType,
+	private AttributeMethods(@Nullable Class<? extends Annotation> annotationType,
 			Method[] attributeMethods) {
 		this.annotationType = annotationType;
 		this.attributeMethods = attributeMethods;
@@ -264,7 +264,7 @@ final class AttributeMethods {
 		Method[] methods = annotationType.getDeclaredMethods();
 		int size = methods.length;
 		for (int i = 0; i < methods.length; i++) {
-			if (!isAttributeMethod(methods[0])) {
+			if (!isAttributeMethod(methods[i])) {
 				methods[i] = null;
 				size--;
 			}

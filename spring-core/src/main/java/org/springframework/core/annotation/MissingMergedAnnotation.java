@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.springframework.lang.Nullable;
+
 /**
  * A {@link MappableAnnotation} used as the implementation of
  * {@link MergedAnnotation#missing()}.
@@ -110,8 +112,8 @@ final class MissingMergedAnnotation<A extends Annotation>
 
 	@Override
 	public <T extends Map<String, Object>> T asMap(
-			Function<MergedAnnotation<?>, T> factory, MapValues... options) {
-
+			@Nullable Function<MergedAnnotation<?>, T> factory, MapValues... options) {
+		// FIXME if null check here on the factory
 		return factory.apply(this);
 	}
 

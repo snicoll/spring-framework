@@ -459,6 +459,7 @@ public class AnnotationAttributes extends LinkedHashMap<String, Object> {
 	 * @see MergedAnnotation#asMap(java.util.function.Function,
 	 * org.springframework.core.annotation.MergedAnnotation.MapValues...)
 	 */
+	@Nullable
 	public static AnnotationAttributes createIfAnnotationPresent(MergedAnnotation<?> annotation) {
 		return annotation.isPresent() ? new AnnotationAttributes() : null;
 	}

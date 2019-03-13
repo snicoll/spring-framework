@@ -59,6 +59,7 @@ enum IntrospectionFailureLogger {
 	};
 
 
+	@Nullable
 	private static Log logger;
 
 

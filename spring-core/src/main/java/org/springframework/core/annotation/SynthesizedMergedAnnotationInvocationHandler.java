@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -52,6 +53,7 @@ class SynthesizedMergedAnnotationInvocationHandler<A extends Annotation>
 
 	private final AttributeMethods attributes;
 
+	@Nullable
 	private volatile Integer hashCode;
 
 

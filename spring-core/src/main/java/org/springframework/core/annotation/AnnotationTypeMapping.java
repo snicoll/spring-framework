@@ -67,7 +67,6 @@ class AnnotationTypeMapping {
 
 	private final int[] conventionMappings;
 
-	@Nullable
 	private final Map<Method, List<Method>> aliasedBy;
 
 	@Nullable
@@ -459,7 +458,7 @@ class AnnotationTypeMapping {
 		return value.getName().equals(extractedValue);
 	}
 
-	private static boolean areEquivalent(Annotation value, Object extractedValue,
+	private static boolean areEquivalent(Annotation value, @Nullable Object extractedValue,
 			BiFunction<Method, Object, Object> valueExtractor) {
 		AttributeMethods attributes = AttributeMethods.forAnnotationType(
 				value.annotationType());
@@ -526,6 +525,7 @@ class AnnotationTypeMapping {
 			return this.mirrorSets[index];
 		}
 
+		@Nullable
 		MirrorSet getAssigned(int attributeIndex) {
 			return this.assigned[attributeIndex];
 		}
@@ -569,7 +569,7 @@ class AnnotationTypeMapping {
 				}
 			}
 
-			<A> int resolve(Object source, A annotation,
+			<A> int resolve(@Nullable Object source, A annotation,
 					BiFunction<Method, Object, Object> valueExtractor) {
 
 				int result = -1;

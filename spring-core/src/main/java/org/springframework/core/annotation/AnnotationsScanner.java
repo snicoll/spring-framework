@@ -49,6 +49,7 @@ abstract class AnnotationsScanner {
 
 	private static final Method[] NO_METHODS = {};
 
+	@Nullable
 	private static final Class<?> SERVLET_CONTEXT_CLASS = getClassIfPresent(
 			"javax.servlet.ServletContext");
 
@@ -74,6 +75,7 @@ abstract class AnnotationsScanner {
 	 * @param processor the processor that receives the annotations
 	 * @return the result of {@link AnnotationsProcessor#finish(Object)}
 	 */
+	@Nullable
 	static <C, R> R scan(@Nullable C context, AnnotatedElement source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor) {
 		return scan(context, source, searchStrategy, processor, null);
@@ -91,7 +93,8 @@ abstract class AnnotationsScanner {
 	 * out a specific class from the hierarchy
 	 * @return the result of {@link AnnotationsProcessor#finish(Object)}
 	 */
-	static <C, R> R scan(C context, AnnotatedElement source,
+	@Nullable
+	static <C, R> R scan(@Nullable C context, AnnotatedElement source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -99,7 +102,8 @@ abstract class AnnotationsScanner {
 		return processor.finish(result);
 	}
 
-	private static <C, R> R process(C context, AnnotatedElement source,
+	@Nullable
+	private static <C, R> R process(@Nullable C context, AnnotatedElement source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -112,7 +116,8 @@ abstract class AnnotationsScanner {
 		return processElement(context, source, processor, classFilter);
 	}
 
-	private static <C, R> R processClass(C context, Class<?> source,
+	@Nullable
+	private static <C, R> R processClass(@Nullable C context, Class<?> source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -133,7 +138,8 @@ abstract class AnnotationsScanner {
 		throw new IllegalStateException("Unsupported search strategy " + searchStrategy);
 	}
 
-	private static <C, R> R processClassInheritedAnnotations(C context, Class<?> source,
+	@Nullable
+	private static <C, R> R processClassInheritedAnnotations(@Nullable C context, Class<?> source,
 			AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -186,7 +192,8 @@ abstract class AnnotationsScanner {
 		return null;
 	}
 
-	private static <C, R> R processClassHierarchy(C context, int[] aggregateIndex,
+	@Nullable
+	private static <C, R> R processClassHierarchy(@Nullable C context, int[] aggregateIndex,
 			Class<?> source, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter, boolean includeInterfaces) {
 
@@ -223,7 +230,8 @@ abstract class AnnotationsScanner {
 		return null;
 	}
 
-	private static <C, R> R processMethod(C context, Method source,
+	@Nullable
+	private static <C, R> R processMethod(@Nullable C context, Method source,
 			SearchStrategy searchStrategy, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -242,15 +250,17 @@ abstract class AnnotationsScanner {
 		throw new IllegalStateException("Unsupported search strategy " + searchStrategy);
 	}
 
-	private static <C, R> R processMethodInheritedAnnotations(C context, Method source,
-			AnnotationsProcessor<C, R> processor, BiPredicate<C, Class<?>> classFilter) {
+	@Nullable
+	private static <C, R> R processMethodInheritedAnnotations(@Nullable C context, Method source,
+			AnnotationsProcessor<C, R> processor, @Nullable BiPredicate<C, Class<?>> classFilter) {
 
 		R result = processor.doWithAggregate(context, 0);
 		return result != null ? result :
 				processMethodAnnotations(context, 0, source, processor, classFilter);
 	}
 
-	private static <C, R> R processMethodHierarchy(C context, int[] aggregateIndex,
+	@Nullable
+	private static <C, R> R processMethodHierarchy(@Nullable C context, int[] aggregateIndex,
 			Class<?> sourceClass, AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter, Method rootMethod,
 			boolean includeInterfaces) {
@@ -309,8 +319,8 @@ abstract class AnnotationsScanner {
 		return null;
 	}
 
-	private static <C> Method[] getBaseTypeMethods(C context, Class<?> baseType,
-			BiPredicate<C, Class<?>> classFilter) {
+	private static <C> Method[] getBaseTypeMethods(@Nullable C context, Class<?> baseType,
+			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
 		if (baseType == Object.class || hasPlainJavaAnnotationsOnly(baseType) ||
 				isFiltered(baseType, context, classFilter)) {
@@ -378,9 +388,10 @@ abstract class AnnotationsScanner {
 		return true;
 	}
 
-	private static <C, R> R processMethodAnnotations(C context, int aggregateIndex,
+	@Nullable
+	private static <C, R> R processMethodAnnotations(@Nullable C context, int aggregateIndex,
 			Method source, AnnotationsProcessor<C, R> processor,
-			BiPredicate<C, Class<?>> classFilter) {
+			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
 		Annotation[] annotations = getDeclaredAnnotations(context, source, classFilter,
 				false);
@@ -404,7 +415,8 @@ abstract class AnnotationsScanner {
 		return null;
 	}
 
-	private static <C, R> R processElement(C context, AnnotatedElement source,
+	@Nullable
+	private static <C, R> R processElement(@Nullable C context, AnnotatedElement source,
 			AnnotationsProcessor<C, R> processor,
 			@Nullable BiPredicate<C, Class<?>> classFilter) {
 
@@ -414,7 +426,7 @@ abstract class AnnotationsScanner {
 						getDeclaredAnnotations(context, source, classFilter, false));
 	}
 
-	private static <C, R> Annotation[] getDeclaredAnnotations(C context,
+	private static <C, R> Annotation[] getDeclaredAnnotations(@Nullable C context,
 			AnnotatedElement source, @Nullable BiPredicate<C, Class<?>> classFilter,
 			boolean copy) {
 
@@ -430,6 +442,7 @@ abstract class AnnotationsScanner {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Nullable
 	static <A extends Annotation> A getDeclaredAnnotation(AnnotatedElement source,
 			Class<A> annotationType) {
 
@@ -481,8 +494,8 @@ abstract class AnnotationsScanner {
 				annotationType == FunctionalInterface.class);
 	}
 
-	private static <C> boolean isFiltered(Class<?> sourceClass, C context,
-			BiPredicate<C, Class<?>> classFilter) {
+	private static <C> boolean isFiltered(Class<?> sourceClass, @Nullable C context,
+			@Nullable BiPredicate<C, Class<?>> classFilter) {
 		return classFilter != null && classFilter.test(context, sourceClass);
 	}
 
@@ -538,6 +551,7 @@ abstract class AnnotationsScanner {
 		return true;
 	}
 
+	@Nullable
 	private static Class<?> getClassIfPresent(String name) {
 		try {
 			return ClassUtils.forName(name, null);

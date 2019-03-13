@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -42,10 +43,11 @@ import org.springframework.util.ReflectionUtils;
  */
 public abstract class RepeatableContainers {
 
+	@Nullable
 	private final RepeatableContainers parent;
 
 
-	private RepeatableContainers(RepeatableContainers parent) {
+	private RepeatableContainers(@Nullable RepeatableContainers parent) {
 		this.parent = parent;
 	}
 
@@ -63,6 +65,7 @@ public abstract class RepeatableContainers {
 		return new ExplicitRepeatableContainer(this, repeatable, container);
 	}
 
+	@Nullable
 	Annotation[] findRepeatedAnnotations(Annotation annotation) {
 		if (this.parent == null) {
 			return null;
@@ -79,8 +82,7 @@ public abstract class RepeatableContainers {
 			return false;
 		}
 		RepeatableContainers other = (RepeatableContainers) obj;
-		return (this.parent == other.parent)
-				|| (this.parent != null && this.parent.equals(other.parent));
+		return Objects.equals(this.parent, other.parent);
 	}
 
 	@Override
@@ -190,10 +192,11 @@ public abstract class RepeatableContainers {
 
 		private final Class<? extends Annotation> container;
 
+		@Nullable
 		private final Method valueMethod;
 
 
-		ExplicitRepeatableContainer(RepeatableContainers parent,
+		ExplicitRepeatableContainer(@Nullable RepeatableContainers parent,
 				Class<? extends Annotation> repeatable,
 				@Nullable Class<? extends Annotation> container) {
 

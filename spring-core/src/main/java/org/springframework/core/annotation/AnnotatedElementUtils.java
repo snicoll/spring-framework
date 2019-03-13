@@ -149,7 +149,7 @@ public abstract class AnnotatedElementUtils {
 	}
 
 	private static Set<String> getMetaAnnotationTypes(AnnotatedElement element,
-			Annotation annotation) {
+			@Nullable Annotation annotation) {
 
 		if (annotation == null) {
 			return Collections.emptySet();
@@ -790,7 +790,7 @@ public abstract class AnnotatedElementUtils {
 	}
 
 	private static MergedAnnotations getRepeatableAnnotations(AnnotatedElement element,
-			Class<? extends Annotation> containerType,
+			@Nullable Class<? extends Annotation> containerType,
 			Class<? extends Annotation> annotationType) {
 
 		RepeatableContainers repeatableContainers = RepeatableContainers.of(annotationType, containerType);
@@ -804,7 +804,7 @@ public abstract class AnnotatedElementUtils {
 	}
 
 	private static MergedAnnotations findRepeatableAnnotations(AnnotatedElement element,
-			Class<? extends Annotation> containerType,
+			@Nullable Class<? extends Annotation> containerType,
 			Class<? extends Annotation> annotationType) {
 
 		RepeatableContainers repeatableContainers = RepeatableContainers.of(annotationType, containerType);
@@ -819,6 +819,7 @@ public abstract class AnnotatedElementUtils {
 		return annotation.getParent().getType() + ":" + annotation.getParent().getType();
 	}
 
+	@Nullable
 	private static MultiValueMap<String, Object> nullIfEmpty(
 			MultiValueMap<String, Object> map) {
 		return map.isEmpty() ? null : map;

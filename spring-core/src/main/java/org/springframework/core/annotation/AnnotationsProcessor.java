@@ -39,7 +39,8 @@ interface AnnotationsProcessor<C, R> {
 	 * @param aggregateIndex the aggregate index about to be processed
 	 * @return a {@code non-null} result if no further processing is required
 	 */
-	default R doWithAggregate(C context, int aggregateIndex) {
+	@Nullable
+	default R doWithAggregate(@Nullable C context, int aggregateIndex) {
 		return null;
 	}
 

@@ -68,6 +68,7 @@ public class AnnotationAwareOrderComparator extends OrderComparator {
 		return findOrderFromAnnotation(obj);
 	}
 
+	@Nullable
 	private Integer findOrderFromAnnotation(Object obj) {
 		AnnotatedElement element = obj instanceof AnnotatedElement
 				? (AnnotatedElement) obj
@@ -82,7 +83,7 @@ public class AnnotationAwareOrderComparator extends OrderComparator {
 	}
 
 	/**
-	 * This implementation retrieves an @{@link javax.annotation.Priority}
+	 * This implementation retrieves an {@code @javax.annotation.Priority}
 	 * value, allowing for additional semantics over the regular @{@link Order}
 	 * annotation: typically, selecting one object over another in case of
 	 * multiple matches but only one object to be returned.

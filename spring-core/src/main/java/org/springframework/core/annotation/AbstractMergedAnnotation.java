@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
 abstract class AbstractMergedAnnotation<A extends Annotation>
 		implements MergedAnnotation<A> {
 
+	@Nullable
 	private volatile A synthesizedAnnotation;
 
 
@@ -146,7 +147,9 @@ abstract class AbstractMergedAnnotation<A extends Annotation>
 		return (E[]) getRequiredValue(attributeName, arrayType);
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	private <T> T getRequiredValue(String attributeName, Class<T> type) {
+		// FIXME remove suppresswarnings and replace by if check here
 		return getValue(attributeName, type, true);
 	}
 
@@ -171,6 +174,7 @@ abstract class AbstractMergedAnnotation<A extends Annotation>
 	}
 
 	@Override
+	@Nullable
 	public Map<String, Object> asMap(MapValues... options) {
 		return asMap(null, options);
 	}

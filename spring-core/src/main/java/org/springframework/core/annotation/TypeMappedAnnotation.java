@@ -92,6 +92,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 
 	private final int[] resolvedMirrors;
 
+	@Nullable
 	private String string;
 
 
@@ -340,7 +341,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 		return string;
 	}
 
-	private Object toString(Object value) {
+	private Object toString(@Nullable Object value) {
 		if (value == null) {
 			return "";
 		}
@@ -365,6 +366,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 		return attributeIndex != -1 ? getValue(attributeIndex, type) : null;
 	}
 
+	@Nullable
 	private <T> T getValue(int attributeIndex, Class<T> type) {
 		Method attribute = this.mapping.getAttributes().get(attributeIndex);
 		Object value = getValue(attributeIndex, true, true);
@@ -374,6 +376,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 		return adapt(attribute, value, type);
 	}
 
+	@Nullable
 	private Object getValue(int attributeIndex, boolean useConventionMapping,
 			boolean resolveMirrors) {
 		AnnotationTypeMapping mapping = this.mapping;
@@ -402,6 +405,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 		return getValueFromMetaAnnotation(attribute);
 	}
 
+	@Nullable
 	private Object getValueFromMetaAnnotation(Method attribute) {
 		AnnotationTypeMapping mapping = this.mapping;
 		if (this.useMergedValues && !VALUE.equals(attribute.getName())) {
@@ -422,6 +426,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 	}
 
 	@SuppressWarnings("unchecked")
+	@Nullable
 	private <T> T adapt(Method attribute, @Nullable Object value, Class<T> type) {
 		if (value == null) {
 			return null;
@@ -565,7 +570,7 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 
 		Assert.notNull(annotationType, "AnnotationType must not be null");
 		AnnotationTypeMappings mappings = AnnotationTypeMappings.forAnnotationType(annotationType);
-		return new TypeMappedAnnotation<A>(mappings.get(0), source, attributes,
+		return new TypeMappedAnnotation<>(mappings.get(0), source, attributes,
 				TypeMappedAnnotation::extractFromMap, 0);
 	}
 
@@ -594,7 +599,8 @@ final class TypeMappedAnnotation<A extends Annotation> extends AbstractMergedAnn
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Object extractFromMap(Method attribute, Object map) {
+	@Nullable
+	private static Object extractFromMap(Method attribute, @Nullable Object map) {
 		return map != null ? ((Map<String, ?>) map).get(attribute.getName()) : null;
 	}
 

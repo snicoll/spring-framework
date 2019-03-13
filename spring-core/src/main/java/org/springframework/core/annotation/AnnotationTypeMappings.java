@@ -120,7 +120,7 @@ final class AnnotationTypeMappings {
 				failureLogger.log(
 						"Failed to introspect meta-annotation "
 								+ annotationType.getName(),
-						parent.getAnnotationType(), ex);
+						(parent != null) ? parent.getAnnotationType() : null, ex);
 			}
 		}
 	}
