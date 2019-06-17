@@ -17,9 +17,11 @@
 package org.springframework.cache.annotation;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
@@ -29,12 +31,17 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for annotation-based caching methods that use reactive operators.
@@ -109,6 +116,19 @@ public class ReactiveCachingTests {
 		assertThat(r1).isSameAs(r2).isSameAs(r3);
 
 		ctx.close();
+	}
+
+	@Test
+	void cacheErrorHandlerIsInvoked() {
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(
+				CacheErrorHandlerConfig.class, ReactiveCacheableService.class);
+		ReactiveCacheableService service = ctx.getBean(ReactiveCacheableService.class);
+		CacheErrorHandler errorHandler = ctx.getBean(CacheErrorHandler.class);
+
+		Object key = new Object();
+		Long r1 = service.cacheFuture(key).join();
+		verify(errorHandler).handleCacheGetError(any(), any(), key);
+
 	}
 
 
@@ -208,6 +228,33 @@ public class ReactiveCachingTests {
 				}
 			};
 		}
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@EnableCaching
+	static class CacheErrorHandlerConfig implements CachingConfigurer {
+
+		@Bean
+		@Override
+		public CacheManager cacheManager() {
+			return new ConcurrentMapCacheManager("first") {
+				@Override
+				public Cache getCache(String name) {
+					Cache cache = mock(Cache.class);
+					given(cache.getName()).willReturn(name);
+					given(cache.retrieve(any())).willThrow(new IllegalStateException("Expected backend failure"));
+					given(cache.get(any(), any(Callable.class))).willThrow(new IllegalStateException("Expecteed backend failure"));
+					return cache;
+				}
+			};
+		}
+
+		@Bean
+		@Override
+		public CacheErrorHandler errorHandler() {
+			return mock(CacheErrorHandler.class);
+		}
+
 	}
 
 }

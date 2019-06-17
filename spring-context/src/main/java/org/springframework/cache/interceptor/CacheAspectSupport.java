@@ -451,7 +451,7 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 				}
 			}
 			try {
-				return wrapCacheValue(method, cache.get(key, () -> unwrapReturnValue(invokeOperation(invoker))));
+				return wrapCacheValue(method, doGetSync(invoker, cache, key));
 			}
 			catch (Cache.ValueRetrievalException ex) {
 				// Directly propagate ThrowableWrapper from the invoker,
@@ -574,6 +574,23 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 		contexts.processed = true;
 
 		return returnValue;
+	}
+
+	@Nullable
+	private Object doGetSync(CacheOperationInvoker invoker, Cache cache, Object key) {
+		try {
+			return cache.get(key, () -> unwrapReturnValue(invokeOperation(invoker)));
+		}
+		catch (RuntimeException ex) {
+			// Make sure method invocation exceptions are not managed by the error handler
+			if (ex instanceof Cache.ValueRetrievalException) {
+				throw ex;
+			}
+			getErrorHandler().handleCacheGetError(ex, cache, key);
+			// If the exception is handled, we're just invoking the method and ignore
+			// the cache infrastructure failure
+			return unwrapReturnValue(invokeOperation(invoker));
+		}
 	}
 
 	@Nullable
