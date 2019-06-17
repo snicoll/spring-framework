@@ -17,6 +17,7 @@
 package org.springframework.cache.interceptor;
 
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
@@ -38,6 +39,8 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.BDDMockito.willThrow;
@@ -75,6 +78,17 @@ public class CacheErrorHandlerTests {
 		verify(this.errorHandler).handleCacheGetError(exception, cache, 0L);
 		verify(this.cache).get(0L);
 		verify(this.cache).put(0L, result); // result of the invocation
+	}
+
+	@Test
+	public void getSyncFail() {
+		UnsupportedOperationException exception = new UnsupportedOperationException("Test exception on get");
+		willThrow(exception).given(this.cache).get(eq(0L), any(Callable.class));
+
+		Object result = this.simpleService.getSync(0L);
+		assertThat(result).isEqualTo(0L);
+		verify(this.errorHandler).handleCacheGetError(exception, cache, 0L);
+		verify(this.cache).get(eq(0L), any(Callable.class));
 	}
 
 	@Test
@@ -205,6 +219,11 @@ public class CacheErrorHandlerTests {
 
 		@Cacheable
 		public Object get(long id) {
+			return this.counter.getAndIncrement();
+		}
+
+		@Cacheable(sync = true)
+		public Object getSync(long id) {
 			return this.counter.getAndIncrement();
 		}
 
