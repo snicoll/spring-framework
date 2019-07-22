@@ -105,10 +105,6 @@ class MergedAnnotationsTests {
 			assertThatIllegalArgumentException()
 				.isThrownBy(() -> search.withRepeatableContainers(null))
 				.withMessage("RepeatableContainers must not be null");
-
-			assertThatIllegalArgumentException()
-				.isThrownBy(() -> search.from(null))
-				.withMessage("AnnotatedElement must not be null");
 		}
 
 		@Test
@@ -272,15 +268,7 @@ class MergedAnnotationsTests {
 
 	@Test
 	void fromPreconditions() {
-		SearchStrategy strategy = SearchStrategy.DIRECT;
 		RepeatableContainers containers = RepeatableContainers.standardRepeatables();
-
-		assertThatIllegalArgumentException()
-			.isThrownBy(() -> MergedAnnotations.from(getClass(), strategy, null, AnnotationFilter.PLAIN))
-			.withMessage("RepeatableContainers must not be null");
-		assertThatIllegalArgumentException()
-			.isThrownBy(() -> MergedAnnotations.from(getClass(), strategy, containers, null))
-			.withMessage("AnnotationFilter must not be null");
 
 		assertThatIllegalArgumentException()
 			.isThrownBy(() -> MergedAnnotations.from(getClass(), new Annotation[0], null, AnnotationFilter.PLAIN))
@@ -2271,6 +2259,31 @@ class MergedAnnotationsTests {
 		assertThat(attributes.annotationType()).isEqualTo(SpringApplicationConfiguration.class);
 	}
 
+	@Test
+	public void fromNullElementReturnsMissing() {
+		AnnotatedElement element = null;
+		assertThat(MergedAnnotations.from(element)).isSameAs(TypeMappedAnnotations.NONE);
+	}
+
+	@Test
+	public void fromNullElementsReturnsEmpty() {
+		AnnotatedElement element1 = null;
+		AnnotatedElement element2 = null;
+		assertThat(MergedAnnotations.from(element1, element2)).isSameAs(TypeMappedAnnotations.NONE);
+	}
+
+	@Test
+	public void fromElementsReturnsUnifiedView() { // gh-23327
+		Field field = ReflectionUtils.findField(MultipleElements.class, "property");
+		Method getter = ReflectionUtils.findMethod(MultipleElements.class, "getProperty");
+		Method setter = ReflectionUtils.findMethod(MultipleElements.class, "setProperty", String.class);
+		MergedAnnotations annotations = MergedAnnotations.from(null, getter, setter, field);
+		assertThat(annotations.get(RequestMapping.class).getStringArray("path")).containsExactly("/getter");
+		assertThat(annotations.stream(RequestMapping.class)
+				.map(annotation -> annotation.getStringArray("path")[0]))
+			.containsExactly("/getter", "/setter", "/field");
+	}
+
 	// @formatter:off
 
 	@Retention(RetentionPolicy.RUNTIME)
@@ -3832,6 +3845,24 @@ class MergedAnnotationsTests {
 	static class ValueAttributeMetaMetaClass {
 
 	}
+
+	static class MultipleElements {
+
+		@GetMapping("/field")
+		private String property;
+
+		@GetMapping("/getter")
+		String getProperty() {
+			return this.property;
+		}
+
+		@GetMapping("/setter")
+		void setProperty(String property) {
+			this.property = property;
+		}
+
+	}
+
 	// @formatter:on
 
 	static void assertSynthesized(Annotation annotation) {

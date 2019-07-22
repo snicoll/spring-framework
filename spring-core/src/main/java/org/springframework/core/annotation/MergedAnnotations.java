@@ -303,8 +303,21 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	 * annotations
 	 * @see #search(SearchStrategy)
 	 */
-	static MergedAnnotations from(AnnotatedElement element) {
+	static MergedAnnotations from(@Nullable AnnotatedElement element) {
 		return from(element, SearchStrategy.DIRECT);
+	}
+
+	/**
+	 * Create a new {@link MergedAnnotations} instance containing all
+	 * annotations and meta-annotations from the specified elements using
+	 * {@link SearchStrategy#DIRECT}.
+	 * @param elements the source elements (elements of the array can be
+	 * {@code null})
+	 * @return a {@link MergedAnnotations} instance containing the element's
+	 * annotations
+	 */
+	static MergedAnnotations from(AnnotatedElement... elements) {
+		return TypeMappedAnnotations.from(elements);
 	}
 
 	/**
@@ -317,7 +330,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	 * element annotations
 	 * @see #search(SearchStrategy)
 	 */
-	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy) {
+	static MergedAnnotations from(@Nullable AnnotatedElement element, SearchStrategy searchStrategy) {
 		return from(element, searchStrategy, RepeatableContainers.standardRepeatables());
 	}
 
@@ -353,17 +366,19 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
 	 * annotations for the supplied element
 	 * @see #search(SearchStrategy)
 	 */
-	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
+	static MergedAnnotations from(@Nullable AnnotatedElement element, SearchStrategy searchStrategy,
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
 
 		return from(element, searchStrategy, Search.never, repeatableContainers, annotationFilter);
 	}
 
-	private static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
+	private static MergedAnnotations from(@Nullable AnnotatedElement element, SearchStrategy searchStrategy,
 			Predicate<Class<?>> searchEnclosingClass, RepeatableContainers repeatableContainers,
 			AnnotationFilter annotationFilter) {
 
-		Assert.notNull(element, "AnnotatedElement must not be null");
+		if (element == null || AnnotationsScanner.isKnownEmpty(element, searchStrategy, searchEnclosingClass)) {
+			return TypeMappedAnnotations.NONE;
+		}
 		Assert.notNull(searchStrategy, "SearchStrategy must not be null");
 		Assert.notNull(searchEnclosingClass, "Predicate must not be null");
 		Assert.notNull(repeatableContainers, "RepeatableContainers must not be null");

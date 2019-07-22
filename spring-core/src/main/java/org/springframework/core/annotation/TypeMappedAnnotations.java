@@ -51,16 +51,13 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	@Nullable
 	private final Object source;
 
-	@Nullable
-	private final AnnotatedElement element;
+	/** See the {@code scan} method for supported types. **/
+	private final Object scanSource;
 
 	@Nullable
 	private final SearchStrategy searchStrategy;
 
 	private final Predicate<Class<?>> searchEnclosingClass;
-
-	@Nullable
-	private final Annotation[] annotations;
 
 	private final RepeatableContainers repeatableContainers;
 
@@ -75,22 +72,29 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 			AnnotationFilter annotationFilter) {
 
 		this.source = element;
-		this.element = element;
+		this.scanSource = element;
 		this.searchStrategy = searchStrategy;
 		this.searchEnclosingClass = searchEnclosingClass;
-		this.annotations = null;
 		this.repeatableContainers = repeatableContainers;
 		this.annotationFilter = annotationFilter;
+	}
+
+	private TypeMappedAnnotations(AnnotatedElement[] elements) {
+		this.source = null;
+		this.scanSource = elements;
+		this.searchStrategy = SearchStrategy.DIRECT;
+		this.searchEnclosingClass = Search.never;
+		this.repeatableContainers = RepeatableContainers.standardRepeatables();
+		this.annotationFilter = AnnotationFilter.PLAIN;
 	}
 
 	private TypeMappedAnnotations(@Nullable Object source, Annotation[] annotations,
 			RepeatableContainers repeatableContainers, AnnotationFilter annotationFilter) {
 
 		this.source = source;
-		this.element = null;
+		this.scanSource = annotations;
 		this.searchStrategy = null;
 		this.searchEnclosingClass = Search.never;
-		this.annotations = annotations;
 		this.repeatableContainers = repeatableContainers;
 		this.annotationFilter = annotationFilter;
 	}
@@ -240,23 +244,34 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 	@Nullable
 	private <C, R> R scan(C criteria, AnnotationsProcessor<C, R> processor) {
-		if (this.annotations != null) {
-			R result = processor.doWithAnnotations(criteria, 0, this.source, this.annotations);
+		if (this.scanSource instanceof Annotation[]) {
+			R result = processor.doWithAnnotations(criteria, 0, this.source, (Annotation[]) this.scanSource);
 			return processor.finish(result);
 		}
-		if (this.element != null && this.searchStrategy != null) {
-			return AnnotationsScanner.scan(criteria, this.element, this.searchStrategy,
+		else if (this.scanSource instanceof AnnotatedElement ae && this.searchStrategy != null) {
+			return AnnotationsScanner.scan(criteria, ae, this.searchStrategy, this.searchEnclosingClass, processor);
+		}
+		else if (this.scanSource instanceof AnnotatedElement[] && this.searchStrategy != null) {
+			return AnnotationsScanner.scan(criteria, (AnnotatedElement[]) this.scanSource,
 					this.searchEnclosingClass, processor);
 		}
 		return null;
 	}
 
+	static MergedAnnotations from(AnnotatedElement[] elements) {
+		for (AnnotatedElement element : elements) {
+			if (element != null && !AnnotationsScanner.isKnownEmpty(element, SearchStrategy.DIRECT, Search.never)) {
+				return new TypeMappedAnnotations(elements);
+			}
+		}
+		return NONE;
+	}
 
-	static MergedAnnotations from(AnnotatedElement element, SearchStrategy searchStrategy,
+	static MergedAnnotations from(@Nullable AnnotatedElement element, SearchStrategy searchStrategy,
 			Predicate<Class<?>> searchEnclosingClass, RepeatableContainers repeatableContainers,
 			AnnotationFilter annotationFilter) {
 
-		if (AnnotationsScanner.isKnownEmpty(element, searchStrategy, searchEnclosingClass)) {
+		if (element == null || AnnotationsScanner.isKnownEmpty(element, searchStrategy, searchEnclosingClass)) {
 			return NONE;
 		}
 		return new TypeMappedAnnotations(element, searchStrategy, searchEnclosingClass, repeatableContainers, annotationFilter);
