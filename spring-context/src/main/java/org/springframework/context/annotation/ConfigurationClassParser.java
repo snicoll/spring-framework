@@ -682,8 +682,13 @@ class ConfigurationClassParser {
 						"Failed to load class [" + className + "]", ex);
 			}
 		}
-		return new SourceClass(
-				this.metadataReaderFactory.getMetadataReader(className));
+		if (ConfigurationClassSelector.adapter.getSelector().select(className)) {
+			return new SourceClass(
+					this.metadataReaderFactory.getMetadataReader(className));
+		}
+		else {
+			return this.objectSourceClass;
+		}
 	}
 
 
