@@ -16,9 +16,12 @@
 
 package org.springframework.cache.annotation;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheErrorHandler;
@@ -71,28 +74,63 @@ public abstract class AbstractCachingConfiguration implements ImportAware {
 	}
 
 	@Autowired(required = false)
-	void setConfigurers(Collection<CachingConfigurer> configurers) {
-		if (CollectionUtils.isEmpty(configurers)) {
-			return;
-		}
-		if (configurers.size() > 1) {
-			throw new IllegalStateException(configurers.size() + " implementations of " +
-					"CachingConfigurer were found when only 1 was expected. " +
-					"Refactor the configuration such that CachingConfigurer is " +
-					"implemented only once or not at all.");
-		}
-		CachingConfigurer configurer = configurers.iterator().next();
-		useCachingConfigurer(configurer);
+	void setConfigurers(ObjectProvider<CachingConfigurer> configurers) {
+		Supplier<CachingConfigurer> cachingConfigurer = () -> {
+			List<CachingConfigurer> candidates = configurers.stream().collect(Collectors.toList());
+			if (CollectionUtils.isEmpty(candidates)) {
+				return null;
+			}
+			if (candidates.size() > 1) {
+				throw new IllegalStateException(candidates.size() + " implementations of " +
+						"CachingConfigurer were found when only 1 was expected. " +
+						"Refactor the configuration such that CachingConfigurer is " +
+						"implemented only once or not at all.");
+			}
+			return candidates.get(0);
+		};
+		useCachingConfigurer(new CachingConfigurerSupplier(cachingConfigurer));
 	}
 
 	/**
 	 * Extract the configuration from the nominated {@link CachingConfigurer}.
 	 */
-	protected void useCachingConfigurer(CachingConfigurer config) {
-		this.cacheManager = config::cacheManager;
-		this.cacheResolver = config::cacheResolver;
-		this.keyGenerator = config::keyGenerator;
-		this.errorHandler = config::errorHandler;
+	protected void useCachingConfigurer(CachingConfigurerSupplier cachingConfigurerSupplier) {
+		this.cacheManager = cachingConfigurerSupplier.adapt(CachingConfigurer::cacheManager);
+		this.cacheResolver = cachingConfigurerSupplier.adapt(CachingConfigurer::cacheResolver);
+		this.keyGenerator = cachingConfigurerSupplier.adapt(CachingConfigurer::keyGenerator);
+		this.errorHandler = cachingConfigurerSupplier.adapt(CachingConfigurer::errorHandler);
+	}
+
+	protected static class CachingConfigurerSupplier {
+
+		private final Supplier<CachingConfigurer> supplier;
+
+		private boolean resolved;
+
+		@Nullable
+		private CachingConfigurer delegate;
+
+		public CachingConfigurerSupplier(Supplier<CachingConfigurer> supplier) {
+			this.supplier = supplier;
+		}
+
+		@Nullable
+		public <T> Supplier<T> adapt(Function<CachingConfigurer, T> provider) {
+			return () -> {
+				CachingConfigurer cachingConfigurer = getCachingConfigurer();
+				return (cachingConfigurer != null) ? provider.apply(cachingConfigurer) : null;
+			};
+		}
+
+		@Nullable
+		private CachingConfigurer getCachingConfigurer() {
+			if (!this.resolved) {
+				this.delegate = this.supplier.get();
+				this.resolved = true;
+			}
+			return this.delegate;
+		}
+
 	}
 
 }

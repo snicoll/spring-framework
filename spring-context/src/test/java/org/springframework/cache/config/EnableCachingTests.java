@@ -107,11 +107,8 @@ public class EnableCachingTests extends AbstractCacheAnnotationTests {
 		try {
 			ctx.refresh();
 		}
-		catch (BeanCreationException ex) {
-			Throwable root = ex.getRootCause();
-			boolean condition = root instanceof IllegalStateException;
-			assertThat(condition).isTrue();
-			assertThat(root.getMessage().contains("implementations of CachingConfigurer")).isTrue();
+		catch (IllegalStateException ex) {
+			assertThat(ex.getMessage().contains("implementations of CachingConfigurer")).isTrue();
 		}
 	}
 
