@@ -35,12 +35,12 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 public interface AotContributingBeanPostProcessor extends BeanPostProcessor {
 
 	/**
-	 * Build a {@link BeanInstantiationContributor} for the given bean definition.
+	 * Contribute a {@link BeanInstantiationContribution} for the given bean definition.
 	 * @param beanDefinition the merged bean definition for the bean
 	 * @param beanType the inferred type of the bean
 	 * @param beanName the name of the bean
-	 * @return the contributor to use
+	 * @return the contribution to use
 	 */
-	BeanInstantiationContributor buildAotContributor(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
+	BeanInstantiationContribution contribute(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
 
 }
