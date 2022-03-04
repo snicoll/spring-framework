@@ -18,11 +18,12 @@ package org.springframework.beans.factory.generator;
 
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.PriorityOrdered;
 
 /**
- * Specialization of {@link BeanPostProcessor} that contributes to bean
- * instantiation ahead of time, providing generated code that is equivalent to
- * its runtime behavior.
+ * Specialization of a priority ordered {@link BeanPostProcessor} that
+ * contributes to bean instantiation ahead of time, providing generated code
+ * that is equivalent to its runtime behavior.
  *
  * <p>Contrary to other bean post processors, implementations of this interface
  * are instantiated at build-time and should not rely on other beans in the
@@ -31,8 +32,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
  * @author Stephane Nicoll
  * @since 6.0
  */
-@FunctionalInterface
-public interface AotContributingBeanPostProcessor extends BeanPostProcessor {
+public interface AotContributingBeanPostProcessor extends BeanPostProcessor, PriorityOrdered {
 
 	/**
 	 * Contribute a {@link BeanInstantiationContribution} for the given bean definition.
