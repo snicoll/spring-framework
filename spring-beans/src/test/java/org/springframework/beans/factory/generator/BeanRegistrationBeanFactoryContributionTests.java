@@ -209,6 +209,31 @@ class BeanRegistrationBeanFactoryContributionTests {
 	}
 
 	@Test
+	void generateWithBeanDefinitionHavingInitMethodName() {
+		compile(simpleConfigurationRegistration(bd -> bd.setInitMethodName("someMethod")),
+				hasBeanDefinition(generatedBd -> assertThat(generatedBd.getInitMethodNames()).containsExactly("someMethod")));
+
+	}
+
+	@Test
+	void generateWithBeanDefinitionHavingInitMethodNames() {
+		compile(simpleConfigurationRegistration(bd -> bd.setInitMethodNames("i1", "i2")),
+				hasBeanDefinition(generatedBd -> assertThat(generatedBd.getInitMethodNames()).containsExactly("i1", "i2")));
+	}
+
+	@Test
+	void generateWithBeanDefinitionHavingDestroyMethodName() {
+		compile(simpleConfigurationRegistration(bd -> bd.setDestroyMethodName("someMethod")),
+				hasBeanDefinition(generatedBd -> assertThat(generatedBd.getDestroyMethodNames()).containsExactly("someMethod")));
+	}
+
+	@Test
+	void generateWithBeanDefinitionHavingDestroyMethodNames() {
+		compile(simpleConfigurationRegistration(bd -> bd.setDestroyMethodNames("d1", "d2")),
+				hasBeanDefinition(generatedBd -> assertThat(generatedBd.getDestroyMethodNames()).containsExactly("d1", "d2")));
+	}
+
+	@Test
 	void generateWithBeanDefinitionHavingSyntheticFlag() {
 		compile(simpleConfigurationRegistration(bd -> bd.setSynthetic(true)),
 				hasBeanDefinition(generatedBd -> assertThat(generatedBd.isSynthetic()).isTrue()));
