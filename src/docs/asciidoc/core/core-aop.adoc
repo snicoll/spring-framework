@@ -83,7 +83,7 @@ Spring AOP includes the following types of advice:
   an exception).
 * After returning advice: Advice to be run after a join point completes
   normally (for example, if a method returns without throwing an exception).
-* After throwing advice: Advice to be executed if a method exits by throwing an
+@* After throwing advice: Advice to be executed if a method exits by throwing an
   exception.
 * After (finally) advice: Advice to be executed regardless of the means by which a
   join point exits (normal or exceptional return).

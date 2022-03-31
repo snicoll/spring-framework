@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-context-indexer</artifactId>
+  <versioning>
+    <latest>5.1.21.BUILD-SNAPSHOT</latest>
+    <versions>
+      <version>5.1.21.BUILD-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20220331162114</lastUpdated>
+  </versioning>
+</metadata>
