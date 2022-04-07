@@ -29,6 +29,7 @@ import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcess
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.RefreshMode;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.metrics.jfr.FlightRecorderApplicationStartup;
@@ -106,8 +107,8 @@ class GenericApplicationContextTests {
 				ac.getBean(String.class));
 
 		assertThatIllegalStateException().isThrownBy(() -> {
-				ac.getAutowireCapableBeanFactory().getBean("testBean");
-				ac.getAutowireCapableBeanFactory().getBean(String.class);
+			ac.getAutowireCapableBeanFactory().getBean("testBean");
+			ac.getAutowireCapableBeanFactory().getBean(String.class);
 		});
 		ac.close();
 	}
@@ -154,8 +155,8 @@ class GenericApplicationContextTests {
 		assertThat(context.getBean(BeanA.class).c).isSameAs(context.getBean(BeanC.class));
 		assertThat(context.getBean(BeanB.class).applicationContext).isSameAs(context);
 
-		assertThat(context.getDefaultListableBeanFactory().getDependentBeans(BeanB.class.getName())).isEqualTo(new String[] {BeanA.class.getName()});
-		assertThat(context.getDefaultListableBeanFactory().getDependentBeans(BeanC.class.getName())).isEqualTo(new String[] {BeanA.class.getName()});
+		assertThat(context.getDefaultListableBeanFactory().getDependentBeans(BeanB.class.getName())).isEqualTo(new String[] { BeanA.class.getName() });
+		assertThat(context.getDefaultListableBeanFactory().getDependentBeans(BeanC.class.getName())).isEqualTo(new String[] { BeanA.class.getName() });
 		context.close();
 	}
 
@@ -239,7 +240,7 @@ class GenericApplicationContextTests {
 	void refreshForAotSetsContextActive() {
 		GenericApplicationContext context = new GenericApplicationContext();
 		assertThat(context.isActive()).isFalse();
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		assertThat(context.isActive()).isTrue();
 		context.close();
 	}
@@ -249,7 +250,7 @@ class GenericApplicationContextTests {
 		ConfigurableEnvironment environment = mock(ConfigurableEnvironment.class);
 		GenericApplicationContext context = new GenericApplicationContext();
 		context.setEnvironment(environment);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		assertThat(context.getBean(Environment.class)).isEqualTo(environment);
 		context.close();
 	}
@@ -258,7 +259,7 @@ class GenericApplicationContextTests {
 	void refreshForAotLoadsBeanClassName() {
 		GenericApplicationContext context = new GenericApplicationContext();
 		context.registerBeanDefinition("number", new RootBeanDefinition("java.lang.Integer"));
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		assertThat(getBeanDefinition(context, "number").getBeanClass()).isEqualTo(Integer.class);
 		context.close();
 	}
@@ -270,8 +271,8 @@ class GenericApplicationContextTests {
 		GenericBeanDefinition innerBeanDefinition = new GenericBeanDefinition();
 		innerBeanDefinition.setBeanClassName("java.lang.Integer");
 		beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, innerBeanDefinition);
-		context.registerBeanDefinition("test",beanDefinition);
-		context.refreshForAotProcessing();
+		context.registerBeanDefinition("test", beanDefinition);
+		context.refresh(RefreshMode.OPTIMIZE);
 		RootBeanDefinition bd = getBeanDefinition(context, "test");
 		GenericBeanDefinition value = (GenericBeanDefinition) bd.getConstructorArgumentValues()
 				.getIndexedArgumentValue(0, GenericBeanDefinition.class).getValue();
@@ -287,8 +288,8 @@ class GenericApplicationContextTests {
 		GenericBeanDefinition innerBeanDefinition = new GenericBeanDefinition();
 		innerBeanDefinition.setBeanClassName("java.lang.Integer");
 		beanDefinition.getPropertyValues().add("inner", innerBeanDefinition);
-		context.registerBeanDefinition("test",beanDefinition);
-		context.refreshForAotProcessing();
+		context.registerBeanDefinition("test", beanDefinition);
+		context.refresh(RefreshMode.OPTIMIZE);
 		RootBeanDefinition bd = getBeanDefinition(context, "test");
 		GenericBeanDefinition value = (GenericBeanDefinition) bd.getPropertyValues().get("inner");
 		assertThat(value.hasBeanClass()).isTrue();
@@ -301,7 +302,7 @@ class GenericApplicationContextTests {
 		GenericApplicationContext context = new GenericApplicationContext();
 		BeanFactoryPostProcessor bfpp = mock(BeanFactoryPostProcessor.class);
 		context.addBeanFactoryPostProcessor(bfpp);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		verify(bfpp).postProcessBeanFactory(context.getBeanFactory());
 		context.close();
 	}
@@ -312,7 +313,7 @@ class GenericApplicationContextTests {
 		context.registerBeanDefinition("test", new RootBeanDefinition(String.class));
 		context.registerBeanDefinition("number", new RootBeanDefinition("java.lang.Integer"));
 		MergedBeanDefinitionPostProcessor bpp = registerMockMergedBeanDefinitionPostProcessor(context);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "test"), String.class, "test");
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "number"), Integer.class, "number");
 		context.close();
@@ -327,7 +328,7 @@ class GenericApplicationContextTests {
 		beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, innerBeanDefinition);
 		context.registerBeanDefinition("test", beanDefinition);
 		MergedBeanDefinitionPostProcessor bpp = registerMockMergedBeanDefinitionPostProcessor(context);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "test"), BeanD.class, "test");
 		verify(bpp).postProcessMergedBeanDefinition(any(RootBeanDefinition.class), eq(Integer.class), captor.capture());
@@ -344,7 +345,7 @@ class GenericApplicationContextTests {
 		beanDefinition.getPropertyValues().add("counter", innerBeanDefinition);
 		context.registerBeanDefinition("test", beanDefinition);
 		MergedBeanDefinitionPostProcessor bpp = registerMockMergedBeanDefinitionPostProcessor(context);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "test"), BeanD.class, "test");
 		verify(bpp).postProcessMergedBeanDefinition(any(RootBeanDefinition.class), eq(Integer.class), captor.capture());
@@ -356,7 +357,7 @@ class GenericApplicationContextTests {
 	void refreshForAotFailsOnAnActiveContext() {
 		GenericApplicationContext context = new GenericApplicationContext();
 		context.refresh();
-		assertThatIllegalStateException().isThrownBy(context::refreshForAotProcessing)
+		assertThatIllegalStateException().isThrownBy(() -> context.refresh(RefreshMode.OPTIMIZE))
 				.withMessageContaining("does not support multiple refresh attempts");
 		context.close();
 	}
@@ -366,7 +367,7 @@ class GenericApplicationContextTests {
 		GenericApplicationContext context = new GenericApplicationContext();
 		context.registerBeanDefinition("genericFactoryBean",
 				new RootBeanDefinition(TestAotFactoryBean.class));
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		context.close();
 	}
 
@@ -376,7 +377,7 @@ class GenericApplicationContextTests {
 		context.registerBeanDefinition("test", BeanDefinitionBuilder.rootBeanDefinition(String.class, () -> {
 			throw new IllegalStateException("Should not be invoked");
 		}).getBeanDefinition());
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		context.close();
 	}
 
@@ -396,6 +397,7 @@ class GenericApplicationContextTests {
 	static class BeanA {
 
 		BeanB b;
+
 		BeanC c;
 
 		public BeanA(BeanB b, BeanC c) {
@@ -404,7 +406,7 @@ class GenericApplicationContextTests {
 		}
 	}
 
-	static class BeanB implements ApplicationContextAware  {
+	static class BeanB implements ApplicationContextAware {
 
 		ApplicationContext applicationContext;
 

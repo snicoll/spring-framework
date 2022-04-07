@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.RefreshMode;
 import org.springframework.context.annotation6.ComponentForScanning;
 import org.springframework.context.annotation6.ConfigForScanning;
 import org.springframework.context.annotation6.Jsr330NamedForScanning;
@@ -400,7 +401,7 @@ class AnnotationConfigApplicationContextTests {
 	void refreshForAotProcessingWithConfiguration() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(Config.class);
-		context.refreshForAotProcessing();
+		context.refresh(RefreshMode.OPTIMIZE);
 		assertThat(context.getBeanFactory().getBeanDefinitionNames()).contains(
 				"annotationConfigApplicationContextTests.Config", "testBean");
 	}

@@ -84,6 +84,15 @@ public interface ApplicationContext extends EnvironmentCapable, ListableBeanFact
 	long getStartupDate();
 
 	/**
+	 * Return the {@link RefreshMode mode} in which this context was
+	 * refreshed.
+	 * @return the refresh mode
+	 */
+	default RefreshMode getRefreshMode() {
+		return RefreshMode.RUN;
+	}
+
+	/**
 	 * Return the parent context, or {@code null} if there is no parent
 	 * and this is the root of the context hierarchy.
 	 * @return the parent context, or {@code null} if there is no parent

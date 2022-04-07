@@ -26,6 +26,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.MessageSourceAware;
+import org.springframework.context.RefreshModeAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
@@ -78,7 +79,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		if (!(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
 				bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
 				bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware ||
-				bean instanceof ApplicationStartupAware)) {
+				bean instanceof ApplicationStartupAware || bean instanceof RefreshModeAware)) {
 			return bean;
 		}
 
@@ -87,6 +88,9 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 	}
 
 	private void invokeAwareInterfaces(Object bean) {
+		if (bean instanceof RefreshModeAware) {
+			((RefreshModeAware) bean).setRefreshMode(this.applicationContext.getRefreshMode());
+		}
 		if (bean instanceof EnvironmentAware) {
 			((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
 		}

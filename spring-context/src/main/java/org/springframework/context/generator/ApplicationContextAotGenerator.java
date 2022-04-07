@@ -40,6 +40,7 @@ import org.springframework.beans.factory.generator.BeanFactoryContribution;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.RefreshMode;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.OrderComparator;
 import org.springframework.javapoet.CodeBlock;
@@ -67,7 +68,7 @@ public class ApplicationContextAotGenerator {
 	 */
 	public void generateApplicationContext(GenericApplicationContext applicationContext,
 			GeneratedTypeContext generationContext) {
-		applicationContext.refreshForAotProcessing();
+		applicationContext.refresh(RefreshMode.OPTIMIZE);
 
 		DefaultListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
 		List<BeanFactoryContribution> contributions = resolveBeanFactoryContributions(beanFactory);

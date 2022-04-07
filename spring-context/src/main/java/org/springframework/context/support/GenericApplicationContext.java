@@ -30,9 +30,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -264,10 +262,22 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 		return super.getClassLoader();
 	}
 
-
 	//---------------------------------------------------------------------
 	// Implementations of AbstractApplicationContext's template methods
 	//---------------------------------------------------------------------
+
+	@Override
+	protected void refreshForAotProcessing() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Preparing bean factory for AOT processing");
+		}
+		prepareRefresh();
+		obtainFreshBeanFactory();
+		prepareBeanFactory(this.beanFactory);
+		postProcessBeanFactory(this.beanFactory);
+		invokeBeanFactoryPostProcessors(this.beanFactory);
+		PostProcessorRegistrationDelegate.invokeMergedBeanDefinitionPostProcessors(this.beanFactory);
+	}
 
 	/**
 	 * Do nothing: We hold a single internal BeanFactory and rely on callers
@@ -372,30 +382,6 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	// AOT processing
 	//---------------------------------------------------------------------
 
-	/**
-	 * Load or refresh the persistent representation of the configuration up to
-	 * a point where the underlying bean factory is ready to create bean
-	 * instances.
-	 * <p>This variant of {@link #refresh()} is used by Ahead of Time processing
-	 * that optimizes the application context, typically at build-time.
-	 * <p>In this mode, only {@link BeanDefinitionRegistryPostProcessor} and
-	 * {@link MergedBeanDefinitionPostProcessor} are invoked.
-	 * @throws BeansException if the bean factory could not be initialized
-	 * @throws IllegalStateException if already initialized and multiple refresh
-	 * attempts are not supported
-	 * @since 6.0
-	 */
-	public void refreshForAotProcessing() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Preparing bean factory for AOT processing");
-		}
-		prepareRefresh();
-		obtainFreshBeanFactory();
-		prepareBeanFactory(this.beanFactory);
-		postProcessBeanFactory(this.beanFactory);
-		invokeBeanFactoryPostProcessors(this.beanFactory);
-		PostProcessorRegistrationDelegate.invokeMergedBeanDefinitionPostProcessors(this.beanFactory);
-	}
 
 	//---------------------------------------------------------------------
 	// Convenient methods for registering individual beans

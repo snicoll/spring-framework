@@ -39,6 +39,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.support.ResourceEditorRegistrar;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -57,6 +59,8 @@ import org.springframework.context.MessageSourceAware;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.PayloadApplicationEvent;
+import org.springframework.context.RefreshMode;
+import org.springframework.context.RefreshModeAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
@@ -197,6 +201,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	/** System time in milliseconds when this context started. */
 	private long startupDate;
 
+	private RefreshMode refreshMode = RefreshMode.RUN;
+
 	/** Flag that indicates whether this context is currently active. */
 	private final AtomicBoolean active = new AtomicBoolean();
 
@@ -280,6 +286,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public String getApplicationName() {
 		return "";
+	}
+
+	@Override
+	public RefreshMode getRefreshMode() {
+		return this.refreshMode;
 	}
 
 	/**
@@ -541,6 +552,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 * Load or refresh the persistent representation of the configuration, which
+	 * might be from Java-based configuration, an XML file, a properties file, a
+	 * relational database schema, or some other format according to the specified
+	 * {@link RefreshMode}.
+	 * @param refreshMode the refresh mode to use
+	 * @throws BeansException if the bean factory could not be initialized
+	 * @throws IllegalStateException if already initialized and multiple refresh
+	 * attempts are not supported
+	 */
+	public void refresh(RefreshMode refreshMode) throws BeansException, IllegalStateException {
+		Assert.notNull(refreshMode, "RefreshMode must nut be null");
+		this.refreshMode = refreshMode;
+		switch (refreshMode) {
+			case RUN -> refresh();
+			case OPTIMIZE -> refreshForAotProcessing();
+			case RUN_OPTIMIZE -> refreshWithAotProcessing();
+		}
+	}
+
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
@@ -609,6 +640,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				contextRefresh.end();
 			}
 		}
+	}
+
+	/**
+	 * Load or refresh the persistent representation of the configuration up to
+	 * a point where the underlying bean factory is ready to create bean
+	 * instances.
+	 * <p>This variant of {@link #refresh()} is used by Ahead of Time processing
+	 * that optimizes the application context, typically at build-time.
+	 * <p>In this mode, only {@link BeanDefinitionRegistryPostProcessor} and
+	 * {@link MergedBeanDefinitionPostProcessor} are invoked.
+	 * @throws BeansException if the bean factory could not be initialized
+	 * @throws IllegalStateException if already initialized and multiple refresh
+	 * attempts are not supported
+	 */
+	protected void refreshForAotProcessing() {
+		throw new UnsupportedOperationException();
+	}
+
+	protected void refreshWithAotProcessing() {
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -694,6 +745,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationStartupAware.class);
+		beanFactory.ignoreDependencyInterface(RefreshModeAware.class);
 
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
