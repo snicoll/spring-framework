@@ -27,25 +27,24 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.javapoet.CodeBlock;
+import org.springframework.util.Assert;
 
 /**
- * Generate the various fragments of code needed to register a bean.
+ * A {@link BeanRegistrationCodeFragments} decorator implementation.
  *
  * @author Phillip Webb
  * @since 6.0
  */
-public interface BeanRegistrationCodeFragments {
+public class BeanRegistrationCodeFragmentsDecorator implements BeanRegistrationCodeFragments {
 
-	/**
-	 * The variable name to used when creating the bean definition.
-	 */
-	String BEAN_DEFINITION_VARIABLE = "beanDefinition";
 
-	/**
-	 * The variable name to used when creating the bean definition.
-	 */
-	String INSTANCE_SUPPLIER_VARIABLE = "instanceSupplier";
+	private final BeanRegistrationCodeFragments delegate;
 
+
+	protected BeanRegistrationCodeFragmentsDecorator(BeanRegistrationCodeFragments delegate) {
+		Assert.notNull(delegate, "Delegate must not be null");
+		this.delegate = delegate;
+	}
 
 	/**
 	 * Return the target for the registration. Used to determine where to write
@@ -54,8 +53,11 @@ public interface BeanRegistrationCodeFragments {
 	 * @param constructorOrFactoryMethod the constructor or factory method
 	 * @return the target class
 	 */
-	Class<?> getTarget(RegisteredBean registeredBean,
-			Executable constructorOrFactoryMethod);
+	public Class<?> getTarget(RegisteredBean registeredBean,
+			Executable constructorOrFactoryMethod) {
+
+		return this.delegate.getTarget(registeredBean, constructorOrFactoryMethod);
+	}
 
 	/**
 	 * Generate the code that defines the new bean definition instance.
@@ -64,8 +66,13 @@ public interface BeanRegistrationCodeFragments {
 	 * @param beanRegistrationCode the bean registration code
 	 * @return the generated code
 	 */
-	CodeBlock generateNewBeanDefinitionCode(GenerationContext generationContext,
-			ResolvableType beanType, BeanRegistrationCode beanRegistrationCode);
+	public CodeBlock generateNewBeanDefinitionCode(GenerationContext generationContext,
+			ResolvableType beanType, BeanRegistrationCode beanRegistrationCode) {
+
+		return this.delegate.generateNewBeanDefinitionCode(generationContext,
+				beanType, beanRegistrationCode);
+
+	}
 
 	/**
 	 * Generate the code that sets the properties of the bean definition.
@@ -74,10 +81,15 @@ public interface BeanRegistrationCodeFragments {
 	 * @param attributeFilter any attribute filtering that should be applied
 	 * @return the generated code
 	 */
-	CodeBlock generateSetBeanDefinitionPropertiesCode(
+	public CodeBlock generateSetBeanDefinitionPropertiesCode(
 			GenerationContext generationContext,
 			BeanRegistrationCode beanRegistrationCode, RootBeanDefinition beanDefinition,
-			Predicate<String> attributeFilter);
+			Predicate<String> attributeFilter) {
+
+		return this.delegate.generateSetBeanDefinitionPropertiesCode(
+				generationContext, beanRegistrationCode, beanDefinition, attributeFilter);
+
+	}
 
 	/**
 	 * Generate the code that sets the instance supplier on the bean definition.
@@ -88,10 +100,14 @@ public interface BeanRegistrationCodeFragments {
 	 * @return the generated code
 	 * @see #generateInstanceSupplierCode
 	 */
-	CodeBlock generateSetBeanInstanceSupplierCode(
+	public CodeBlock generateSetBeanInstanceSupplierCode(
 			GenerationContext generationContext,
 			BeanRegistrationCode beanRegistrationCode, CodeBlock instanceSupplierCode,
-			List<MethodReference> postProcessors);
+			List<MethodReference> postProcessors) {
+
+		return this.delegate.generateSetBeanInstanceSupplierCode(generationContext,
+				beanRegistrationCode, instanceSupplierCode, postProcessors);
+	}
 
 	/**
 	 * Generate the instance supplier code.
@@ -103,9 +119,14 @@ public interface BeanRegistrationCodeFragments {
 	 * than always needing an {@link InstanceSupplier}
 	 * @return the generated code
 	 */
-	CodeBlock generateInstanceSupplierCode(GenerationContext generationContext,
+	public CodeBlock generateInstanceSupplierCode(GenerationContext generationContext,
 			BeanRegistrationCode beanRegistrationCode,
-			Executable constructorOrFactoryMethod, boolean allowDirectSupplierShortcut);
+			Executable constructorOrFactoryMethod, boolean allowDirectSupplierShortcut) {
+
+		return this.delegate.generateInstanceSupplierCode(generationContext,
+				beanRegistrationCode, constructorOrFactoryMethod,
+				allowDirectSupplierShortcut);
+	}
 
 	/**
 	 * Generate the return statement.
@@ -113,7 +134,11 @@ public interface BeanRegistrationCodeFragments {
 	 * @param beanRegistrationCode the bean registration code
 	 * @return the generated code
 	 */
-	CodeBlock generateReturnCode(GenerationContext generationContext,
-			BeanRegistrationCode beanRegistrationCode);
+	public CodeBlock generateReturnCode(GenerationContext generationContext,
+			BeanRegistrationCode beanRegistrationCode) {
+
+		return this.delegate.generateReturnCode(generationContext,
+				beanRegistrationCode);
+	}
 
 }

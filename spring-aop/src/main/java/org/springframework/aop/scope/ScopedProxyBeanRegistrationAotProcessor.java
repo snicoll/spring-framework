@@ -30,6 +30,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragmentsDecorator;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.InstanceSupplier;
@@ -67,8 +68,8 @@ class ScopedProxyBeanRegistrationAotProcessor
 				return null;
 			}
 			return BeanRegistrationAotContribution.ofBeanRegistrationCodeFragmentsCustomizer(codeFragments ->
-				new ScopedProxyBeanRegistrationCodeFragments(codeFragments, registeredBean,
-						targetBeanName, targetBeanDefinition));
+					new ScopedProxyBeanRegistrationCodeFragments(codeFragments, registeredBean,
+							targetBeanName, targetBeanDefinition));
 		}
 		return null;
 	}
@@ -91,7 +92,7 @@ class ScopedProxyBeanRegistrationAotProcessor
 
 
 	private static class ScopedProxyBeanRegistrationCodeFragments
-			extends BeanRegistrationCodeFragments {
+			extends BeanRegistrationCodeFragmentsDecorator {
 
 		private static final String REGISTERED_BEAN_PARAMETER_NAME = "registeredBean";
 
@@ -104,11 +105,11 @@ class ScopedProxyBeanRegistrationAotProcessor
 
 
 		ScopedProxyBeanRegistrationCodeFragments(
-				BeanRegistrationCodeFragments codeGenerator,
+				BeanRegistrationCodeFragments delegate,
 				RegisteredBean registeredBean, String targetBeanName,
 				BeanDefinition targetBeanDefinition) {
 
-			super(codeGenerator);
+			super(delegate);
 			this.registeredBean = registeredBean;
 			this.targetBeanName = targetBeanName;
 			this.targetBeanDefinition = targetBeanDefinition;

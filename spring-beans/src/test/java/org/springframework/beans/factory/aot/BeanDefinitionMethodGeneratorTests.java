@@ -182,7 +182,7 @@ class BeanDefinitionMethodGeneratorTests {
 
 	private BeanRegistrationCodeFragments customizeBeanDefinitionCode(
 			BeanRegistrationCodeFragments codeFragments) {
-		return new BeanRegistrationCodeFragments(codeFragments) {
+		return new BeanRegistrationCodeFragmentsDecorator(codeFragments) {
 
 			@Override
 			public CodeBlock generateNewBeanDefinitionCode(
@@ -221,7 +221,7 @@ class BeanDefinitionMethodGeneratorTests {
 
 	private BeanRegistrationCodeFragments customizeAttributeFilter(
 			BeanRegistrationCodeFragments codeFragments) {
-		return new BeanRegistrationCodeFragments(codeFragments) {
+		return new BeanRegistrationCodeFragmentsDecorator(codeFragments) {
 
 			@Override
 			public CodeBlock generateSetBeanDefinitionPropertiesCode(
