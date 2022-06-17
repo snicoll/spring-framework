@@ -32,13 +32,14 @@ import org.springframework.aot.hint.ResourceBundleHint;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.aot.BeanFactoryNamingConvention;
+import org.springframework.beans.factory.aot.DefaultBeanFactoryNamingConvention;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.javapoet.ClassName;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,9 +51,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * @author Brian Clozel
  */
 class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
-
-	private static final ClassName MAIN_GENERATED_TYPE = ClassName.get("__",
-			"TestInitializer");
 
 	private GenerationContext generationContext;
 
@@ -69,8 +67,7 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 	void shouldProcessRegistrarOnConfiguration() {
 		GenericApplicationContext applicationContext = createApplicationContext(
 				ConfigurationWithHints.class);
-		this.generator.generateApplicationContext(applicationContext,
-				this.generationContext, MAIN_GENERATED_TYPE);
+		generateApplicationContext(applicationContext, this.generationContext);
 		assertThatSampleRegistrarContributed();
 	}
 
@@ -78,8 +75,7 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 	void shouldProcessRegistrarOnBeanMethod() {
 		GenericApplicationContext applicationContext = createApplicationContext(
 				ConfigurationWithBeanDeclaringHints.class);
-		this.generator.generateApplicationContext(applicationContext,
-				this.generationContext, MAIN_GENERATED_TYPE);
+		generateApplicationContext(applicationContext, this.generationContext);
 		assertThatSampleRegistrarContributed();
 	}
 
@@ -88,8 +84,7 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 		GenericApplicationContext applicationContext = createApplicationContext();
 		applicationContext.setClassLoader(
 				new TestSpringFactoriesClassLoader("test-runtime-hints-aot.factories"));
-		this.generator.generateApplicationContext(applicationContext,
-				this.generationContext, MAIN_GENERATED_TYPE);
+		generateApplicationContext(applicationContext, this.generationContext);
 		assertThatSampleRegistrarContributed();
 	}
 
@@ -103,8 +98,7 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 		applicationContext.setClassLoader(
 				new TestSpringFactoriesClassLoader("test-duplicated-runtime-hints-aot.factories"));
 		IncrementalRuntimeHintsRegistrar.counter.set(0);
-		this.generator.generateApplicationContext(applicationContext,
-				this.generationContext, MAIN_GENERATED_TYPE);
+		generateApplicationContext(applicationContext, this.generationContext);
 		RuntimeHints runtimeHints = this.generationContext.getRuntimeHints();
 		assertThat(runtimeHints.resources().resourceBundles().map(ResourceBundleHint::getBaseName))
 				.containsOnly("com.example.example0", "sample");
@@ -115,9 +109,14 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 	void shouldRejectRuntimeHintsRegistrarWithoutDefaultConstructor() {
 		GenericApplicationContext applicationContext = createApplicationContext(
 				ConfigurationWithIllegalRegistrar.class);
-		assertThatThrownBy(() -> this.generator.generateApplicationContext(
-				applicationContext, this.generationContext, MAIN_GENERATED_TYPE))
+		assertThatThrownBy(() -> generateApplicationContext(applicationContext, this.generationContext))
 				.isInstanceOf(BeanInstantiationException.class);
+	}
+
+	private void generateApplicationContext(GenericApplicationContext applicationContext, GenerationContext generationContext) {
+		BeanFactoryNamingConvention namingConvention = new DefaultBeanFactoryNamingConvention(
+				generationContext.getClassNameGenerator(), null, "Test");
+		this.generator.generateApplicationContext(applicationContext, generationContext, namingConvention);
 	}
 
 	private void assertThatSampleRegistrarContributed() {

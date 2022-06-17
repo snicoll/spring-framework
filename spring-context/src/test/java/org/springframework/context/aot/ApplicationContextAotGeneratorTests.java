@@ -28,8 +28,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
+import org.springframework.beans.factory.aot.BeanFactoryNamingConvention;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
+import org.springframework.beans.factory.aot.DefaultBeanFactoryNamingConvention;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -44,7 +46,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.testfixture.context.generator.SimpleComponent;
 import org.springframework.context.testfixture.context.generator.annotation.AutowiredComponent;
 import org.springframework.context.testfixture.context.generator.annotation.InitDestroyComponent;
-import org.springframework.javapoet.ClassName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,9 +56,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  */
 class ApplicationContextAotGeneratorTests {
-
-	private static final ClassName MAIN_GENERATED_TYPE = ClassName.get("__",
-			"TestInitializer");
 
 	@Test
 	void generateApplicationContextWhenHasSimpleBean() {
@@ -193,8 +191,10 @@ class ApplicationContextAotGeneratorTests {
 		InMemoryGeneratedFiles generatedFiles = new InMemoryGeneratedFiles();
 		DefaultGenerationContext generationContext = new DefaultGenerationContext(
 				generatedFiles);
+		BeanFactoryNamingConvention namingConvention = new DefaultBeanFactoryNamingConvention(
+				generationContext.getClassNameGenerator(), null, "Test");
 		generator.generateApplicationContext(applicationContext, generationContext,
-				MAIN_GENERATED_TYPE);
+				namingConvention);
 		generationContext.writeGeneratedContent();
 		TestCompiler.forSystem().withFiles(generatedFiles)
 				.compile(compiled -> result.accept(

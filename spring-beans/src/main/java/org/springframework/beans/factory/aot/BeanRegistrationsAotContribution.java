@@ -61,16 +61,16 @@ class BeanRegistrationsAotContribution
 	public void applyTo(GenerationContext generationContext,
 			BeanFactoryInitializationCode beanFactoryInitializationCode) {
 
-		ClassName className = generationContext.getClassNameGenerator().generateClassName(
-				beanFactoryInitializationCode.getTarget(),
-				beanFactoryInitializationCode.getName() + "BeanFactoryRegistrations");
+		ClassName className = beanFactoryInitializationCode.getBeanFactoryNamingConvention()
+				.generateClassName("BeanFactoryRegistrations");
 		BeanRegistrationsCodeGenerator codeGenerator = new BeanRegistrationsCodeGenerator(
 				className);
+		String beanFactoryName = beanFactoryInitializationCode.getBeanFactoryNamingConvention()
+				.getBeanFactoryName();
 		GeneratedMethod registerMethod = codeGenerator.getMethodGenerator()
 				.generateMethod("registerBeanDefinitions")
 				.using(builder -> generateRegisterMethod(builder, generationContext,
-						beanFactoryInitializationCode.getName(),
-						codeGenerator));
+						beanFactoryName, codeGenerator));
 		JavaFile javaFile = codeGenerator.generatedJavaFile(className);
 		generationContext.getGeneratedFiles().addSourceFile(javaFile);
 		beanFactoryInitializationCode
