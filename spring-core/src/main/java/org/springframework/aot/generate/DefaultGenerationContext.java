@@ -17,8 +17,16 @@
 package org.springframework.aot.generate;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
+import org.springframework.aot.generate.GeneratedClass.JavaFileGenerator;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.javapoet.ClassName;
 import org.springframework.util.Assert;
 
 /**
@@ -32,49 +40,65 @@ public class DefaultGenerationContext implements GenerationContext {
 
 	private final ClassNameGenerator classNameGenerator;
 
-	private final GeneratedClasses generatedClasses;
+	private final Class<?> target;
+
+	private final String name;
 
 	private final GeneratedFiles generatedFiles;
 
 	private final RuntimeHints runtimeHints;
 
+	private final Map<JavaFileGenerator, GeneratedClass> classes;
 
 	/**
 	 * Create a new {@link DefaultGenerationContext} instance backed by the
 	 * specified {@code generatedFiles}.
+	 *
 	 * @param generatedFiles the generated files
 	 */
-	public DefaultGenerationContext(GeneratedFiles generatedFiles) {
-		this(new ClassNameGenerator(), generatedFiles, new RuntimeHints());
-	}
-
-	/**
-	 * Create a new {@link DefaultGenerationContext} instance backed by the
-	 * specified items.
-	 * @param classNameGenerator the class name generator
-	 * @param generatedFiles the generated files
-	 * @param runtimeHints the runtime hints
-	 */
-	public DefaultGenerationContext(ClassNameGenerator classNameGenerator,
-			GeneratedFiles generatedFiles, RuntimeHints runtimeHints) {
-		Assert.notNull(classNameGenerator, "'classNameGenerator' must not be null");
+	public DefaultGenerationContext(Class<?> target, String name,
+			GeneratedFiles generatedFiles) {
+		Assert.notNull(target, "'target' must not be null");
+		Assert.notNull(name, "'name' must not be null");
 		Assert.notNull(generatedFiles, "'generatedFiles' must not be null");
-		Assert.notNull(runtimeHints, "'runtimeHints' must not be null");
-		this.classNameGenerator = classNameGenerator;
-		this.generatedClasses = new GeneratedClasses(classNameGenerator);
+		this.classNameGenerator = new ClassNameGenerator();
+		this.target = target;
+		this.name = name;
 		this.generatedFiles = generatedFiles;
-		this.runtimeHints = runtimeHints;
-	}
-
-
-	@Override
-	public ClassNameGenerator getClassNameGenerator() {
-		return this.classNameGenerator;
+		this.runtimeHints = new RuntimeHints();
+		this.classes = new ConcurrentHashMap<>();
 	}
 
 	@Override
-	public GeneratedClasses getClassGenerator() {
-		return this.generatedClasses;
+	public GenerationContext usingNamingConvention(String name) {
+		// TODO: keeping things in `GeneratedFiles` or similar makes it straightforward
+		// to create clone.
+		return null;
+	}
+
+	@Override
+	public ClassName generateClassName(Class<?> target, String featureName) {
+		return this.classNameGenerator.generateClassName(target, featureName);
+	}
+
+	@Override
+	public ClassName generateQualifiedClassName(Class<?> target, String featureName) {
+		String qualifiedFeatureName = this.name + featureName;
+		return generateClassName(target, qualifiedFeatureName);
+	}
+
+	@Override
+	public ClassName generateQualifiedClassName(String featureName) {
+		return generateQualifiedClassName(this.target, featureName);
+	}
+
+	@Override
+	public GeneratedClass getGeneratedClass(JavaFileGenerator javaFileGenerator,
+			Supplier<ClassName> className) {
+		Assert.notNull(javaFileGenerator, "'javaFileGenerator' must not be null");
+		Assert.notNull(className, "'className' must not be null");
+		return this.classes.computeIfAbsent(javaFileGenerator,
+				key -> new GeneratedClass(javaFileGenerator, className.get()));
 	}
 
 	@Override
@@ -87,16 +111,18 @@ public class DefaultGenerationContext implements GenerationContext {
 		return this.runtimeHints;
 	}
 
-	/**
-	 * Write any generated content out to the generated files.
-	 */
+	@Override
+	public void close() throws IOException {
+		writeGeneratedContent();
+	}
+
 	public void writeGeneratedContent() {
-		try {
-			this.generatedClasses.writeTo(this.generatedFiles);
-		}
-		catch (IOException ex) {
-			throw new IllegalStateException(ex);
+		List<GeneratedClass> generatedClasses = new ArrayList<>(this.classes.values());
+		generatedClasses.sort(Comparator.comparing(GeneratedClass::getName));
+		for (GeneratedClass generatedClass : generatedClasses) {
+			this.generatedFiles.addSourceFile(generatedClass.generateJavaFile());
 		}
 	}
 
 }
+

@@ -41,6 +41,7 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.testfixture.beans.TestBean;
 import org.springframework.beans.testfixture.beans.factory.aot.MockBeanFactoryInitializationCode;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.core.mock.MockSpringFactoriesLoader;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.JavaFile;
@@ -72,7 +73,7 @@ class BeanRegistrationsAotContributionTests {
 	@BeforeEach
 	void setup() {
 		this.generatedFiles = new InMemoryGeneratedFiles();
-		this.generationContext = new DefaultGenerationContext(this.generatedFiles);
+		this.generationContext = new TestGenerationContext(this.generatedFiles);
 		this.beanFactory = new DefaultListableBeanFactory();
 		this.springFactoriesLoader = new MockSpringFactoriesLoader();
 		this.methodGeneratorFactory = new BeanDefinitionMethodGeneratorFactory(
@@ -100,7 +101,7 @@ class BeanRegistrationsAotContributionTests {
 
 	@Test
 	void applyToWhenHasNameGeneratesPrefixedFeatureName() {
-		this.beanFactoryInitializationCode = new MockBeanFactoryInitializationCode("Management");
+		this.beanFactoryInitializationCode = new MockBeanFactoryInitializationCode();
 		Map<String, BeanDefinitionMethodGenerator> registrations = new LinkedHashMap<>();
 		RegisteredBean registeredBean = registerBean(
 				new RootBeanDefinition(TestBean.class));
@@ -110,7 +111,9 @@ class BeanRegistrationsAotContributionTests {
 		registrations.put("testBean", generator);
 		BeanRegistrationsAotContribution contribution = new BeanRegistrationsAotContribution(
 				registrations);
-		contribution.applyTo(this.generationContext, this.beanFactoryInitializationCode);
+		GenerationContext managementGenerationContext = this.generationContext
+				.usingNamingConvention("Management");
+		contribution.applyTo(managementGenerationContext, this.beanFactoryInitializationCode);
 		testCompiledResult((consumer, compiled) -> {
 			SourceFile sourceFile = compiled.getSourceFile(".*BeanDefinitions");
 			assertThat(sourceFile.getClassName()).endsWith("__ManagementBeanDefinitions");
@@ -129,11 +132,10 @@ class BeanRegistrationsAotContributionTests {
 
 			@Override
 			MethodReference generateBeanDefinitionMethod(
-					GenerationContext generationContext, String featureNamePrefix,
+					GenerationContext generationContext,
 					BeanRegistrationsCode beanRegistrationsCode) {
 				beanRegistrationsCodes.add(beanRegistrationsCode);
-				return super.generateBeanDefinitionMethod(generationContext,
-						featureNamePrefix, beanRegistrationsCode);
+				return super.generateBeanDefinitionMethod(generationContext, beanRegistrationsCode);
 			}
 
 		};

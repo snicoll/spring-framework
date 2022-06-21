@@ -21,8 +21,8 @@ import java.util.List;
 
 import javax.lang.model.element.Modifier;
 
-import org.springframework.aot.generate.ClassGenerator.JavaFileGenerator;
 import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.GeneratedClass.JavaFileGenerator;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GeneratedMethods;
 import org.springframework.aot.generate.GenerationContext;
@@ -81,22 +81,20 @@ class BeanDefinitionMethodGenerator {
 	 * Generate the method that returns the {@link BeanDefinition} to be
 	 * registered.
 	 * @param generationContext the generation context
-	 * @param featureNamePrefix the prefix to use for the feature name
 	 * @param beanRegistrationsCode the bean registrations code
 	 * @return a reference to the generated method.
 	 */
 	MethodReference generateBeanDefinitionMethod(GenerationContext generationContext,
-			String featureNamePrefix, BeanRegistrationsCode beanRegistrationsCode) {
+			BeanRegistrationsCode beanRegistrationsCode) {
 
 		BeanRegistrationCodeFragments codeFragments = getCodeFragments(generationContext,
-				beanRegistrationsCode, featureNamePrefix);
+				beanRegistrationsCode);
 		Class<?> target = codeFragments.getTarget(this.registeredBean,
 				this.constructorOrFactoryMethod);
 		if (!target.getName().startsWith("java.")) {
-			String featureName = featureNamePrefix + "BeanDefinitions";
-			GeneratedClass generatedClass = generationContext.getClassGenerator()
-					.getOrGenerateClass(new BeanDefinitionsJavaFileGenerator(target),
-							target, featureName);
+			GeneratedClass generatedClass = generationContext.getGeneratedClass(
+					new BeanDefinitionsJavaFileGenerator(target), () ->
+							generationContext.generateQualifiedClassName(target, "BeanDefinitions"));
 			MethodGenerator methodGenerator = generatedClass.getMethodGenerator()
 					.withName(getName());
 			GeneratedMethod generatedMethod = generateBeanDefinitionMethod(
@@ -115,11 +113,10 @@ class BeanDefinitionMethodGenerator {
 	}
 
 	private BeanRegistrationCodeFragments getCodeFragments(GenerationContext generationContext,
-			BeanRegistrationsCode beanRegistrationsCode, String featureNamePrefix) {
+			BeanRegistrationsCode beanRegistrationsCode) {
 
 		BeanRegistrationCodeFragments codeFragments = new DefaultBeanRegistrationCodeFragments(
-				beanRegistrationsCode, this.registeredBean, this.methodGeneratorFactory,
-				featureNamePrefix);
+				beanRegistrationsCode, this.registeredBean, this.methodGeneratorFactory);
 		for (BeanRegistrationAotContribution aotContribution : this.aotContributions) {
 			codeFragments = aotContribution.customizeBeanRegistrationCodeFragments(generationContext, codeFragments);
 		}
@@ -160,7 +157,7 @@ class BeanDefinitionMethodGenerator {
 		}
 		return (nonGeneratedParent != null)
 				? MethodNameGenerator.join(
-						getSimpleBeanName(nonGeneratedParent.getBeanName()), "innerBean")
+				getSimpleBeanName(nonGeneratedParent.getBeanName()), "innerBean")
 				: "innerBean";
 	}
 

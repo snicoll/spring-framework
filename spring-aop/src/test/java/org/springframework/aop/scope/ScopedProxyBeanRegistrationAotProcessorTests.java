@@ -40,6 +40,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.testfixture.beans.factory.aot.MockBeanFactoryInitializationCode;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.beans.testfixture.beans.factory.generator.factory.NumberHolder;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ReflectionUtils;
@@ -71,7 +72,7 @@ class ScopedProxyBeanRegistrationAotProcessorTests {
 		this.beanFactory = new DefaultListableBeanFactory();
 		this.processor = new TestBeanRegistrationsAotProcessor();
 		this.generatedFiles = new InMemoryGeneratedFiles();
-		this.generationContext = new DefaultGenerationContext(this.generatedFiles);
+		this.generationContext = new TestGenerationContext(this.generatedFiles);
 		this.beanFactoryInitializationCode = new MockBeanFactoryInitializationCode();
 	}
 

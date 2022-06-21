@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
 import org.springframework.aot.hint.ResourceBundleHint;
@@ -33,6 +32,7 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,7 +60,7 @@ class RuntimeHintsBeanFactoryInitializationAotProcessorTests {
 
 	@BeforeEach
 	void setup() {
-		this.generationContext = new DefaultGenerationContext(
+		this.generationContext = new TestGenerationContext(
 				new InMemoryGeneratedFiles());
 		this.generator = new ApplicationContextAotGenerator();
 	}

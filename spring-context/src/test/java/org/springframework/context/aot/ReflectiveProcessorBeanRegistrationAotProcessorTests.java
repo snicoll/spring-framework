@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 
 import org.junit.jupiter.api.Test;
 
-import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
 import org.springframework.aot.hint.MemberCategory;
@@ -37,6 +36,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.core.annotation.SynthesizedAnnotation;
 import org.springframework.lang.Nullable;
@@ -54,7 +54,7 @@ class ReflectiveProcessorBeanRegistrationAotProcessorTests {
 
 	private final ReflectiveProcessorBeanRegistrationAotProcessor processor = new ReflectiveProcessorBeanRegistrationAotProcessor();
 
-	private final GenerationContext generationContext = new DefaultGenerationContext(
+	private final GenerationContext generationContext = new TestGenerationContext(
 			new InMemoryGeneratedFiles());
 
 	@Test

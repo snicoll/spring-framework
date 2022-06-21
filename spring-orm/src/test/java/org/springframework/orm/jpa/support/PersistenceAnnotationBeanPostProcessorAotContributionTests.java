@@ -43,6 +43,7 @@ import org.springframework.beans.factory.aot.BeanRegistrationCode;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,7 +68,7 @@ class PersistenceAnnotationBeanPostProcessorAotContributionTests {
 	void setup() {
 		this.beanFactory = new DefaultListableBeanFactory();
 		this.generatedFiles = new InMemoryGeneratedFiles();
-		this.generationContext = new DefaultGenerationContext(generatedFiles);
+		this.generationContext = new TestGenerationContext(generatedFiles);
 	}
 
 	@Test

@@ -34,6 +34,7 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContrib
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.testfixture.beans.factory.aot.MockBeanFactoryInitializationCode;
+import org.springframework.beans.testfixture.beans.factory.aot.TestGenerationContext;
 import org.springframework.beans.testfixture.beans.factory.generator.SimpleConfiguration;
 import org.springframework.context.testfixture.context.generator.annotation.ImportAwareConfiguration;
 import org.springframework.context.testfixture.context.generator.annotation.ImportConfiguration;
@@ -59,7 +60,7 @@ class ConfigurationClassPostProcessorAotContributionTests {
 
 	private InMemoryGeneratedFiles generatedFiles = new InMemoryGeneratedFiles();
 
-	private DefaultGenerationContext generationContext = new DefaultGenerationContext(
+	private DefaultGenerationContext generationContext = new TestGenerationContext(
 			this.generatedFiles);
 
 	private MockBeanFactoryInitializationCode beanFactoryInitializationCode = new MockBeanFactoryInitializationCode();

@@ -911,8 +911,8 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 		public void applyTo(GenerationContext generationContext,
 				BeanRegistrationCode beanRegistrationCode) {
 
-			ClassName className = generationContext.getClassNameGenerator()
-					.generateClassName(this.target, "Autowiring");
+			ClassName className = generationContext.generateClassName(
+					this.target, "Autowiring");
 			TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className);
 			classBuilder.addJavadoc("Autowiring for {@link $T}.", this.target);
 			classBuilder.addModifiers(javax.lang.model.element.Modifier.PUBLIC);

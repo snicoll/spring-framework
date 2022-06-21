@@ -16,46 +16,94 @@
 
 package org.springframework.aot.generate;
 
+import java.io.Closeable;
+import java.util.function.Supplier;
+
+import org.springframework.aot.generate.GeneratedClass.JavaFileGenerator;
 import org.springframework.aot.hint.ProxyHints;
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.aot.hint.ResourceHints;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.SerializationHints;
+import org.springframework.javapoet.ClassName;
 
 /**
  * Central interface used for code generation.
  * <p>
  * A generation context provides:
  * <ul>
- * <li>Support for {@link #getClassNameGenerator() class name generation}.</li>
- * <li>Central management of all {@link #getGeneratedFiles() generated
- * files}.</li>
- * <li>Support for the recording of {@link #getRuntimeHints() runtime
- * hints}.</li>
+ * <li>Support for class name generation.</li>
+ * <li>Central management for {@link GeneratedClass generated classes}.</li>
+ * <li>Central management of all {@link #getGeneratedFiles() generated files}.</li>
+ * <li>Support for the recording of {@link #getRuntimeHints() runtime hints}.</li>
  * </ul>
  *
- * @author Phillip Webb
  * @author Stephane Nicoll
+ * @author Phillip Webb
  * @since 6.0
  */
-public interface GenerationContext {
+public interface GenerationContext extends Closeable {
+
+	GenerationContext usingNamingConvention(String name);
 
 	/**
-	 * Return the {@link ClassNameGenerator} being used by the context. Allows
-	 * new class names to be generated before they are added to the
-	 * {@link #getGeneratedFiles() generated files}.
-	 * @return the class name generator
-	 * @see #getGeneratedFiles()
+	 * Generate a unique {@link ClassName} based on the specified {@code target}
+	 * class and {@code featureName}.
+	 * <p>The generated class name is a suffixed version of the {@code target}.
+	 * For instance, a {@code com.example.Demo} target with an
+	 * {@code Initializer} feature name leads to a
+	 * {@code com.example.Demo__Initializer} generated class name. If such a
+	 * feature was already requested for this target, a counter is used to
+	 * ensure uniqueness.
+	 * @param target the class the newly generated class relates to
+	 * @param featureName the name of the feature that the generated class
+	 * supports
+	 * @return a unique generated class name
 	 */
-	ClassNameGenerator getClassNameGenerator();
+	ClassName generateClassName(Class<?> target, String featureName);
 
 	/**
-	 * Return the {@link GeneratedClasses} being used by the context. Allows a
-	 * single generated class to be shared across multiple AOT processors. All
-	 * generated classes are written at the end of AOT processing.
-	 * @return the generated classes
+	 * Generate a unique qualified {@link ClassName} based on the specified
+	 * {@code target} class and {@code featureName}.
+	 * <p>The generated class name is a suffixed version of the {@code target},
+	 * using a qualifier specific to the current execution. For instance, a
+	 * {@code com.example.Demo} target with an {@code Initializer} feature name
+	 * leads to a {@code com.example.Demo__MyAppInitializer} generated class name,
+	 * where {@code MyApp} is the current qualifier. If such a  feature was already
+	 * requested for this target, a counter is used to ensure uniqueness.
+	 * @param target the class the newly generated class relates to
+	 * @param featureName the name of the feature that the generated class
+	 * supports
+	 * @return a unique generated class name
 	 */
-	ClassGenerator getClassGenerator();
+	ClassName generateQualifiedClassName(Class<?> target, String featureName);
+
+	/**
+	 * Generate a unique {@link ClassName} for the current application, based
+	 * on the specified feature name.
+	 * @param featureName the name of the feature that the application supports
+	 * @return a unique generated class name
+	 */
+	ClassName generateQualifiedClassName(String featureName);
+
+	/**
+	 * Get the {@link GeneratedClass} identified by the specified generator and
+	 * {@link ClassName}. If such an instance does not exist, it is created.
+	 * @param generator the {@link JavaFileGenerator} to use
+	 * @param className the class name
+	 * @return the generated class for that key and class name
+	 */
+	GeneratedClass getGeneratedClass(JavaFileGenerator generator, Supplier<ClassName> className);
+
+
+	/**
+	 * Return the {@link RuntimeHints} being used by the context. Used to record
+	 * {@link ReflectionHints reflection}, {@link ResourceHints resource},
+	 * {@link SerializationHints serialization} and {@link ProxyHints proxy}
+	 * hints so that the application can run in restricted environment.
+	 * @return the runtime hints
+	 */
+	RuntimeHints getRuntimeHints();
 
 	/**
 	 * Return the {@link GeneratedFiles} being used by the context. Used to
@@ -63,14 +111,5 @@ public interface GenerationContext {
 	 * @return the generated files
 	 */
 	GeneratedFiles getGeneratedFiles();
-
-	/**
-	 * Return the {@link RuntimeHints} being used by the context. Used to record
-	 * {@link ReflectionHints reflection}, {@link ResourceHints resource},
-	 * {@link SerializationHints serialization} and {@link ProxyHints proxy}
-	 * hints so that the application can run as a native image.
-	 * @return the runtime hints
-	 */
-	RuntimeHints getRuntimeHints();
 
 }

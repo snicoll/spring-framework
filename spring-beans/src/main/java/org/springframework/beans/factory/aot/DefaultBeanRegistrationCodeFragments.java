@@ -54,18 +54,14 @@ class DefaultBeanRegistrationCodeFragments extends BeanRegistrationCodeFragments
 
 	private final BeanDefinitionMethodGeneratorFactory beanDefinitionMethodGeneratorFactory;
 
-	private final String featureNamePrefix;
-
 
 	DefaultBeanRegistrationCodeFragments(BeanRegistrationsCode beanRegistrationsCode,
 			RegisteredBean registeredBean,
-			BeanDefinitionMethodGeneratorFactory beanDefinitionMethodGeneratorFactory,
-			String featureNamePrefix) {
+			BeanDefinitionMethodGeneratorFactory beanDefinitionMethodGeneratorFactory) {
 
 		this.beanRegistrationsCode = beanRegistrationsCode;
 		this.registeredBean = registeredBean;
 		this.beanDefinitionMethodGeneratorFactory = beanDefinitionMethodGeneratorFactory;
-		this.featureNamePrefix = featureNamePrefix;
 	}
 
 
@@ -111,7 +107,7 @@ class DefaultBeanRegistrationCodeFragments extends BeanRegistrationCodeFragments
 				generationContext.getRuntimeHints(), attributeFilter,
 				beanRegistrationCode.getMethodGenerator(),
 				(name, value) -> generateValueCode(generationContext, name, value))
-						.generateCode(beanDefinition);
+				.generateCode(beanDefinition);
 	}
 
 	@Nullable
@@ -124,8 +120,7 @@ class DefaultBeanRegistrationCodeFragments extends BeanRegistrationCodeFragments
 					.getBeanDefinitionMethodGenerator(innerRegisteredBean, name);
 			Assert.state(methodGenerator != null, "Unexpected filtering of inner-bean");
 			MethodReference generatedMethod = methodGenerator
-					.generateBeanDefinitionMethod(generationContext, this.featureNamePrefix,
-							this.beanRegistrationsCode);
+					.generateBeanDefinitionMethod(generationContext, this.beanRegistrationsCode);
 			return generatedMethod.toInvokeCodeBlock();
 		}
 		return null;
@@ -175,7 +170,7 @@ class DefaultBeanRegistrationCodeFragments extends BeanRegistrationCodeFragments
 		return new InstanceSupplierCodeGenerator(generationContext,
 				beanRegistrationCode.getClassName(),
 				beanRegistrationCode.getMethodGenerator(), allowDirectSupplierShortcut)
-						.generateCode(this.registeredBean, constructorOrFactoryMethod);
+				.generateCode(this.registeredBean, constructorOrFactoryMethod);
 	}
 
 	@Override
