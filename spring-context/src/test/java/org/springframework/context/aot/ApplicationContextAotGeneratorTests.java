@@ -45,7 +45,6 @@ import org.springframework.context.testfixture.context.generator.SimpleComponent
 import org.springframework.context.testfixture.context.generator.annotation.AutowiredComponent;
 import org.springframework.context.testfixture.context.generator.annotation.InitDestroyComponent;
 import org.springframework.core.testfixture.aot.generate.TestGenerationContext;
-import org.springframework.javapoet.ClassName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,9 +55,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  */
 class ApplicationContextAotGeneratorTests {
-
-	private static final ClassName MAIN_GENERATED_TYPE = ClassName.get("__",
-			"TestInitializer");
 
 	@Test
 	void generateApplicationContextWhenHasSimpleBean() {
@@ -194,8 +190,7 @@ class ApplicationContextAotGeneratorTests {
 		InMemoryGeneratedFiles generatedFiles = new InMemoryGeneratedFiles();
 		DefaultGenerationContext generationContext = new TestGenerationContext(
 				generatedFiles);
-		generator.generateApplicationContext(applicationContext, generationContext,
-				MAIN_GENERATED_TYPE);
+		generator.generateApplicationContext(applicationContext, generationContext);
 		generationContext.writeGeneratedContent();
 		TestCompiler.forSystem().withFiles(generatedFiles)
 				.compile(compiled -> result.accept(

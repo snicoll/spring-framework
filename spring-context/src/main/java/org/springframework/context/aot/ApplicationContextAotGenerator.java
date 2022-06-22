@@ -16,13 +16,14 @@
 
 package org.springframework.context.aot;
 
+import org.springframework.aot.generate.GeneratedClass;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.javapoet.ClassName;
-import org.springframework.javapoet.JavaFile;
 
 /**
  * Process an {@link ApplicationContext} and its {@link BeanFactory} to generate
@@ -41,20 +42,20 @@ public class ApplicationContextAotGenerator {
 	 * specified {@link GenerationContext}.
 	 * @param applicationContext the application context to handle
 	 * @param generationContext the generation context to use
-	 * @param generatedInitializerClassName the class name to use for the
-	 * generated application context initializer
+	 * @return the class name of the {@link ApplicationContextInitializer} entry point
 	 */
-	public void generateApplicationContext(GenericApplicationContext applicationContext,
-			GenerationContext generationContext,
-			ClassName generatedInitializerClassName) {
+	public ClassName generateApplicationContext(GenericApplicationContext applicationContext,
+			GenerationContext generationContext) {
 		applicationContext.refreshForAotProcessing();
 		DefaultListableBeanFactory beanFactory = applicationContext
 				.getDefaultListableBeanFactory();
 		ApplicationContextInitializationCodeGenerator codeGenerator = new ApplicationContextInitializationCodeGenerator();
 		new BeanFactoryInitializationAotContributions(beanFactory).applyTo(generationContext,
 				codeGenerator);
-		JavaFile javaFile = codeGenerator.generateJavaFile(generatedInitializerClassName);
-		generationContext.getGeneratedFiles().addSourceFile(javaFile);
+		GeneratedClass applicationContextInitializer = generationContext.getGeneratedClasses()
+				.forFeature("ApplicationContextInitializer")
+				.generate(codeGenerator.generateJavaFile());
+		return applicationContextInitializer.getName();
 	}
 
 }
