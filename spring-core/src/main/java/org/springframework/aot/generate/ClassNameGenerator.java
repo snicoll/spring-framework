@@ -41,16 +41,23 @@ class ClassNameGenerator {
 
 	private static final String AOT_FEATURE = "Aot";
 
-	private final Map<String, AtomicInteger> sequenceGenerator = new ConcurrentHashMap<>();
+	private final Map<String, AtomicInteger> sequenceGenerator;
 
 	private final Class<?> mainTarget;
 
 	private final String featureNamePrefix;
 
 	public ClassNameGenerator(Class<?> mainTarget, String featureNamePrefix) {
+		this(mainTarget, featureNamePrefix, new ConcurrentHashMap<>());
+	}
+
+	public ClassNameGenerator(Class<?> mainTarget, String featureNamePrefix,
+			Map<String, AtomicInteger> sequenceGenerator) {
 		this.mainTarget = mainTarget;
 		this.featureNamePrefix = featureNamePrefix;
+		this.sequenceGenerator = sequenceGenerator;
 	}
+
 
 	/**
 	 * Generate a unique {@link ClassName} based on the specified
@@ -78,6 +85,10 @@ class ClassNameGenerator {
 		String featureNameToUse = this.featureNamePrefix + featureName;
 		return targetToUse.getName().replace("$", "_")
 				+ SEPARATOR + StringUtils.capitalize(featureNameToUse);
+	}
+
+	public ClassNameGenerator usingFeatureNamePrefix(String featureNamePrefix) {
+		return new ClassNameGenerator(this.mainTarget, featureNamePrefix, this.sequenceGenerator);
 	}
 
 	private String clean(String name) {

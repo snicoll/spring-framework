@@ -45,13 +45,20 @@ public class GeneratedClasses {
 
 	private final ClassNameGenerator classNameGenerator;
 
-	private final List<GeneratedClass> classes = new ArrayList<>();
+	private final List<GeneratedClass> classes;
 
-	private final Map<Owner, GeneratedClass> classesByOwner = new ConcurrentHashMap<>();
+	private final Map<Owner, GeneratedClass> classesByOwner;
 
 	GeneratedClasses(ClassNameGenerator classNameGenerator) {
+		this(classNameGenerator, new ArrayList<>(), new ConcurrentHashMap<>());
+	}
+
+	private GeneratedClasses(ClassNameGenerator classNameGenerator,
+			List<GeneratedClass> classes, Map<Owner, GeneratedClass> classesByOwner) {
 		Assert.notNull(classNameGenerator, "'classNameGenerator' must not be null");
 		this.classNameGenerator = classNameGenerator;
+		this.classes = classes;
+		this.classesByOwner = classesByOwner;
 	}
 
 	/**
@@ -92,6 +99,11 @@ public class GeneratedClasses {
 		for (GeneratedClass generatedClass : generatedClasses) {
 			generatedFiles.addSourceFile(generatedClass.generateJavaFile());
 		}
+	}
+
+	GeneratedClasses withName(String name) {
+		return new GeneratedClasses(this.classNameGenerator.usingFeatureNamePrefix(name),
+				this.classes, this.classesByOwner);
 	}
 
 	private record Owner(String facet, String className) {

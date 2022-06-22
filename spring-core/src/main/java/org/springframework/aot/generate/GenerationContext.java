@@ -27,7 +27,8 @@ import org.springframework.aot.hint.SerializationHints;
  * <p>
  * A generation context provides:
  * <ul>
- * <li>Support for {@link #getClassNameGenerator() class name generation}.</li>
+ * <li>Central management of all {@link #getGeneratedClasses()} generated
+ * classes}.</li>
  * <li>Central management of all {@link #getGeneratedFiles() generated
  * files}.</li>
  * <li>Support for the recording of {@link #getRuntimeHints() runtime
@@ -63,5 +64,14 @@ public interface GenerationContext {
 	 * @return the runtime hints
 	 */
 	RuntimeHints getRuntimeHints();
+
+	/**
+	 * Return a new {@link GenerationContext} instance using the specified
+	 * name to qualify generated assets.
+	 * @param name the name to use
+	 * @return a specialized {@link GenerationContext} using the specified
+	 * name
+	 */
+	GenerationContext withName(String name);
 
 }

@@ -78,6 +78,13 @@ public class DefaultGenerationContext implements GenerationContext {
 		return this.runtimeHints;
 	}
 
+	@Override
+	public GenerationContext withName(String name) {
+		GeneratedClasses namedGeneratedClasses = this.generatedClasses.withName(name);
+		return new DefaultGenerationContext(namedGeneratedClasses,
+				this.generatedFiles, this.runtimeHints);
+	}
+
 	/**
 	 * Write any generated content out to the generated files.
 	 */
