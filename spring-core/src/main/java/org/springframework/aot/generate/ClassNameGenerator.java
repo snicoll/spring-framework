@@ -27,51 +27,57 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Generate unique class names based on an optional target {@link Class} and
- * a feature name. This class is stateful so the same instance should be used
- * for all name generation. Most commonly the class name generator is obtained
- * via a {@link GenerationContext}.
+ * Generate unique class names based on target {@link Class} and a feature
+ * name. This class is stateful so the same instance should be used for all
+ * name generation.
  *
  * @author Phillip Webb
  * @author Stephane Nicoll
  * @since 6.0
  */
-public final class ClassNameGenerator {
+class ClassNameGenerator {
 
 	private static final String SEPARATOR = "__";
-
-	private static final String AOT_PACKAGE = "__.";
 
 	private static final String AOT_FEATURE = "Aot";
 
 	private final Map<String, AtomicInteger> sequenceGenerator = new ConcurrentHashMap<>();
 
+	private final Class<?> mainTarget;
+
+	private final String featureNamePrefix;
+
+	public ClassNameGenerator(Class<?> mainTarget, String featureNamePrefix) {
+		this.mainTarget = mainTarget;
+		this.featureNamePrefix = featureNamePrefix;
+	}
 
 	/**
-	 * Generate a unique {@link ClassName} based on the specified {@code target}
-	 * class and {@code featureName}. If a {@code target} is specified, the
-	 * generated class name is a suffixed version of it.
+	 * Generate a unique {@link ClassName} based on the specified
+	 * {@code featureName} and {@code target}. The class name is
+	 * a suffixed version of the target.
 	 * <p>For instance, a {@code com.example.Demo} target with an
 	 * {@code Initializer} feature name leads to a
 	 * {@code com.example.Demo__Initializer} generated class name. If such a
 	 * feature was already requested for this target, a counter is used to
 	 * ensure uniqueness.
-	 * <p>If there is no target, the {@code featureName} is used to generate the
-	 * class name in the {@value #AOT_PACKAGE} package.
 	 * @param target the class the newly generated class relates to, or
-	 * {@code null} if there is not target
+	 * {@code null} to use the main target
 	 * @param featureName the name of the feature that the generated class
 	 * supports
 	 * @return a unique generated class name
 	 */
 	public ClassName generateClassName(@Nullable Class<?> target, String featureName) {
+		return generateSequencedClassName(getClassName(target, featureName));
+	}
+
+	String getClassName(@Nullable Class<?> target, String featureName) {
 		Assert.hasLength(featureName, "'featureName' must not be empty");
 		featureName = clean(featureName);
-		if (target != null) {
-			return generateSequencedClassName(target.getName().replace("$", "_")
-					+ SEPARATOR + StringUtils.capitalize(featureName));
-		}
-		return generateSequencedClassName(AOT_PACKAGE + featureName);
+		Class<?> targetToUse = (target != null ? target : this.mainTarget);
+		String featureNameToUse = this.featureNamePrefix + featureName;
+		return targetToUse.getName().replace("$", "_")
+				+ SEPARATOR + StringUtils.capitalize(featureNameToUse);
 	}
 
 	private String clean(String name) {

@@ -22,59 +22,170 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import org.springframework.aot.generate.GeneratedClass.JavaFileGenerator;
+import org.springframework.javapoet.ClassName;
+import org.springframework.javapoet.JavaFile;
+import org.springframework.javapoet.TypeSpec;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * A managed collection of generated classes.
+ * A managed collection of generated classes. This class is stateful so the
+ * same instance should be used for all class generation.
  *
  * @author Phillip Webb
+ * @author Stephane Nicoll
  * @since 6.0
  * @see GeneratedClass
  */
-public class GeneratedClasses implements ClassGenerator {
+public class GeneratedClasses {
 
 	private final ClassNameGenerator classNameGenerator;
 
-	private final Map<Owner, GeneratedClass> classes = new ConcurrentHashMap<>();
+	private final List<GeneratedClass> classes = new ArrayList<>();
 
+	private final Map<Owner, GeneratedClass> classesByOwner = new ConcurrentHashMap<>();
 
-	public GeneratedClasses(ClassNameGenerator classNameGenerator) {
+	GeneratedClasses(ClassNameGenerator classNameGenerator) {
 		Assert.notNull(classNameGenerator, "'classNameGenerator' must not be null");
 		this.classNameGenerator = classNameGenerator;
 	}
 
-
-	@Override
-	public GeneratedClass getOrGenerateClass(JavaFileGenerator javaFileGenerator,
-			Class<?> target, String featureName) {
-
-		Assert.notNull(javaFileGenerator, "'javaFileGenerator' must not be null");
-		Assert.notNull(target, "'target' must not be null");
+	/**
+	 * Prepare a {@link GeneratedClass} for the specified {@code featureName}
+	 * targeting the specified {@code component}.
+	 * @param featureName the name of the feature to associate with the generated class
+	 * @param component the target component
+	 * @return a {@link Builder} for further configuration
+	 */
+	public Builder forFeatureComponent(String featureName, Class<?> component) {
 		Assert.hasLength(featureName, "'featureName' must not be empty");
-		Owner owner = new Owner(javaFileGenerator, target.getName(), featureName);
-		return this.classes.computeIfAbsent(owner,
-				key -> new GeneratedClass(javaFileGenerator,
-						this.classNameGenerator.generateClassName(target, featureName)));
+		Assert.notNull(component, "'component' must not be null");
+		return new Builder(featureName, component);
 	}
 
 	/**
-	 * Write generated Spring {@code .factories} files to the given
+	 * Prepare a {@link GeneratedClass} for the specified {@code featureName}
+	 * and no particular component. This should be used for high-level code
+	 * generation that are widely applicable and for entry points.
+	 * @param featureName the name of the feature to associate with the generated class
+	 * @return a {@link Builder} for further configuration
+	 */
+	public Builder forFeature(String featureName) {
+		Assert.hasLength(featureName, "'featureName' must not be empty");
+		return new Builder(featureName, null);
+	}
+
+	/**
+	 * Write the {@link GeneratedClass generated classes} using the given
 	 * {@link GeneratedFiles} instance.
-	 * @param generatedFiles where to write the generated files
+	 * @param generatedFiles where to write the generated classes
 	 * @throws IOException on IO error
 	 */
 	public void writeTo(GeneratedFiles generatedFiles) throws IOException {
 		Assert.notNull(generatedFiles, "'generatedFiles' must not be null");
-		List<GeneratedClass> generatedClasses = new ArrayList<>(this.classes.values());
+		List<GeneratedClass> generatedClasses = new ArrayList<>(this.classes);
 		generatedClasses.sort(Comparator.comparing(GeneratedClass::getName));
 		for (GeneratedClass generatedClass : generatedClasses) {
 			generatedFiles.addSourceFile(generatedClass.generateJavaFile());
 		}
 	}
 
-	private record Owner(JavaFileGenerator javaFileGenerator, String target,
-			String featureName) {
+	private record Owner(String facet, String className) {
+
+	}
+
+	public class Builder {
+
+		private final String featureName;
+
+		@Nullable
+		private final Class<?> target;
+
+
+		Builder(String featureName, @Nullable Class<?> target) {
+			this.target = target;
+			this.featureName = featureName;
+		}
+
+		/**
+		 * Generate a new {@link GeneratedClass} using the specified
+		 * {@link JavaFileGenerator}.
+		 * @param javaFileGenerator the generator to use
+		 * @return a new {@link GeneratedClass}
+		 */
+		public GeneratedClass generate(JavaFileGenerator javaFileGenerator) {
+			Assert.notNull(javaFileGenerator, "'javaFileGenerator' must not be null");
+			return createGeneratedClass(javaFileGenerator);
+		}
+
+		/**
+		 * Generate a new {@link GeneratedClass} using the specified type
+		 * customizer.
+		 * @param typeSpecCustomizer a customizer for the {@link TypeSpec.Builder}
+		 * @return a new {@link GeneratedClass}
+		 */
+		public GeneratedClass generate(Consumer<TypeSpec.Builder> typeSpecCustomizer) {
+			Assert.notNull(typeSpecCustomizer, "'typeSpecCustomizer' must not be null");
+			return generate(new SimpleJavaFileGenerator(typeSpecCustomizer));
+		}
+
+		/**
+		 * Get or generate a new {@link GeneratedClass} for the specified {@code facet}.
+		 * @param facet a unique identifier
+		 * @param javaFileGenerator the java file generator
+		 * @return a {@link GeneratedClass} instance
+		 */
+		public GeneratedClass getOrGenerate(String facet, Supplier<JavaFileGenerator> javaFileGenerator) {
+			Assert.hasLength(facet, "'facet' must not be empty");
+			Assert.notNull(javaFileGenerator, "'javaFileGenerator' must not be null");
+			Owner owner = new Owner(facet, GeneratedClasses.this.classNameGenerator
+					.getClassName(this.target, this.featureName));
+			return GeneratedClasses.this.classesByOwner.computeIfAbsent(owner,
+					key -> createGeneratedClass(javaFileGenerator.get()));
+		}
+
+		/**
+		 * Get or generate a new {@link GeneratedClass} for the specified {@code facet}.
+		 * @param facet a unique identifier
+		 * @param typeSpecCustomizer a customizer for the {@link TypeSpec.Builder}
+		 * @return a {@link GeneratedClass} instance
+		 */
+		public GeneratedClass getOrGenerate(String facet,
+				Consumer<TypeSpec.Builder> typeSpecCustomizer) {
+			Assert.notNull(typeSpecCustomizer, "'typeSpecCustomizer' must not be null");
+			return getOrGenerate(facet, () -> new SimpleJavaFileGenerator(typeSpecCustomizer));
+		}
+
+		private GeneratedClass createGeneratedClass(JavaFileGenerator javaFileGenerator) {
+			ClassName className = GeneratedClasses.this.classNameGenerator
+					.generateClassName(this.target, this.featureName);
+			GeneratedClass generatedClass = new GeneratedClass(javaFileGenerator, className);
+			GeneratedClasses.this.classes.add(generatedClass);
+			return generatedClass;
+		}
+
+	}
+
+	static class SimpleJavaFileGenerator implements JavaFileGenerator {
+
+		private final Consumer<TypeSpec.Builder> typeSpecCustomizer;
+
+		SimpleJavaFileGenerator(Consumer<TypeSpec.Builder> typeSpecCustomizer) {
+			this.typeSpecCustomizer = typeSpecCustomizer;
+		}
+
+		@Override
+		public JavaFile generateJavaFile(ClassName className, GeneratedMethods methods) {
+			TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder(className);
+			this.typeSpecCustomizer.accept(typeSpecBuilder);
+			methods.doWithMethodSpecs(typeSpecBuilder::addMethod);
+			return JavaFile.builder(className.packageName(), typeSpecBuilder.build())
+					.build();
+		}
 
 	}
 

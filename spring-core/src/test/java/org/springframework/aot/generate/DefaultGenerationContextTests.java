@@ -19,6 +19,7 @@ package org.springframework.aot.generate;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.core.testfixture.aot.generate.TestTarget;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -31,7 +32,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 class DefaultGenerationContextTests {
 
-	private final ClassNameGenerator classNameGenerator = new ClassNameGenerator();
+	private final GeneratedClasses generatedClasses = new GeneratedClasses(
+			new ClassNameGenerator(TestTarget.class, ""));
 
 	private final GeneratedFiles generatedFiles = new InMemoryGeneratedFiles();
 
@@ -41,9 +43,7 @@ class DefaultGenerationContextTests {
 	@Test
 	void createWithOnlyGeneratedFilesCreatesContext() {
 		DefaultGenerationContext context = new DefaultGenerationContext(
-				this.generatedFiles);
-		assertThat(context.getClassNameGenerator())
-				.isInstanceOf(ClassNameGenerator.class);
+				TestTarget.class, "", this.generatedFiles);
 		assertThat(context.getGeneratedFiles()).isSameAs(this.generatedFiles);
 		assertThat(context.getRuntimeHints()).isInstanceOf(RuntimeHints.class);
 	}
@@ -51,24 +51,23 @@ class DefaultGenerationContextTests {
 	@Test
 	void createCreatesContext() {
 		DefaultGenerationContext context = new DefaultGenerationContext(
-				this.classNameGenerator, this.generatedFiles, this.runtimeHints);
-		assertThat(context.getClassNameGenerator()).isNotNull();
+				this.generatedClasses, this.generatedFiles, this.runtimeHints);
 		assertThat(context.getGeneratedFiles()).isNotNull();
 		assertThat(context.getRuntimeHints()).isNotNull();
 	}
 
 	@Test
-	void createWhenClassNameGeneratorIsNullThrowsException() {
+	void createWhenGeneratedClassesIsNullThrowsException() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> new DefaultGenerationContext(null, this.generatedFiles,
 						this.runtimeHints))
-				.withMessage("'classNameGenerator' must not be null");
+				.withMessage("'generatedClasses' must not be null");
 	}
 
 	@Test
 	void createWhenGeneratedFilesIsNullThrowsException() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> new DefaultGenerationContext(this.classNameGenerator,
+				.isThrownBy(() -> new DefaultGenerationContext(this.generatedClasses,
 						null, this.runtimeHints))
 				.withMessage("'generatedFiles' must not be null");
 	}
@@ -76,29 +75,29 @@ class DefaultGenerationContextTests {
 	@Test
 	void createWhenRuntimeHintsIsNullThrowsException() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> new DefaultGenerationContext(this.classNameGenerator,
+				.isThrownBy(() -> new DefaultGenerationContext(this.generatedClasses,
 						this.generatedFiles, null))
 				.withMessage("'runtimeHints' must not be null");
 	}
 
 	@Test
-	void getClassNameGeneratorReturnsClassNameGenerator() {
+	void getGeneratedClassesReturnsClassNameGenerator() {
 		DefaultGenerationContext context = new DefaultGenerationContext(
-				this.classNameGenerator, this.generatedFiles, this.runtimeHints);
-		assertThat(context.getClassNameGenerator()).isSameAs(this.classNameGenerator);
+				this.generatedClasses, this.generatedFiles, this.runtimeHints);
+		assertThat(context.getGeneratedClasses()).isSameAs(this.generatedClasses);
 	}
 
 	@Test
 	void getGeneratedFilesReturnsGeneratedFiles() {
 		DefaultGenerationContext context = new DefaultGenerationContext(
-				this.classNameGenerator, this.generatedFiles, this.runtimeHints);
+				this.generatedClasses, this.generatedFiles, this.runtimeHints);
 		assertThat(context.getGeneratedFiles()).isSameAs(this.generatedFiles);
 	}
 
 	@Test
 	void getRuntimeHintsReturnsRuntimeHints() {
 		DefaultGenerationContext context = new DefaultGenerationContext(
-				this.classNameGenerator, this.generatedFiles, this.runtimeHints);
+				this.generatedClasses, this.generatedFiles, this.runtimeHints);
 		assertThat(context.getRuntimeHints()).isSameAs(this.runtimeHints);
 	}
 

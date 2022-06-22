@@ -30,8 +30,6 @@ import org.springframework.util.Assert;
  */
 public class DefaultGenerationContext implements GenerationContext {
 
-	private final ClassNameGenerator classNameGenerator;
-
 	private final GeneratedClasses generatedClasses;
 
 	private final GeneratedFiles generatedFiles;
@@ -44,36 +42,29 @@ public class DefaultGenerationContext implements GenerationContext {
 	 * specified {@code generatedFiles}.
 	 * @param generatedFiles the generated files
 	 */
-	public DefaultGenerationContext(GeneratedFiles generatedFiles) {
-		this(new ClassNameGenerator(), generatedFiles, new RuntimeHints());
+	public DefaultGenerationContext(Class<?> target, String name, GeneratedFiles generatedFiles) {
+		this(new GeneratedClasses(new ClassNameGenerator(target, name)), generatedFiles, new RuntimeHints());
 	}
 
 	/**
 	 * Create a new {@link DefaultGenerationContext} instance backed by the
 	 * specified items.
-	 * @param classNameGenerator the class name generator
+	 * @param generatedClasses the generated classes
 	 * @param generatedFiles the generated files
 	 * @param runtimeHints the runtime hints
 	 */
-	public DefaultGenerationContext(ClassNameGenerator classNameGenerator,
+	public DefaultGenerationContext(GeneratedClasses generatedClasses,
 			GeneratedFiles generatedFiles, RuntimeHints runtimeHints) {
-		Assert.notNull(classNameGenerator, "'classNameGenerator' must not be null");
+		Assert.notNull(generatedClasses, "'generatedClasses' must not be null");
 		Assert.notNull(generatedFiles, "'generatedFiles' must not be null");
 		Assert.notNull(runtimeHints, "'runtimeHints' must not be null");
-		this.classNameGenerator = classNameGenerator;
-		this.generatedClasses = new GeneratedClasses(classNameGenerator);
+		this.generatedClasses = generatedClasses;
 		this.generatedFiles = generatedFiles;
 		this.runtimeHints = runtimeHints;
 	}
 
-
 	@Override
-	public ClassNameGenerator getClassNameGenerator() {
-		return this.classNameGenerator;
-	}
-
-	@Override
-	public GeneratedClasses getClassGenerator() {
+	public GeneratedClasses getGeneratedClasses() {
 		return this.generatedClasses;
 	}
 

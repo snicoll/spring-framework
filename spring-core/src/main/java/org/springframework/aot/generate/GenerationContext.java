@@ -41,21 +41,12 @@ import org.springframework.aot.hint.SerializationHints;
 public interface GenerationContext {
 
 	/**
-	 * Return the {@link ClassNameGenerator} being used by the context. Allows
-	 * new class names to be generated before they are added to the
-	 * {@link #getGeneratedFiles() generated files}.
-	 * @return the class name generator
-	 * @see #getGeneratedFiles()
-	 */
-	ClassNameGenerator getClassNameGenerator();
-
-	/**
 	 * Return the {@link GeneratedClasses} being used by the context. Allows a
 	 * single generated class to be shared across multiple AOT processors. All
 	 * generated classes are written at the end of AOT processing.
 	 * @return the generated classes
 	 */
-	ClassGenerator getClassGenerator();
+	GeneratedClasses getGeneratedClasses();
 
 	/**
 	 * Return the {@link GeneratedFiles} being used by the context. Used to
