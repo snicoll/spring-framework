@@ -38,11 +38,7 @@ import org.springframework.util.Assert;
  */
 public class DefaultGenerationContext implements GenerationContext {
 
-	private final ClassNameGenerator classNameGenerator;
-
-	private final Class<?> target;
-
-	private final String name;
+	private final GenerationNamingStrategy generationNamingStrategy;
 
 	private final GeneratedFiles generatedFiles;
 
@@ -56,40 +52,19 @@ public class DefaultGenerationContext implements GenerationContext {
 	 *
 	 * @param generatedFiles the generated files
 	 */
-	public DefaultGenerationContext(Class<?> target, String name,
+	public DefaultGenerationContext(GenerationNamingStrategy generationNamingStrategy,
 			GeneratedFiles generatedFiles) {
-		Assert.notNull(target, "'target' must not be null");
-		Assert.notNull(name, "'name' must not be null");
+		Assert.notNull(generationNamingStrategy, "'generationNamingStrategy' must not be null");
 		Assert.notNull(generatedFiles, "'generatedFiles' must not be null");
-		this.classNameGenerator = new ClassNameGenerator();
-		this.target = target;
-		this.name = name;
+		this.generationNamingStrategy = generationNamingStrategy;
 		this.generatedFiles = generatedFiles;
 		this.runtimeHints = new RuntimeHints();
 		this.classes = new ConcurrentHashMap<>();
 	}
 
 	@Override
-	public GenerationContext usingNamingConvention(String name) {
-		// TODO: keeping things in `GeneratedFiles` or similar makes it straightforward
-		// to create clone.
-		return null;
-	}
-
-	@Override
-	public ClassName generateClassName(Class<?> target, String featureName) {
-		return this.classNameGenerator.generateClassName(target, featureName);
-	}
-
-	@Override
-	public ClassName generateQualifiedClassName(Class<?> target, String featureName) {
-		String qualifiedFeatureName = this.name + featureName;
-		return generateClassName(target, qualifiedFeatureName);
-	}
-
-	@Override
-	public ClassName generateQualifiedClassName(String featureName) {
-		return generateQualifiedClassName(this.target, featureName);
+	public GenerationNamingStrategy getNamingStrategy() {
+		return this.generationNamingStrategy;
 	}
 
 	@Override
@@ -109,6 +84,13 @@ public class DefaultGenerationContext implements GenerationContext {
 	@Override
 	public RuntimeHints getRuntimeHints() {
 		return this.runtimeHints;
+	}
+
+	@Override
+	public GenerationContext withName(String name) {
+		// TODO: keeping things in `GeneratedFiles` or similar makes it straightforward
+		// to create clone.
+		return null;
 	}
 
 	@Override

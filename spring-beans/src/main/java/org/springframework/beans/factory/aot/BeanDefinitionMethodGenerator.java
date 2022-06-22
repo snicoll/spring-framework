@@ -94,7 +94,8 @@ class BeanDefinitionMethodGenerator {
 		if (!target.getName().startsWith("java.")) {
 			GeneratedClass generatedClass = generationContext.getGeneratedClass(
 					new BeanDefinitionsJavaFileGenerator(target), () ->
-							generationContext.generateQualifiedClassName(target, "BeanDefinitions"));
+							generationContext.getNamingStrategy().forComponent(target)
+									.withQualifiedFeatureName("BeanDefinitions").toClassName());
 			MethodGenerator methodGenerator = generatedClass.getMethodGenerator()
 					.withName(getName());
 			GeneratedMethod generatedMethod = generateBeanDefinitionMethod(

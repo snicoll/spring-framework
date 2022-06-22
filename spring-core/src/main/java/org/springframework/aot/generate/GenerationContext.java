@@ -44,47 +44,13 @@ import org.springframework.javapoet.ClassName;
  */
 public interface GenerationContext extends Closeable {
 
-	GenerationContext usingNamingConvention(String name);
-
 	/**
-	 * Generate a unique {@link ClassName} based on the specified {@code target}
-	 * class and {@code featureName}.
-	 * <p>The generated class name is a suffixed version of the {@code target}.
-	 * For instance, a {@code com.example.Demo} target with an
-	 * {@code Initializer} feature name leads to a
-	 * {@code com.example.Demo__Initializer} generated class name. If such a
-	 * feature was already requested for this target, a counter is used to
-	 * ensure uniqueness.
-	 * @param target the class the newly generated class relates to
-	 * @param featureName the name of the feature that the generated class
-	 * supports
-	 * @return a unique generated class name
+	 * Return the {@link GenerationNamingStrategy naming strategy} to use for
+	 * generated classes.
+	 * @return the naming strategy to use
+	 * @see #withName(String)
 	 */
-	ClassName generateClassName(Class<?> target, String featureName);
-
-	/**
-	 * Generate a unique qualified {@link ClassName} based on the specified
-	 * {@code target} class and {@code featureName}.
-	 * <p>The generated class name is a suffixed version of the {@code target},
-	 * using a qualifier specific to the current execution. For instance, a
-	 * {@code com.example.Demo} target with an {@code Initializer} feature name
-	 * leads to a {@code com.example.Demo__MyAppInitializer} generated class name,
-	 * where {@code MyApp} is the current qualifier. If such a  feature was already
-	 * requested for this target, a counter is used to ensure uniqueness.
-	 * @param target the class the newly generated class relates to
-	 * @param featureName the name of the feature that the generated class
-	 * supports
-	 * @return a unique generated class name
-	 */
-	ClassName generateQualifiedClassName(Class<?> target, String featureName);
-
-	/**
-	 * Generate a unique {@link ClassName} for the current application, based
-	 * on the specified feature name.
-	 * @param featureName the name of the feature that the application supports
-	 * @return a unique generated class name
-	 */
-	ClassName generateQualifiedClassName(String featureName);
+	GenerationNamingStrategy getNamingStrategy();
 
 	/**
 	 * Get the {@link GeneratedClass} identified by the specified generator and
@@ -94,7 +60,6 @@ public interface GenerationContext extends Closeable {
 	 * @return the generated class for that key and class name
 	 */
 	GeneratedClass getGeneratedClass(JavaFileGenerator generator, Supplier<ClassName> className);
-
 
 	/**
 	 * Return the {@link RuntimeHints} being used by the context. Used to record
@@ -111,5 +76,7 @@ public interface GenerationContext extends Closeable {
 	 * @return the generated files
 	 */
 	GeneratedFiles getGeneratedFiles();
+
+	GenerationContext withName(String name);
 
 }

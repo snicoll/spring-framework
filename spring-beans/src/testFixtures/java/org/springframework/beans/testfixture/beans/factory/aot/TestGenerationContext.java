@@ -18,6 +18,7 @@ package org.springframework.beans.testfixture.beans.factory.aot;
 
 import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.GeneratedFiles;
+import org.springframework.aot.generate.GenerationNamingStrategy;
 
 /**
  * @author Stephane Nicoll
@@ -26,7 +27,7 @@ public class TestGenerationContext extends DefaultGenerationContext {
 
 
 	public TestGenerationContext(GeneratedFiles generatedFiles) {
-		super(TestTarget.class, "", generatedFiles);
+		super(new GenerationNamingStrategy(TestTarget.class, ""), generatedFiles);
 	}
 
 	public static class TestTarget {

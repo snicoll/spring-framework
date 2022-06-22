@@ -789,8 +789,8 @@ public class PersistenceAnnotationBeanPostProcessor implements InstantiationAwar
 		@Override
 		public void applyTo(GenerationContext generationContext,
 				BeanRegistrationCode beanRegistrationCode) {
-			ClassName className = generationContext.generateClassName(
-					this.target, "PersistenceInjection");
+			ClassName className = generationContext.getNamingStrategy()
+					.forComponent(this.target).withFeatureName("PersistenceInjection").toClassName();
 			TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className);
 			classBuilder.addJavadoc("Persistence injection for {@link $T}.", this.target);
 			classBuilder.addModifiers(javax.lang.model.element.Modifier.PUBLIC);

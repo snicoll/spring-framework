@@ -61,8 +61,8 @@ class BeanRegistrationsAotContribution
 	public void applyTo(GenerationContext generationContext,
 			BeanFactoryInitializationCode beanFactoryInitializationCode) {
 
-		ClassName className = generationContext.generateQualifiedClassName(
-				"BeanFactoryRegistrations");
+		ClassName className = generationContext.getNamingStrategy()
+				.forMainTarget("BeanFactoryRegistrations").toUniqueClassName();
 		BeanRegistrationsCodeGenerator codeGenerator = new BeanRegistrationsCodeGenerator(
 				className);
 		GeneratedMethod registerMethod = codeGenerator.getMethodGenerator()

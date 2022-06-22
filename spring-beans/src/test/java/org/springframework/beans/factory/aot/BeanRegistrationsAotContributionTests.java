@@ -112,7 +112,7 @@ class BeanRegistrationsAotContributionTests {
 		BeanRegistrationsAotContribution contribution = new BeanRegistrationsAotContribution(
 				registrations);
 		GenerationContext managementGenerationContext = this.generationContext
-				.usingNamingConvention("Management");
+				.withName("Management");
 		contribution.applyTo(managementGenerationContext, this.beanFactoryInitializationCode);
 		testCompiledResult((consumer, compiled) -> {
 			SourceFile sourceFile = compiled.getSourceFile(".*BeanDefinitions");
