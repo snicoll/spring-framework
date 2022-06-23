@@ -131,4 +131,21 @@ class DefaultGenerationContextTests {
 		assertThat(this.generatedFiles.getGeneratedFiles(Kind.SOURCE)).hasSize(2);
 	}
 
+	@Test
+	void withNameGenerateUniqueName() {
+		DefaultGenerationContext context = new DefaultGenerationContext(
+				Object.class, "", this.generatedFiles);
+		context.withName("Test").getGeneratedClasses()
+				.forFeature("Feature").generate(typeSpecCustomizer);
+		context.withName("Test").getGeneratedClasses()
+				.forFeature("Feature").generate(typeSpecCustomizer);
+		context.withName("Test").getGeneratedClasses()
+				.forFeature("Feature").generate(typeSpecCustomizer);
+		context.writeGeneratedContent();
+		assertThat(this.generatedFiles.getGeneratedFiles(Kind.SOURCE)).containsOnlyKeys(
+				"java/lang/Object__TestFeature.java",
+				"java/lang/Object__Test1Feature.java",
+				"java/lang/Object__Test2Feature.java");
+	}
+
 }

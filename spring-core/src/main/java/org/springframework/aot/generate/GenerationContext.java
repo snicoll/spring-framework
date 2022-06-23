@@ -24,16 +24,17 @@ import org.springframework.aot.hint.SerializationHints;
 
 /**
  * Central interface used for code generation.
- * <p>
- * A generation context provides:
+ *
+ * <p>A generation context provides:
  * <ul>
- * <li>Central management of all {@link #getGeneratedClasses()} generated
- * classes}.</li>
- * <li>Central management of all {@link #getGeneratedFiles() generated
- * files}.</li>
- * <li>Support for the recording of {@link #getRuntimeHints() runtime
- * hints}.</li>
+ * <li>Management of all {@link #getGeneratedClasses()} generated classes},
+ * including naming convention support.</li>
+ * <li>Central management of all {@link #getGeneratedFiles() generated files}.</li>
+ * <li>Support for the recording of {@link #getRuntimeHints() runtime hints}.</li>
  * </ul>
+ *
+ * <p>If a dedicated round of code generation is required while processing, it
+ * is possible to create a specialized context using {@link #withName(String)}.
  *
  * @author Phillip Webb
  * @author Stephane Nicoll
@@ -67,10 +68,11 @@ public interface GenerationContext {
 
 	/**
 	 * Return a new {@link GenerationContext} instance using the specified
-	 * name to qualify generated assets.
+	 * name to qualify generated assets for a dedicated round of code
+	 * generation. If this name is already in use, a unique sequence is added
+	 * to ensure the name is unique.
 	 * @param name the name to use
-	 * @return a specialized {@link GenerationContext} using the specified
-	 * name
+	 * @return a specialized {@link GenerationContext} for the specified name
 	 */
 	GenerationContext withName(String name);
 

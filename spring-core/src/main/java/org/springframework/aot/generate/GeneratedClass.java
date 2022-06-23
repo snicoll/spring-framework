@@ -111,4 +111,5 @@ public final class GeneratedClass {
 		}
 
 	}
+
 }

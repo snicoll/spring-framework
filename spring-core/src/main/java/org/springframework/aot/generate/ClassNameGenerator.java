@@ -87,7 +87,7 @@ class ClassNameGenerator {
 				+ SEPARATOR + StringUtils.capitalize(featureNameToUse);
 	}
 
-	public ClassNameGenerator usingFeatureNamePrefix(String featureNamePrefix) {
+	ClassNameGenerator usingFeatureNamePrefix(String featureNamePrefix) {
 		return new ClassNameGenerator(this.mainTarget, featureNamePrefix, this.sequenceGenerator);
 	}
 

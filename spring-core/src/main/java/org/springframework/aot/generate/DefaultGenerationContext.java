@@ -17,6 +17,9 @@
 package org.springframework.aot.generate;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.util.Assert;
@@ -29,6 +32,8 @@ import org.springframework.util.Assert;
  * @since 6.0
  */
 public class DefaultGenerationContext implements GenerationContext {
+
+	private final Map<String, AtomicInteger> sequenceGenerator;
 
 	private final GeneratedClasses generatedClasses;
 
@@ -58,9 +63,20 @@ public class DefaultGenerationContext implements GenerationContext {
 		Assert.notNull(generatedClasses, "'generatedClasses' must not be null");
 		Assert.notNull(generatedFiles, "'generatedFiles' must not be null");
 		Assert.notNull(runtimeHints, "'runtimeHints' must not be null");
+		this.sequenceGenerator = new ConcurrentHashMap<>();
 		this.generatedClasses = generatedClasses;
 		this.generatedFiles = generatedFiles;
 		this.runtimeHints = runtimeHints;
+	}
+
+	private DefaultGenerationContext(DefaultGenerationContext existing, String name) {
+		int sequence = existing.sequenceGenerator
+				.computeIfAbsent(name, key -> new AtomicInteger()).getAndIncrement();
+		String nameToUse = (sequence > 0 ? name + sequence : name);
+		this.sequenceGenerator = existing.sequenceGenerator;
+		this.generatedClasses = existing.generatedClasses.withName(nameToUse);
+		this.generatedFiles = existing.generatedFiles;
+		this.runtimeHints = existing.runtimeHints;
 	}
 
 	@Override
@@ -80,9 +96,7 @@ public class DefaultGenerationContext implements GenerationContext {
 
 	@Override
 	public GenerationContext withName(String name) {
-		GeneratedClasses namedGeneratedClasses = this.generatedClasses.withName(name);
-		return new DefaultGenerationContext(namedGeneratedClasses,
-				this.generatedFiles, this.runtimeHints);
+		return new DefaultGenerationContext(this, name);
 	}
 
 	/**

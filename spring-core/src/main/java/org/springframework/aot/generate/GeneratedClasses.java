@@ -146,30 +146,30 @@ public class GeneratedClasses {
 		}
 
 		/**
-		 * Get or generate a new {@link GeneratedClass} for the specified {@code facet}.
-		 * @param facet a unique identifier
+		 * Get or generate a new {@link GeneratedClass} for the specified {@code id}.
+		 * @param id a unique identifier
 		 * @param javaFileGenerator the java file generator
 		 * @return a {@link GeneratedClass} instance
 		 */
-		public GeneratedClass getOrGenerate(String facet, Supplier<JavaFileGenerator> javaFileGenerator) {
-			Assert.hasLength(facet, "'facet' must not be empty");
+		public GeneratedClass getOrGenerate(String id, Supplier<JavaFileGenerator> javaFileGenerator) {
+			Assert.hasLength(id, "'id' must not be empty");
 			Assert.notNull(javaFileGenerator, "'javaFileGenerator' must not be null");
-			Owner owner = new Owner(facet, GeneratedClasses.this.classNameGenerator
+			Owner owner = new Owner(id, GeneratedClasses.this.classNameGenerator
 					.getClassName(this.target, this.featureName));
 			return GeneratedClasses.this.classesByOwner.computeIfAbsent(owner,
 					key -> createGeneratedClass(javaFileGenerator.get()));
 		}
 
 		/**
-		 * Get or generate a new {@link GeneratedClass} for the specified {@code facet}.
-		 * @param facet a unique identifier
+		 * Get or generate a new {@link GeneratedClass} for the specified {@code id}.
+		 * @param id a unique identifier
 		 * @param typeSpecCustomizer a customizer for the {@link TypeSpec.Builder}
 		 * @return a {@link GeneratedClass} instance
 		 */
-		public GeneratedClass getOrGenerate(String facet,
+		public GeneratedClass getOrGenerate(String id,
 				Consumer<TypeSpec.Builder> typeSpecCustomizer) {
 			Assert.notNull(typeSpecCustomizer, "'typeSpecCustomizer' must not be null");
-			return getOrGenerate(facet, () -> new SimpleJavaFileGenerator(typeSpecCustomizer));
+			return getOrGenerate(id, () -> new SimpleJavaFileGenerator(typeSpecCustomizer));
 		}
 
 		private GeneratedClass createGeneratedClass(JavaFileGenerator javaFileGenerator) {
