@@ -158,7 +158,7 @@ class BeanDefinitionMethodGenerator {
 		}
 		return (nonGeneratedParent != null)
 				? MethodNameGenerator.join(
-				getSimpleBeanName(nonGeneratedParent.getBeanName()), "innerBean")
+						getSimpleBeanName(nonGeneratedParent.getBeanName()), "innerBean")
 				: "innerBean";
 	}
 

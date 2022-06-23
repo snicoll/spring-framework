@@ -364,7 +364,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 					catch (Throwable ex) {
 						throw new BeanCreationException(beanName,
 								"Resolution of declared constructors on bean Class [" + beanClass.getName() +
-										"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
+								"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 					}
 					List<Constructor<?>> candidates = new ArrayList<>(rawCandidates.length);
 					Constructor<?> requiredConstructor = null;
@@ -396,16 +396,16 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 							if (requiredConstructor != null) {
 								throw new BeanCreationException(beanName,
 										"Invalid autowire-marked constructor: " + candidate +
-												". Found constructor with 'required' Autowired annotation already: " +
-												requiredConstructor);
+										". Found constructor with 'required' Autowired annotation already: " +
+										requiredConstructor);
 							}
 							boolean required = determineRequiredStatus(ann);
 							if (required) {
 								if (!candidates.isEmpty()) {
 									throw new BeanCreationException(beanName,
 											"Invalid autowire-marked constructors: " + candidates +
-													". Found constructor with 'required' Autowired annotation: " +
-													candidate);
+											". Found constructor with 'required' Autowired annotation: " +
+											candidate);
 								}
 								requiredConstructor = candidate;
 							}
@@ -431,14 +431,14 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
-						candidateConstructors = new Constructor<?>[] { rawCandidates[0] };
+						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
 					else if (nonSyntheticConstructors == 2 && primaryConstructor != null &&
 							defaultConstructor != null && !primaryConstructor.equals(defaultConstructor)) {
-						candidateConstructors = new Constructor<?>[] { primaryConstructor, defaultConstructor };
+						candidateConstructors = new Constructor<?>[] {primaryConstructor, defaultConstructor};
 					}
 					else if (nonSyntheticConstructors == 1 && primaryConstructor != null) {
-						candidateConstructors = new Constructor<?>[] { primaryConstructor };
+						candidateConstructors = new Constructor<?>[] {primaryConstructor};
 					}
 					else {
 						candidateConstructors = new Constructor<?>[0];
@@ -587,7 +587,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 	 * @return whether the annotation indicates that a dependency is required
 	 */
 	protected boolean determineRequiredStatus(MergedAnnotation<?> ann) {
-		return determineRequiredStatus(ann.<AnnotationAttributes>asMap(
+		return determineRequiredStatus(ann.<AnnotationAttributes> asMap(
 				mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));
 	}
 

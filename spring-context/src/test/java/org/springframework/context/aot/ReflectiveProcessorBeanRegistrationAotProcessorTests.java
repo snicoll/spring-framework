@@ -236,7 +236,7 @@ class ReflectiveProcessorBeanRegistrationAotProcessorTests {
 
 	}
 
-	@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+	@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Reflective
@@ -246,7 +246,7 @@ class ReflectiveProcessorBeanRegistrationAotProcessorTests {
 
 	}
 
-	@Target({ ElementType.METHOD })
+	@Target({ElementType.METHOD})
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@SampleInvoker
