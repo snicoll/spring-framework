@@ -71,13 +71,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class InstanceSupplierCodeGeneratorTests {
 
+	private static final ClassName className = ClassName.get("__", "InstanceSupplierSupplier");
+
 	private InMemoryGeneratedFiles generatedFiles;
 
 	private DefaultGenerationContext generationContext;
 
 	private boolean allowDirectSupplierShortcut = false;
-
-	private ClassName className = ClassName.get("__", "InstanceSupplierSupplier");
 
 
 	@BeforeEach
@@ -178,7 +178,7 @@ class InstanceSupplierCodeGeneratorTests {
 					instanceSupplier);
 			assertThat(bean).isInstanceOf(TestBeanWithPrivateConstructor.class);
 			assertThat(compiled.getSourceFile())
-					.contains("resolveAndInstantiate(registeredBean)");
+					.contains("return BeanInstanceSupplier.forConstructor();");
 		});
 		assertThat(getReflectionHints().getTypeHint(TestBeanWithPrivateConstructor.class))
 				.satisfies(hasConstructorWithMode(ExecutableMode.INVOKE));
@@ -217,7 +217,8 @@ class InstanceSupplierCodeGeneratorTests {
 			assertThat(bean).isInstanceOf(String.class);
 			assertThat(bean).isEqualTo("Hello");
 			assertThat(compiled.getSourceFile())
-					.contains("resolveAndInstantiate(registeredBean)");
+					.contains("BeanInstanceSupplier.forFactoryMethod")
+					.doesNotContain("withGenerator");
 		});
 		assertThat(getReflectionHints().getTypeHint(SimpleConfiguration.class))
 				.satisfies(hasMethodWithMode(ExecutableMode.INVOKE));
@@ -277,7 +278,7 @@ class InstanceSupplierCodeGeneratorTests {
 			Integer bean = getBean(beanFactory, beanDefinition, instanceSupplier);
 			assertThat(bean).isInstanceOf(Integer.class);
 			assertThat(bean).isEqualTo(42);
-			assertThat(compiled.getSourceFile()).contains(") throws Exception {");
+			assertThat(compiled.getSourceFile()).doesNotContain(") throws Exception {");
 		});
 		assertThat(getReflectionHints().getTypeHint(SimpleConfiguration.class))
 				.satisfies(hasMethodWithMode(ExecutableMode.INTROSPECT));
@@ -319,7 +320,7 @@ class InstanceSupplierCodeGeneratorTests {
 				"testBean");
 		GeneratedMethods generatedMethods = new GeneratedMethods();
 		InstanceSupplierCodeGenerator generator = new InstanceSupplierCodeGenerator(
-				this.generationContext, this.className, generatedMethods,
+				this.generationContext, className, generatedMethods,
 				this.allowDirectSupplierShortcut);
 		Executable constructorOrFactoryMethod = ConstructorOrFactoryMethodResolver
 				.resolve(registeredBean);
@@ -334,7 +335,7 @@ class InstanceSupplierCodeGeneratorTests {
 
 	private JavaFile createJavaFile(CodeBlock generatedCode,
 			GeneratedMethods generatedMethods) {
-		TypeSpec.Builder builder = TypeSpec.classBuilder("InstanceSupplierSupplier");
+		TypeSpec.Builder builder = TypeSpec.classBuilder(className);
 		builder.addModifiers(Modifier.PUBLIC);
 		builder.addSuperinterface(
 				ParameterizedTypeName.get(Supplier.class, InstanceSupplier.class));
