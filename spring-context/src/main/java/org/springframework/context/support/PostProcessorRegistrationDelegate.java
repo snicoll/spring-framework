@@ -16,6 +16,7 @@
 
 package org.springframework.context.support;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import org.springframework.core.PriorityOrdered;
 import org.springframework.core.metrics.ApplicationStartup;
 import org.springframework.core.metrics.StartupStep;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Delegate for AbstractApplicationContext's post-processor handling.
@@ -315,6 +317,7 @@ final class PostProcessorRegistrationDelegate {
 	 */
 	static void invokeMergedBeanDefinitionPostProcessors(DefaultListableBeanFactory beanFactory) {
 		new MergedBeanDefinitionPostProcessorInvoker(beanFactory).invokeMergedBeanDefinitionPostProcessors();
+
 	}
 
 	private static void sortPostProcessors(List<?> postProcessors, ConfigurableListableBeanFactory beanFactory) {
@@ -364,7 +367,7 @@ final class PostProcessorRegistrationDelegate {
 	 * Register the given BeanPostProcessor beans.
 	 */
 	private static void registerBeanPostProcessors(
-			ConfigurableListableBeanFactory beanFactory, List<BeanPostProcessor> postProcessors) {
+			ConfigurableListableBeanFactory beanFactory, List<? extends BeanPostProcessor> postProcessors) {
 
 		if (beanFactory instanceof AbstractBeanFactory) {
 			// Bulk addition is more efficient against our CopyOnWriteArrayList there
@@ -439,12 +442,19 @@ final class PostProcessorRegistrationDelegate {
 				Class<?> beanType = resolveBeanType(bd);
 				postProcessRootBeanDefinition(postProcessors, beanName, beanType, bd);
 			}
+			registerBeanPostProcessors(this.beanFactory, postProcessors);
 		}
 
 		private void postProcessRootBeanDefinition(List<MergedBeanDefinitionPostProcessor> postProcessors,
 				String beanName, Class<?> beanType, RootBeanDefinition bd) {
 			BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.beanFactory, beanName, bd);
-			postProcessors.forEach(postProcessor -> postProcessor.postProcessMergedBeanDefinition(bd, beanType, beanName));
+			postProcessors.forEach(postProcessor -> {
+				postProcessor.postProcessMergedBeanDefinition(bd, beanType, beanName);
+				// FIXME: logic should move elsewhere to access package private flag
+				Field postProcessed = ReflectionUtils.findField(bd.getClass(), "postProcessed");
+				ReflectionUtils.makeAccessible(postProcessed);
+				ReflectionUtils.setField(postProcessed, bd, true);
+			});
 			for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValueList()) {
 				Object value = propertyValue.getValue();
 				if (value instanceof AbstractBeanDefinition innerBd) {
