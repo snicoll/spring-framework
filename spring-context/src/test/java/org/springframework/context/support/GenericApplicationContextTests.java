@@ -55,6 +55,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -372,6 +373,19 @@ class GenericApplicationContextTests {
 		context.refreshForAotProcessing();
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "test"), String.class, "test");
 		verify(bpp).postProcessMergedBeanDefinition(getBeanDefinition(context, "number"), Integer.class, "number");
+		context.close();
+	}
+
+	@Test
+	void refreshForAotInvokesMergedBeanDefinitionPostProcessorsOnlyOnceIfBeanIsInstantiated() {
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.registerBeanDefinition("test", BeanDefinitionBuilder.rootBeanDefinition(String.class)
+				.addConstructorArgValue("value").getBeanDefinition());
+		MergedBeanDefinitionPostProcessor bpp = registerMockMergedBeanDefinitionPostProcessor(context);
+		context.refreshForAotProcessing();
+		assertThat(context.getBean("test")).isEqualTo("value");
+		verify(bpp, times(1)).postProcessMergedBeanDefinition(
+				getBeanDefinition(context, "test"), String.class, "test");
 		context.close();
 	}
 

@@ -572,18 +572,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Allow post-processors to modify the merged bean definition.
-		synchronized (mbd.postProcessingLock) {
-			if (!mbd.postProcessed) {
-				try {
-					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
-				}
-				catch (Throwable ex) {
-					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
-							"Post-processing of merged bean definition failed", ex);
-				}
-				mbd.postProcessed = true;
-			}
-		}
+		postProcessMergedBeanDefinition(beanName, mbd, beanType);
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
@@ -1066,6 +1055,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		return getFactoryBean(beanName, instance);
+	}
+
+	public void postProcessMergedBeanDefinition(String beanName, RootBeanDefinition mbd, Class<?> beanType) {
+		synchronized (mbd.postProcessingLock) {
+			if (!mbd.postProcessed) {
+				try {
+					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+				}
+				catch (Throwable ex) {
+					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
+							"Post-processing of merged bean definition failed", ex);
+				}
+				mbd.postProcessed = true;
+			}
+		}
 	}
 
 	/**

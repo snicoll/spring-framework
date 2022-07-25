@@ -434,24 +434,25 @@ final class PostProcessorRegistrationDelegate {
 		private void invokeMergedBeanDefinitionPostProcessors() {
 			List<MergedBeanDefinitionPostProcessor> postProcessors = PostProcessorRegistrationDelegate.loadBeanPostProcessors(
 					this.beanFactory, MergedBeanDefinitionPostProcessor.class);
+			// Register them upfront so that they can be invoked by the bean factory
+			registerBeanPostProcessors(this.beanFactory, postProcessors);
 			for (String beanName : this.beanFactory.getBeanDefinitionNames()) {
 				RootBeanDefinition bd = (RootBeanDefinition) this.beanFactory.getMergedBeanDefinition(beanName);
 				Class<?> beanType = resolveBeanType(bd);
-				postProcessRootBeanDefinition(postProcessors, beanName, beanType, bd);
+				postProcessRootBeanDefinition(beanName, beanType, bd);
 			}
 			registerBeanPostProcessors(this.beanFactory, postProcessors);
 		}
 
-		private void postProcessRootBeanDefinition(List<MergedBeanDefinitionPostProcessor> postProcessors,
-				String beanName, Class<?> beanType, RootBeanDefinition bd) {
+		private void postProcessRootBeanDefinition(String beanName, Class<?> beanType, RootBeanDefinition bd) {
 			BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.beanFactory, beanName, bd);
-			postProcessors.forEach(postProcessor -> postProcessor.postProcessMergedBeanDefinition(bd, beanType, beanName));
+			this.beanFactory.postProcessMergedBeanDefinition(beanName, bd, beanType);
 			for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValueList()) {
 				Object value = propertyValue.getValue();
 				if (value instanceof AbstractBeanDefinition innerBd) {
 					Class<?> innerBeanType = resolveBeanType(innerBd);
 					resolveInnerBeanDefinition(valueResolver, innerBd, (innerBeanName, innerBeanDefinition)
-							-> postProcessRootBeanDefinition(postProcessors, innerBeanName, innerBeanType, innerBeanDefinition));
+							-> postProcessRootBeanDefinition(innerBeanName, innerBeanType, innerBeanDefinition));
 				}
 			}
 			for (ValueHolder valueHolder : bd.getConstructorArgumentValues().getIndexedArgumentValues().values()) {
@@ -459,7 +460,7 @@ final class PostProcessorRegistrationDelegate {
 				if (value instanceof AbstractBeanDefinition innerBd) {
 					Class<?> innerBeanType = resolveBeanType(innerBd);
 					resolveInnerBeanDefinition(valueResolver, innerBd, (innerBeanName, innerBeanDefinition)
-							-> postProcessRootBeanDefinition(postProcessors, innerBeanName, innerBeanType, innerBeanDefinition));
+							-> postProcessRootBeanDefinition(innerBeanName, innerBeanType, innerBeanDefinition));
 				}
 			}
 		}
