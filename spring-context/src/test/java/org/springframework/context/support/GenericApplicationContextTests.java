@@ -428,6 +428,7 @@ class GenericApplicationContextTests {
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		AbstractBeanDefinition bd = BeanDefinitionBuilder.rootBeanDefinition(String.class)
 				.addConstructorArgValue("value").getBeanDefinition();
+		bd.setAttribute(AotInstantiationSafeBeanPostProcessor.AOT_INSTANTIATION_SAFE, true);
 		context.registerBeanDefinition("test", bd);
 		context.refreshForAotProcessing();
 		assertThat(context.getBeanFactory().getMergedBeanDefinition("test")

@@ -38,6 +38,7 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
+import org.springframework.context.support.AotInstantiationSafeBeanPostProcessor;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.context.testfixture.context.generator.SimpleComponent;
 import org.springframework.context.testfixture.context.generator.annotation.AutowiredComponent;
@@ -172,8 +173,10 @@ class ApplicationContextAotGeneratorTests {
 	@Test
 	void generateApplicationContextWhenHasBeanRegistrationAotProcessorExcludesProcessor() {
 		GenericApplicationContext applicationContext = new GenericApplicationContext();
+		RootBeanDefinition beanDefinition = new RootBeanDefinition(NoOpBeanRegistrationAotProcessor.class);
+		beanDefinition.setAttribute(AotInstantiationSafeBeanPostProcessor.AOT_INSTANTIATION_SAFE, true);
 		applicationContext.registerBeanDefinition("test",
-				new RootBeanDefinition(NoOpBeanRegistrationAotProcessor.class));
+				beanDefinition);
 		testCompiledResult(applicationContext, (initializer, compiled) -> {
 			GenericApplicationContext freshApplicationContext = toFreshApplicationContext(
 					initializer);

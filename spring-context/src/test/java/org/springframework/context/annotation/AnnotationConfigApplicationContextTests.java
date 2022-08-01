@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation6.ComponentForScanning;
 import org.springframework.context.annotation6.ConfigForScanning;
 import org.springframework.context.annotation6.Jsr330NamedForScanning;
+import org.springframework.context.support.AotInstantiationSafe;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.ObjectUtils;
 
@@ -514,6 +515,7 @@ class AnnotationConfigApplicationContextTests {
 		}
 	}
 
+	@AotInstantiationSafe
 	static class BeanB {
 
 		@Autowired ApplicationContext applicationContext;
@@ -524,6 +526,7 @@ class AnnotationConfigApplicationContextTests {
 
 	static class BeanC {}
 
+	@AotInstantiationSafe
 	static class BeanD {
 
 		private final ApplicationContext applicationContext;
