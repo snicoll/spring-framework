@@ -158,6 +158,16 @@ public class LocalContainerEntityManagerFactoryBean extends AbstractEntityManage
 	}
 
 	/**
+	 * Set the {@link JpaManagedTypes} to use to build the list of managed types
+	 * as an alternative to entity scanning.
+	 * @param jpaManagedTypes the managed types
+	 * @see DefaultPersistenceUnitManager#setJpaManagedTypes(JpaManagedTypes)
+	 */
+	public void setJpaManagedTypes(JpaManagedTypes jpaManagedTypes) {
+		this.internalPersistenceUnitManager.setJpaManagedTypes(jpaManagedTypes);
+	}
+
+	/**
 	 * Set whether to use Spring-based scanning for entity classes in the classpath
 	 * instead of using JPA's standard scanning of jar files with {@code persistence.xml}
 	 * markers in them. In case of Spring-based scanning, no {@code persistence.xml}
