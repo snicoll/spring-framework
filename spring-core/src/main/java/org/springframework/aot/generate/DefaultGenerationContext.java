@@ -84,6 +84,14 @@ public class DefaultGenerationContext implements GenerationContext {
 		this.runtimeHints = existing.runtimeHints;
 	}
 
+	private DefaultGenerationContext(DefaultGenerationContext existing, Class<?> defaultTarget) {
+		this.sequenceGenerator = existing.sequenceGenerator;
+		this.generatedClasses = existing.generatedClasses.withDefaultTarget(defaultTarget);
+		this.generatedFiles = existing.generatedFiles;
+		this.runtimeHints = existing.runtimeHints;
+	}
+
+
 	@Override
 	public GeneratedClasses getGeneratedClasses() {
 		return this.generatedClasses;
@@ -100,9 +108,14 @@ public class DefaultGenerationContext implements GenerationContext {
 	}
 
 	@Override
-	public GenerationContext withName(String name) {
+	public DefaultGenerationContext withName(String name) {
 		return new DefaultGenerationContext(this, name);
 	}
+
+	public DefaultGenerationContext withDefaultTarget(Class<?> defaultTarget) {
+		return new DefaultGenerationContext(this, defaultTarget);
+	}
+
 
 	/**
 	 * Write any generated content out to the generated files.

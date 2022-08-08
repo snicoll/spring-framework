@@ -43,6 +43,7 @@ public final class ClassNameGenerator {
 
 	private static final String AOT_FEATURE = "Aot";
 
+	@Nullable
 	private final Class<?> defaultTarget;
 
 	private final String featureNamePrefix;
@@ -55,7 +56,7 @@ public final class ClassNameGenerator {
 	 * feature name prefix.
 	 * @param defaultTarget the default target class to use
 	 */
-	public ClassNameGenerator(Class<?> defaultTarget) {
+	public ClassNameGenerator(@Nullable Class<?> defaultTarget) {
 		this(defaultTarget, "");
 	}
 
@@ -65,13 +66,12 @@ public final class ClassNameGenerator {
 	 * @param defaultTarget the default target class to use
 	 * @param featureNamePrefix the prefix to use to qualify feature names
 	 */
-	public ClassNameGenerator(Class<?> defaultTarget, String featureNamePrefix) {
+	public ClassNameGenerator(@Nullable Class<?> defaultTarget, String featureNamePrefix) {
 		this(defaultTarget, featureNamePrefix, new ConcurrentHashMap<>());
 	}
 
-	private ClassNameGenerator(Class<?> defaultTarget, String featureNamePrefix,
+	private ClassNameGenerator(@Nullable Class<?> defaultTarget, String featureNamePrefix,
 			Map<String, AtomicInteger> sequenceGenerator) {
-		Assert.notNull(defaultTarget, "'defaultTarget' must not be null");
 		this.defaultTarget = defaultTarget;
 		this.featureNamePrefix = (!StringUtils.hasText(featureNamePrefix) ? "" : featureNamePrefix);
 		this.sequenceGenerator = sequenceGenerator;
@@ -106,8 +106,9 @@ public final class ClassNameGenerator {
 		Assert.hasLength(featureName, "'featureName' must not be empty");
 		featureName = clean(featureName);
 		Class<?> targetToUse = (target != null ? target : this.defaultTarget);
+		String targetNameToUse = (targetToUse != null) ? targetToUse.getName().replace("$", "_") : "__AOT";
 		String featureNameToUse = this.featureNamePrefix + featureName;
-		return targetToUse.getName().replace("$", "_") + SEPARATOR + StringUtils.capitalize(featureNameToUse);
+		return targetNameToUse + SEPARATOR + StringUtils.capitalize(featureNameToUse);
 	}
 
 	private String clean(String name) {
@@ -144,6 +145,11 @@ public final class ClassNameGenerator {
 	 */
 	ClassNameGenerator withFeatureNamePrefix(String featureNamePrefix) {
 		return new ClassNameGenerator(this.defaultTarget, featureNamePrefix,
+				this.sequenceGenerator);
+	}
+
+	ClassNameGenerator withDefaultTarget(Class<?> defaultTarget) {
+		return new ClassNameGenerator(defaultTarget, this.featureNamePrefix,
 				this.sequenceGenerator);
 	}
 
