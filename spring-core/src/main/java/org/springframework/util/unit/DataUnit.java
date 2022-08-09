@@ -97,4 +97,8 @@ public enum DataUnit {
 		throw new IllegalArgumentException("Unknown data unit suffix '" + suffix + "'");
 	}
 
+	@Override
+	public String toString() {
+		return this.suffix;
+	}
 }
