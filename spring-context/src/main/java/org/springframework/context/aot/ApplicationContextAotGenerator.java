@@ -16,9 +16,13 @@
 
 package org.springframework.context.aot;
 
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.cglib.core.GeneratedClassHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.support.GenericApplicationContext;
@@ -47,12 +51,25 @@ public class ApplicationContextAotGenerator {
 	 */
 	public ClassName processAheadOfTime(GenericApplicationContext applicationContext,
 			GenerationContext generationContext) {
-		applicationContext.refreshForAotProcessing();
-		DefaultListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
-		ApplicationContextInitializationCodeGenerator codeGenerator =
-				new ApplicationContextInitializationCodeGenerator(generationContext);
-		new BeanFactoryInitializationAotContributions(beanFactory).applyTo(generationContext, codeGenerator);
-		return codeGenerator.getGeneratedClass().getName();
+		return withGeneratedClassHandler(new ApplicationContextGeneratedClassHandler(generationContext), () -> {
+			applicationContext.refreshForAotProcessing();
+			DefaultListableBeanFactory beanFactory = applicationContext.getDefaultListableBeanFactory();
+			ApplicationContextInitializationCodeGenerator codeGenerator =
+					new ApplicationContextInitializationCodeGenerator(generationContext);
+			new BeanFactoryInitializationAotContributions(beanFactory).applyTo(generationContext, codeGenerator);
+			return codeGenerator.getGeneratedClass().getName();
+		});
+	}
+
+	private <T> T withGeneratedClassHandler(GeneratedClassHandler generatedClassHandler, Supplier<T> task) {
+		Predicate<ClassLoader> applyToAll = classLoader -> true;
+		try {
+			GeneratedClassHandler.register(applyToAll, generatedClassHandler);
+			return task.get();
+		}
+		finally {
+			GeneratedClassHandler.clear(applyToAll);
+		}
 	}
 
 }

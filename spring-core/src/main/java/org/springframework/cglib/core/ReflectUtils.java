@@ -20,16 +20,12 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,14 +444,7 @@ public class ReflectUtils {
 		Class c = null;
 		Throwable t = THROWABLE;
 
-		String generatedClasses = System.getProperty("cglib.generatedClasses");
-		if (generatedClasses != null) {
-			Path path = Path.of(generatedClasses + "/" + className.replace(".", "/") + ".class");
-			Files.createDirectories(path.getParent());
-			try (OutputStream os = Files.newOutputStream(path)) {
-				new ByteArrayInputStream(b).transferTo(os);
-			}
-		}
+		GeneratedClassHandler.get(loader).generatedClass(className, b);
 
 		// Preferred option: JDK 9+ Lookup.defineClass API if ClassLoader matches
 		if (contextClass != null && contextClass.getClassLoader() == loader) {
