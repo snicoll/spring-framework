@@ -27,6 +27,7 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.aot.generate.MethodReference;
+import org.springframework.aot.generate.MethodReference.ArgumentCodeGenerator;
 import org.springframework.aot.hint.ResourcePatternHint;
 import org.springframework.aot.test.generate.TestGenerationContext;
 import org.springframework.aot.test.generate.compile.Compiled;
@@ -162,11 +163,13 @@ class ConfigurationClassPostProcessorAotContributionTests {
 	private void compile(BiConsumer<Consumer<DefaultListableBeanFactory>, Compiled> result) {
 		MethodReference methodReference = this.beanFactoryInitializationCode.getInitializers().get(0);
 		this.beanFactoryInitializationCode.getTypeBuilder().set(type -> {
+			CodeBlock methodInvocation = methodReference.toInvokeCodeBlock(this.beanFactoryInitializationCode.getClassName(),
+					ArgumentCodeGenerator.of(DefaultListableBeanFactory.class, "beanFactory"));
 			type.addModifiers(Modifier.PUBLIC);
 			type.addSuperinterface(ParameterizedTypeName.get(Consumer.class, DefaultListableBeanFactory.class));
 			type.addMethod(MethodSpec.methodBuilder("accept").addModifiers(Modifier.PUBLIC)
 					.addParameter(DefaultListableBeanFactory.class, "beanFactory")
-					.addStatement(methodReference.toInvokeCodeBlock(CodeBlock.of("beanFactory")))
+					.addStatement(methodInvocation)
 					.build());
 		});
 		this.generationContext.writeGeneratedContent();

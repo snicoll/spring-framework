@@ -28,6 +28,7 @@ import org.springframework.aot.generate.AccessVisibility;
 import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GeneratedMethods;
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.aot.generate.MethodReference.ArgumentCodeGenerator;
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.beans.factory.support.InstanceSupplier;
 import org.springframework.beans.factory.support.RegisteredBean;
@@ -297,7 +298,9 @@ class InstanceSupplierCodeGenerator {
 	}
 
 	private CodeBlock generateReturnStatement(GeneratedMethod generatedMethod) {
-		return generatedMethod.toMethodReference().toInvokeCodeBlock();
+		// FIXME: no idea if this is correct
+		return generatedMethod.toMethodReference().toInvokeCodeBlock(this.className,
+				ArgumentCodeGenerator.none());
 	}
 
 	private CodeBlock generateWithGeneratorCode(boolean hasArguments, CodeBlock newInstance) {
