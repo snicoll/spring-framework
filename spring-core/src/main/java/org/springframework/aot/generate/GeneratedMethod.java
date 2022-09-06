@@ -60,6 +60,10 @@ public final class GeneratedMethod {
 		return this.name;
 	}
 
+	public DefaultMethodReference toMethodReference() {
+		return new DefaultMethodReference(this.methodSpec, null); // FIXME
+	}
+
 	/**
 	 * Return the {@link MethodSpec} for this generated method.
 	 * @return the method spec
