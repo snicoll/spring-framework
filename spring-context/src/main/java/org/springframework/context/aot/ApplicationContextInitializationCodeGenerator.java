@@ -18,6 +18,7 @@ package org.springframework.context.aot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.lang.model.element.Modifier;
 
@@ -32,10 +33,15 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.MethodSpec;
 import org.springframework.javapoet.ParameterizedTypeName;
+import org.springframework.javapoet.TypeName;
 import org.springframework.javapoet.TypeSpec;
+import org.springframework.lang.Nullable;
 
 /**
  * Internal code generator to create the {@link ApplicationContextInitializer}.
@@ -89,7 +95,7 @@ class ApplicationContextInitializationCodeGenerator implements BeanFactoryInitia
 				BEAN_FACTORY_VARIABLE, ContextAnnotationAutowireCandidateResolver.class);
 		code.addStatement("$L.setDependencyComparator($T.INSTANCE)",
 				BEAN_FACTORY_VARIABLE, AnnotationAwareOrderComparator.class);
-		ArgumentCodeGenerator argCodeGenerator = createInitializerMethodsArgumentCodeGenerator();
+		ArgumentCodeGenerator argCodeGenerator = createInitializerMethodArgumentCodeGenerator();
 		for (MethodReference initializer : this.initializers) {
 			code.addStatement(initializer.toInvokeCodeBlock(
 					this.generatedClass.getName(), argCodeGenerator));
@@ -97,8 +103,11 @@ class ApplicationContextInitializationCodeGenerator implements BeanFactoryInitia
 		return code.build();
 	}
 
-	private ArgumentCodeGenerator createInitializerMethodsArgumentCodeGenerator() {
-		return ArgumentCodeGenerator.of(DefaultListableBeanFactory.class, BEAN_FACTORY_VARIABLE);
+	private ArgumentCodeGenerator createInitializerMethodArgumentCodeGenerator() {
+		return ArgumentCodeGenerator.of(ResourceLoader.class, APPLICATION_CONTEXT_VARIABLE)
+				.and(TypeOrInterfaceMatcher.of(DefaultListableBeanFactory.class, BEAN_FACTORY_VARIABLE))
+				.and(TypeOrInterfaceMatcher.of(ConfigurableEnvironment.class, CodeBlock.of(
+						"$L.getConfigurableEnvironment()", APPLICATION_CONTEXT_VARIABLE)));
 	}
 
 	GeneratedClass getGeneratedClass() {
@@ -113,6 +122,63 @@ class ApplicationContextInitializationCodeGenerator implements BeanFactoryInitia
 	@Override
 	public void addInitializer(MethodReference methodReference) {
 		this.initializers.add(methodReference);
+	}
+
+	private static final class TypeOrInterfaceMatcher implements Function<TypeName, CodeBlock> {
+
+		private final Class<?> candidate;
+
+		private final CodeBlock code;
+
+		private TypeOrInterfaceMatcher(Class<?> candidate, CodeBlock code) {
+			this.candidate = candidate;
+			this.code = code;
+		}
+
+		static ArgumentCodeGenerator of(Class<?> candidate, String argument) {
+			return of(candidate, CodeBlock.of(argument));
+		}
+
+		static ArgumentCodeGenerator of(Class<?> candidate, CodeBlock code) {
+			return ArgumentCodeGenerator.from(new TypeOrInterfaceMatcher(candidate, code));
+		}
+
+		@Override
+		@Nullable
+		public CodeBlock apply(TypeName typeName) {
+			if (typeName instanceof ClassName className
+					&& matchTypeOrAnyInterface(this.candidate, className)) {
+				return this.code;
+			}
+			return null;
+		}
+
+
+		/**
+		 * Specify if the {@code className} is assignable from the specified
+		 * {@code candidate} using the type of the candidate and any interface
+		 * that it implements.
+		 * @param candidate the matching class to check
+		 * @param className the requested class name
+		 * @return {@code true} if the className is assignable from the candidate
+		 */
+		private boolean matchTypeOrAnyInterface(Class<?> candidate, ClassName className) {
+			String canonicalName = className.canonicalName();
+			if (canonicalName.equals(candidate.getCanonicalName())) {
+				return true;
+			}
+			for (Class<?> interfaceCandidate : candidate.getInterfaces()) {
+				if (canonicalName.equals(interfaceCandidate.getCanonicalName())) {
+					return true;
+				}
+			}
+			for (Class<?> itf : candidate.getInterfaces()) {
+				if (matchTypeOrAnyInterface(itf, className)) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 }
