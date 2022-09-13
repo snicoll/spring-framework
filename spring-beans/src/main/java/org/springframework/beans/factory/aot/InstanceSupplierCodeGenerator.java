@@ -42,13 +42,12 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.function.ThrowingSupplier;
 
 /**
- * Internal code generator to create an {@link InstanceSupplier}, usually in
- * the form of a {@link BeanInstanceSupplier} that retains the executable
- * that is used to instantiate the bean.
+ * Code generator to create an {@link InstanceSupplier}, usually in the form of
+ * a {@link BeanInstanceSupplier} that retains the executable that is used to
+ * instantiate the bean.
  * <p>
  * Generated code is usually a method reference that generate the
- * {@link BeanInstanceSupplier}, but some shortcut can be used as well such
- * as:
+ * {@link BeanInstanceSupplier}, but some shortcut can be used as well such as:
  * <pre class="code">
  * {@code InstanceSupplier.of(TheGeneratedClass::getMyBeanInstance);}
  * </pre>
@@ -57,7 +56,7 @@ import org.springframework.util.function.ThrowingSupplier;
  * @author Stephane Nicoll
  * @since 6.0
  */
-class InstanceSupplierCodeGenerator {
+public class InstanceSupplierCodeGenerator {
 
 	private static final String REGISTERED_BEAN_PARAMETER_NAME = "registeredBean";
 
@@ -79,7 +78,7 @@ class InstanceSupplierCodeGenerator {
 	private final boolean allowDirectSupplierShortcut;
 
 
-	InstanceSupplierCodeGenerator(GenerationContext generationContext,
+	public InstanceSupplierCodeGenerator(GenerationContext generationContext,
 			ClassName className, GeneratedMethods generatedMethods,
 			boolean allowDirectSupplierShortcut) {
 
@@ -90,7 +89,7 @@ class InstanceSupplierCodeGenerator {
 	}
 
 
-	CodeBlock generateCode(RegisteredBean registeredBean,
+	public CodeBlock generateCode(RegisteredBean registeredBean,
 			Executable constructorOrFactoryMethod) {
 
 		if (constructorOrFactoryMethod instanceof Constructor<?> constructor) {
@@ -108,8 +107,7 @@ class InstanceSupplierCodeGenerator {
 
 		String beanName = registeredBean.getBeanName();
 		Class<?> beanClass = registeredBean.getBeanClass();
-		Class<?> declaringClass = ClassUtils
-				.getUserClass(constructor.getDeclaringClass());
+		Class<?> declaringClass = constructor.getDeclaringClass();
 		boolean dependsOnBean = ClassUtils.isInnerClass(declaringClass);
 		AccessVisibility accessVisibility = getAccessVisibility(registeredBean,
 				constructor);
