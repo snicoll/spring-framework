@@ -93,13 +93,13 @@ class ApplicationContextAotGeneratorTests {
 		GenericApplicationContext applicationContext = new GenericApplicationContext();
 		applicationContext.registerBeanDefinition(AnnotationConfigUtils.AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME,
 				BeanDefinitionBuilder
-					.rootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class)
-					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+						.rootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class)
+						.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		applicationContext.registerBeanDefinition("autowiredComponent", new RootBeanDefinition(AutowiredComponent.class));
 		applicationContext.registerBeanDefinition("number",
 				BeanDefinitionBuilder
-					.rootBeanDefinition(Integer.class, "valueOf")
-					.addConstructorArgValue("42").getBeanDefinition());
+						.rootBeanDefinition(Integer.class, "valueOf")
+						.addConstructorArgValue("42").getBeanDefinition());
 		testCompiledResult(applicationContext, (initializer, compiled) -> {
 			GenericApplicationContext freshApplicationContext = toFreshApplicationContext(initializer);
 			assertThat(freshApplicationContext.getBeanDefinitionNames()).containsOnly("autowiredComponent", "number");
@@ -200,8 +200,8 @@ class ApplicationContextAotGeneratorTests {
 		applicationContext.registerBeanDefinition(
 				AnnotationConfigUtils.COMMON_ANNOTATION_PROCESSOR_BEAN_NAME,
 				BeanDefinitionBuilder
-					.rootBeanDefinition(CommonAnnotationBeanPostProcessor.class)
-					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+						.rootBeanDefinition(CommonAnnotationBeanPostProcessor.class)
+						.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		applicationContext.registerBeanDefinition("initDestroyComponent",
 				new RootBeanDefinition(InitDestroyComponent.class));
 		testCompiledResult(applicationContext, (initializer, compiled) -> {
@@ -220,8 +220,8 @@ class ApplicationContextAotGeneratorTests {
 		applicationContext.registerBeanDefinition(
 				AnnotationConfigUtils.COMMON_ANNOTATION_PROCESSOR_BEAN_NAME,
 				BeanDefinitionBuilder
-					.rootBeanDefinition(CommonAnnotationBeanPostProcessor.class)
-					.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+						.rootBeanDefinition(CommonAnnotationBeanPostProcessor.class)
+						.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(InitDestroyComponent.class);
 		beanDefinition.setInitMethodName("customInit");
 		beanDefinition.setDestroyMethodName("customDestroy");
@@ -283,6 +283,17 @@ class ApplicationContextAotGeneratorTests {
 	}
 
 	@Test
+	void processAheadOfTimeWhenHasCglibProxyUseProxy() {
+		GenericApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+		applicationContext.registerBean(CglibConfiguration.class);
+		testCompiledResult(applicationContext, (initializer, compiled) -> {
+			GenericApplicationContext freshApplicationContext = toFreshApplicationContext(initializer);
+			assertThat(freshApplicationContext.getBean("prefix", String.class)).isEqualTo("Hello0");
+			assertThat(freshApplicationContext.getBean("text", String.class)).isEqualTo("Hello0 World");
+		});
+	}
+
+	@Test
 	void processAheadOfTimeWithPropertySource() {
 		GenericApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 		applicationContext.registerBean(PropertySourceConfiguration.class);
@@ -315,7 +326,7 @@ class ApplicationContextAotGeneratorTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void testCompiledResult(TestGenerationContext generationContext,
 			BiConsumer<ApplicationContextInitializer<GenericApplicationContext>, Compiled> result) {
-		TestCompiler.forSystem().withFiles(generationContext.getGeneratedFiles()).compile(compiled ->
+		TestCompiler.forSystem().withFiles(generationContext.getGeneratedFiles()).printFiles(System.out).compile(compiled ->
 				result.accept(compiled.getInstance(ApplicationContextInitializer.class), compiled));
 	}
 
