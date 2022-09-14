@@ -94,8 +94,8 @@ class DynamicJavaFileManagerTests {
 				Kind.CLASS, null);
 		this.fileManager.getJavaFileForOutput(this.location, "com.example.MyClass2",
 				Kind.CLASS, null);
-		assertThat(this.fileManager.getClassFiles()).containsKeys("com.example.MyClass1",
-				"com.example.MyClass2");
+		assertThat(this.fileManager.getClassFiles().get("com.example.MyClass1")).isNotNull();
+		assertThat(this.fileManager.getClassFiles().get("com.example.MyClass2")).isNotNull();
 	}
 
 }

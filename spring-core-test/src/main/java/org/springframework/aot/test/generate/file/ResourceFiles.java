@@ -111,13 +111,13 @@ public final class ResourceFiles implements Iterable<ResourceFile> {
 
 	/**
 	 * Get the {@link ResourceFile} with the given
-	 * {@code DynamicFile#getPath() path}.
-	 * @param path the path to find
+	 * {@linkplain  DynamicFile#getName() name}.
+	 * @param name the path to find
 	 * @return a {@link ResourceFile} instance or {@code null}
 	 */
 	@Nullable
-	public ResourceFile get(String path) {
-		return this.files.get(path);
+	public ResourceFile get(String name) {
+		return this.files.get(name);
 	}
 
 	/**

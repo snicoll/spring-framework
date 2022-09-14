@@ -28,14 +28,14 @@ import java.util.stream.Stream;
 import org.springframework.lang.Nullable;
 
 /**
- * Internal class used by {@link SourceFiles} and {@link ResourceFiles} to
- * manage {@link DynamicFile} instances.
+ * Internal class used by {@link SourceFiles}, {@link ResourceFiles},
+ * and {@link ClassFiles} to manage {@link DynamicFile} instances.
  *
  * @author Phillip Webb
  * @since 6.0
  * @param <F> the {@link DynamicFile} type
  */
-final class DynamicFiles<F extends DynamicFile> implements Iterable<F> {
+final class DynamicFiles<F extends DynamicFile<?>> implements Iterable<F> {
 
 
 	private static final DynamicFiles<?> NONE = new DynamicFiles<>(
@@ -51,19 +51,19 @@ final class DynamicFiles<F extends DynamicFile> implements Iterable<F> {
 
 
 	@SuppressWarnings("unchecked")
-	static <F extends DynamicFile> DynamicFiles<F> none() {
+	static <F extends DynamicFile<?>> DynamicFiles<F> none() {
 		return (DynamicFiles<F>) NONE;
 	}
 
 	DynamicFiles<F> and(Iterable<F> files) {
 		Map<String, F> merged = new LinkedHashMap<>(this.files);
-		files.forEach(file -> merged.put(file.getPath(), file));
+		files.forEach(file -> merged.put(file.getName(), file));
 		return new DynamicFiles<>(Collections.unmodifiableMap(merged));
 	}
 
 	DynamicFiles<F> and(F[] files) {
 		Map<String, F> merged = new LinkedHashMap<>(this.files);
-		Arrays.stream(files).forEach(file -> merged.put(file.getPath(), file));
+		Arrays.stream(files).forEach(file -> merged.put(file.getName(), file));
 		return new DynamicFiles<>(Collections.unmodifiableMap(merged));
 	}
 
@@ -87,8 +87,8 @@ final class DynamicFiles<F extends DynamicFile> implements Iterable<F> {
 	}
 
 	@Nullable
-	F get(String path) {
-		return this.files.get(path);
+	F get(String name) {
+		return this.files.get(name);
 	}
 
 	F getSingle() {

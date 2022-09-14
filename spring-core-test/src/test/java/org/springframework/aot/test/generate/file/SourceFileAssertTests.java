@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
- * Tests for {@link SourceFileAssert}.
+ * Tests for {@link SourceTextFileAssert}.
  *
  * @author Phillip Webb
  */

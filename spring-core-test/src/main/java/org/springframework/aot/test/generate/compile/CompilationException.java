@@ -43,12 +43,12 @@ public class CompilationException extends RuntimeException {
 		message.append(errors);
 		message.append("\n\n");
 		for (SourceFile sourceFile : sourceFiles) {
-			message.append("---- source:   " + sourceFile.getPath() + "\n\n");
+			message.append("---- source:   " + sourceFile.getName() + "\n\n");
 			message.append(sourceFile.getContent());
 			message.append("\n\n");
 		}
 		for (ResourceFile resourceFile : resourceFiles) {
-			message.append("---- resource: " + resourceFile.getPath() + "\n\n");
+			message.append("---- resource: " + resourceFile.getName() + "\n\n");
 			message.append(resourceFile.getContent());
 			message.append("\n\n");
 		}

@@ -35,9 +35,8 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link DynamicFile} that holds Java source code and provides
- * {@link SourceFileAssert} support. Usually created from an AOT generated type,
- * for example:
- *
+ * {@link SourceTextFileAssert} support. Usually created from an AOT generated
+ * type, for example:
  * <pre class="code">
  * SourceFile.of(generatedFile::writeTo)
  * </pre>
@@ -45,15 +44,15 @@ import org.springframework.util.StringUtils;
  * @author Phillip Webb
  * @since 6.0
  */
-public final class SourceFile extends DynamicFile
-		implements AssertProvider<SourceFileAssert> {
+public final class SourceFile extends DynamicTextFile
+		implements AssertProvider<SourceTextFileAssert> {
 
 
 	private final String className;
 
 
-	private SourceFile(String path, String content, String className) {
-		super(path, content);
+	private SourceFile(String name, String content, String className) {
+		super(name, content);
 		this.className = className;
 	}
 
@@ -71,13 +70,13 @@ public final class SourceFile extends DynamicFile
 	/**
 	 * Factory method to create a new {@link SourceFile} from the given
 	 * {@link CharSequence}.
-	 * @param path the relative path of the file or {@code null} to have the
+	 * @param name the relative path of the file or {@code null} to have the
 	 * path deduced
 	 * @param charSequence a file containing the source contents
 	 * @return a {@link SourceFile} instance
 	 */
-	public static SourceFile of(@Nullable String path, CharSequence charSequence) {
-		return of(path, appendable -> appendable.append(charSequence));
+	public static SourceFile of(@Nullable String name, CharSequence charSequence) {
+		return of(name, appendable -> appendable.append(charSequence));
 	}
 
 	/**
@@ -93,13 +92,13 @@ public final class SourceFile extends DynamicFile
 	/**
 	 * Factory method to create a new {@link SourceFile} from the given
 	 * {@link InputStreamSource}.
-	 * @param path the relative path of the file or {@code null} to have the
+	 * @param name the relative path of the file or {@code null} to have the
 	 * path deduced
 	 * @param inputStreamSource the source for the file
 	 * @return a {@link SourceFile} instance
 	 */
-	public static SourceFile of(@Nullable String path, InputStreamSource inputStreamSource) {
-		return of(path, appendable -> appendable.append(copyToString(inputStreamSource)));
+	public static SourceFile of(@Nullable String name, InputStreamSource inputStreamSource) {
+		return of(name, appendable -> appendable.append(copyToString(inputStreamSource)));
 	}
 
 	private static String copyToString(InputStreamSource inputStreamSource) throws IOException {
@@ -120,19 +119,19 @@ public final class SourceFile extends DynamicFile
 	/**
 	 * Factory method to create a new {@link SourceFile} from the given
 	 * {@link WritableContent}.
-	 * @param path the relative path of the file or {@code null} to have the
+	 * @param name the relative path of the file or {@code null} to have the
 	 * path deduced
 	 * @param writableContent the content to write to the file
 	 * @return a {@link SourceFile} instance
 	 */
-	public static SourceFile of(@Nullable String path, WritableContent writableContent) {
+	public static SourceFile of(@Nullable String name, WritableContent writableContent) {
 		String content = toString(writableContent);
 		Assert.state(StringUtils.hasLength(content), "WritableContent did not append any content");
 		String className = getClassName(content);
-		if (!StringUtils.hasLength(path)) {
-			path = ClassUtils.convertClassNameToResourcePath(className) + ".java";
+		if (!StringUtils.hasLength(name)) {
+			name = ClassUtils.convertClassNameToResourcePath(className) + ".java";
 		}
-		return new SourceFile(path, content, className);
+		return new SourceFile(name, content, className);
 	}
 
 	/**
@@ -166,10 +165,8 @@ public final class SourceFile extends DynamicFile
 	 */
 	@Override
 	@Deprecated
-	public SourceFileAssert assertThat() {
-		return new SourceFileAssert(this);
+	public SourceTextFileAssert assertThat() {
+		return new SourceTextFileAssert(this);
 	}
-
-
 
 }

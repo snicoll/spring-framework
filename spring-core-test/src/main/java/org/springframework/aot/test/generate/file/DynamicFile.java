@@ -16,7 +16,6 @@
 
 package org.springframework.aot.test.generate.file;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import org.springframework.util.Assert;
@@ -26,50 +25,45 @@ import org.springframework.util.Assert;
  *
  * @author Phillip Webb
  * @since 6.0
+ * @param <T> the content type
  * @see SourceFile
  * @see ResourceFile
+ * @see ClassFile
  */
-public abstract sealed class DynamicFile permits SourceFile, ResourceFile {
+public abstract class DynamicFile<T> {
+
+	private final String name;
+
+	private final T content;
 
 
-	private final String path;
-
-	private final String content;
-
-
-	protected DynamicFile(String path, String content) {
-		Assert.hasText(path, "Path must not be empty");
-		Assert.hasText(content, "Content must not be empty");
-		this.path = path;
+	protected DynamicFile(String name, T content) {
+		Assert.hasText(name, "'name' must not be empty");
+		Assert.notNull(content, "'content' must not be null");
+		this.name = name;
 		this.content = content;
-	}
-
-
-	protected static String toString(WritableContent writableContent) {
-		try {
-			StringBuilder stringBuilder = new StringBuilder();
-			writableContent.writeTo(stringBuilder);
-			return stringBuilder.toString();
-		}
-		catch (IOException ex) {
-			throw new IllegalStateException("Unable to read content", ex);
-		}
 	}
 
 	/**
 	 * Return the contents of the file.
 	 * @return the file contents
 	 */
-	public String getContent() {
+	public T getContent() {
 		return this.content;
 	}
 
 	/**
-	 * Return the relative path of the file.
-	 * @return the file path
+	 * Return the name of the file.
+	 * @return the file name
 	 */
-	public String getPath() {
-		return this.path;
+	public String getName() {
+		return this.name;
+	}
+
+
+	@Override
+	public String toString() {
+		return this.name;
 	}
 
 	@Override
@@ -80,19 +74,14 @@ public abstract sealed class DynamicFile permits SourceFile, ResourceFile {
 		if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-		DynamicFile other = (DynamicFile) obj;
-		return Objects.equals(this.path, other.path)
+		DynamicFile<?> other = (DynamicFile<?>) obj;
+		return Objects.equals(this.name, other.name)
 				&& Objects.equals(this.content, other.content);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.path, this.content);
-	}
-
-	@Override
-	public String toString() {
-		return this.path;
+		return Objects.hash(this.name, this.content);
 	}
 
 }

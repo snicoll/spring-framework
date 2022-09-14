@@ -14,36 +14,19 @@
  * limitations under the License.
  */
 
-package org.springframework.aot.test.generate.compile;
-
-import java.net.URI;
-
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-
-import org.springframework.aot.test.generate.file.SourceFile;
+package org.springframework.aot.test.generate.file;
 
 /**
- * Adapts a {@link SourceFile} instance to a {@link JavaFileObject}.
+ * Assertion methods for {@code SourceFile} instances.
  *
  * @author Phillip Webb
  * @since 6.0
  */
-class DynamicJavaFileObject extends SimpleJavaFileObject {
+public class SourceTextFileAssert extends DynamicTextFileAssert<SourceTextFileAssert, SourceFile> {
 
 
-	private final SourceFile sourceFile;
-
-
-	DynamicJavaFileObject(SourceFile sourceFile) {
-		super(URI.create(sourceFile.getName()), Kind.SOURCE);
-		this.sourceFile = sourceFile;
-	}
-
-
-	@Override
-	public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-		return this.sourceFile.getContent();
+	SourceTextFileAssert(SourceFile actual) {
+		super(actual, SourceTextFileAssert.class);
 	}
 
 }

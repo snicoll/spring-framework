@@ -26,6 +26,9 @@ import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
+import org.springframework.aot.test.generate.file.ClassFile;
+import org.springframework.aot.test.generate.file.ClassFiles;
+
 /**
  * {@link JavaFileManager} to create in-memory {@link DynamicClassFileObject
  * ClassFileObjects} when compiling.
@@ -63,8 +66,9 @@ class DynamicJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> 
 		return super.getJavaFileForOutput(location, className, kind, sibling);
 	}
 
-	Map<String, DynamicClassFileObject> getClassFiles() {
-		return Collections.unmodifiableMap(this.classFiles);
+	ClassFiles getClassFiles() {
+		return ClassFiles.of(this.classFiles.entrySet().stream().map(entry ->
+				ClassFile.of(entry.getKey(), entry.getValue().getBytes())).toArray(ClassFile[]::new));
 	}
 
 }

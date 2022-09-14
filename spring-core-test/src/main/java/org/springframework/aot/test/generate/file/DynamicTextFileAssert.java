@@ -23,18 +23,18 @@ import org.springframework.lang.Nullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Assertion methods for {@code DynamicFile} instances.
+ * Assertion methods for {@code DynamicTextFile} instances.
  *
  * @author Phillip Webb
  * @since 6.0
  * @param <A> the assertion type
  * @param <F> the file type
  */
-public class DynamicFileAssert<A extends DynamicFileAssert<A, F>, F extends DynamicFile>
+public class DynamicTextFileAssert<A extends DynamicTextFileAssert<A, F>, F extends DynamicTextFile>
 		extends AbstractAssert<A, F> {
 
 
-	DynamicFileAssert(F actual, Class<?> selfType) {
+	DynamicTextFileAssert(F actual, Class<?> selfType) {
 		super(actual, selfType);
 	}
 
@@ -51,7 +51,7 @@ public class DynamicFileAssert<A extends DynamicFileAssert<A, F>, F extends Dyna
 
 	@Override
 	public A isEqualTo(@Nullable Object expected) {
-		if (expected instanceof DynamicFile) {
+		if (expected instanceof DynamicTextFile) {
 			return super.isEqualTo(expected);
 		}
 		assertThat(this.actual.getContent()).isEqualTo(

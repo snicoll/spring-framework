@@ -16,17 +16,32 @@
 
 package org.springframework.aot.test.generate.file;
 
+import java.io.IOException;
+
+import org.springframework.util.Assert;
+
 /**
- * Assertion methods for {@code SourceFile} instances.
+ * A {@link DynamicFile} with a textual content.
  *
- * @author Phillip Webb
+ * @author Stephane Nicoll
  * @since 6.0
  */
-public class SourceFileAssert extends DynamicFileAssert<SourceFileAssert, SourceFile> {
+public abstract sealed class DynamicTextFile extends DynamicFile<String> permits SourceFile, ResourceFile {
 
+	protected DynamicTextFile(String name, String content) {
+		super(name, content);
+		Assert.hasText(content, "'content' must not be empty");
+	}
 
-	SourceFileAssert(SourceFile actual) {
-		super(actual, SourceFileAssert.class);
+	protected static String toString(WritableContent writableContent) {
+		try {
+			StringBuilder stringBuilder = new StringBuilder();
+			writableContent.writeTo(stringBuilder);
+			return stringBuilder.toString();
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Unable to read content", ex);
+		}
 	}
 
 }

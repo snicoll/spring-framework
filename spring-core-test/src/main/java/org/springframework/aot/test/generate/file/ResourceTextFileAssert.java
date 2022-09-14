@@ -22,12 +22,12 @@ package org.springframework.aot.test.generate.file;
  * @author Phillip Webb
  * @since 6.0
  */
-public class ResourceFileAssert
-		extends DynamicFileAssert<ResourceFileAssert, ResourceFile> {
+public class ResourceTextFileAssert
+		extends DynamicTextFileAssert<ResourceTextFileAssert, ResourceFile> {
 
 
-	ResourceFileAssert(ResourceFile actual) {
-		super(actual, ResourceFileAssert.class);
+	ResourceTextFileAssert(ResourceFile actual) {
+		super(actual, ResourceTextFileAssert.class);
 	}
 
 

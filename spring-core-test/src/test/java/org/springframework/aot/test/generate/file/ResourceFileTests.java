@@ -31,14 +31,14 @@ class ResourceFileTests {
 	@Test
 	void ofPathAndCharSequenceCreatesResource() {
 		ResourceFile file = ResourceFile.of("path", "test");
-		assertThat(file.getPath()).isEqualTo("path");
+		assertThat(file.getName()).isEqualTo("path");
 		assertThat(file.getContent()).isEqualTo("test");
 	}
 
 	@Test
 	void ofPathAndWritableContentCreatesResource() {
 		ResourceFile file = ResourceFile.of("path", appendable -> appendable.append("test"));
-		assertThat(file.getPath()).isEqualTo("path");
+		assertThat(file.getName()).isEqualTo("path");
 		assertThat(file.getContent()).isEqualTo("test");
 	}
 
@@ -46,7 +46,7 @@ class ResourceFileTests {
 	@SuppressWarnings("deprecation")
 	void assertThatReturnsResourceFileAssert() {
 		ResourceFile file = ResourceFile.of("path", "test");
-		assertThat(file.assertThat()).isInstanceOf(ResourceFileAssert.class);
+		assertThat(file.assertThat()).isInstanceOf(ResourceTextFileAssert.class);
 	}
 
 }

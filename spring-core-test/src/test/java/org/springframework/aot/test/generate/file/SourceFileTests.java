@@ -72,7 +72,7 @@ class SourceFileTests {
 	@Test
 	void ofWithoutPathDeducesPath() {
 		SourceFile sourceFile = SourceFile.of(HELLO_WORLD);
-		assertThat(sourceFile.getPath()).isEqualTo(
+		assertThat(sourceFile.getName()).isEqualTo(
 				"com/example/helloworld/HelloWorld.java");
 	}
 
@@ -80,7 +80,7 @@ class SourceFileTests {
 	void ofWithPathUsesPath() {
 		SourceFile sourceFile = SourceFile.of("com/example/DifferentPath.java",
 				HELLO_WORLD);
-		assertThat(sourceFile.getPath()).isEqualTo("com/example/DifferentPath.java");
+		assertThat(sourceFile.getName()).isEqualTo("com/example/DifferentPath.java");
 	}
 
 	@Test
@@ -93,7 +93,7 @@ class SourceFileTests {
 	@SuppressWarnings("deprecation")
 	void assertThatReturnsAssert() {
 		SourceFile sourceFile = SourceFile.of(HELLO_WORLD);
-		assertThat(sourceFile.assertThat()).isInstanceOf(SourceFileAssert.class);
+		assertThat(sourceFile.assertThat()).isInstanceOf(SourceTextFileAssert.class);
 	}
 
 	@Test

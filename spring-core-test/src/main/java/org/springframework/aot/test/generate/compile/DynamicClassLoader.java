@@ -26,8 +26,9 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import java.util.Map;
 
+import org.springframework.aot.test.generate.file.ClassFile;
+import org.springframework.aot.test.generate.file.ClassFiles;
 import org.springframework.aot.test.generate.file.ResourceFile;
 import org.springframework.aot.test.generate.file.ResourceFiles;
 import org.springframework.lang.Nullable;
@@ -44,14 +45,14 @@ public class DynamicClassLoader extends ClassLoader {
 
 	private final ResourceFiles resourceFiles;
 
-	private final Map<String, DynamicClassFileObject> classFiles;
+	private final ClassFiles classFiles;
 
 	@Nullable
 	private final Method defineClassMethod;
 
 
 	public DynamicClassLoader(ClassLoader parent, ResourceFiles resourceFiles,
-			Map<String, DynamicClassFileObject> classFiles) {
+			ClassFiles classFiles) {
 
 		super(parent);
 		this.resourceFiles = resourceFiles;
@@ -77,15 +78,16 @@ public class DynamicClassLoader extends ClassLoader {
 
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		DynamicClassFileObject classFile = this.classFiles.get(name);
+		ClassFile classFile = this.classFiles.get(name);
 		if (classFile != null) {
-			return defineClass(name, classFile);
+			return defineClass(classFile);
 		}
 		return super.findClass(name);
 	}
 
-	private Class<?> defineClass(String name, DynamicClassFileObject classFile) {
-		byte[] bytes = classFile.getBytes();
+	private Class<?> defineClass(ClassFile classFile) {
+		String name = classFile.getName();
+		byte[] bytes = classFile.getContent();
 		if (this.defineClassMethod != null) {
 			return (Class<?>) ReflectionUtils.invokeMethod(this.defineClassMethod,
 					getParent(), name, bytes, 0, bytes.length);
@@ -109,7 +111,7 @@ public class DynamicClassLoader extends ClassLoader {
 		ResourceFile file = this.resourceFiles.get(name);
 		if (file != null) {
 			try {
-				return new URL(null, "resource:///" + file.getPath(),
+				return new URL(null, "resource:///" + file.getName(),
 						new ResourceFileHandler(file));
 			}
 			catch (MalformedURLException ex) {
@@ -158,7 +160,7 @@ public class DynamicClassLoader extends ClassLoader {
 
 
 		@Override
-		protected URLConnection openConnection(URL url) throws IOException {
+		protected URLConnection openConnection(URL url) {
 			return new ResourceFileConnection(url, this.file);
 		}
 
@@ -177,7 +179,7 @@ public class DynamicClassLoader extends ClassLoader {
 
 
 		@Override
-		public void connect() throws IOException {
+		public void connect() {
 		}
 
 		@Override

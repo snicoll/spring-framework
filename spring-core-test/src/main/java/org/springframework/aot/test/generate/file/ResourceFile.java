@@ -22,61 +22,57 @@ import java.nio.charset.StandardCharsets;
 import org.assertj.core.api.AssertProvider;
 
 import org.springframework.core.io.InputStreamSource;
-import org.springframework.lang.Nullable;
 import org.springframework.util.FileCopyUtils;
 
 /**
  * {@link DynamicFile} that holds resource file content and provides
- * {@link ResourceFileAssert} support.
+ * {@link ResourceTextFileAssert} support.
  *
  * @author Phillip Webb
  * @since 6.0
  */
-public final class ResourceFile extends DynamicFile
-		implements AssertProvider<ResourceFileAssert> {
+public final class ResourceFile extends DynamicTextFile
+		implements AssertProvider<ResourceTextFileAssert> {
 
 
-	private ResourceFile(String path, String content) {
-		super(path, content);
+	private ResourceFile(String name, String content) {
+		super(name, content);
 	}
 
 
 	/**
 	 * Factory method to create a new {@link ResourceFile} from the given
 	 * {@link CharSequence}.
-	 * @param path the relative path of the file or {@code null} to have the
+	 * @param name the relative path of the file or {@code null} to have the
 	 * path deduced
 	 * @param charSequence a file containing the source contents
 	 * @return a {@link ResourceFile} instance
 	 */
-	public static ResourceFile of(String path, CharSequence charSequence) {
-		return new ResourceFile(path, charSequence.toString());
+	public static ResourceFile of(String name, CharSequence charSequence) {
+		return new ResourceFile(name, charSequence.toString());
 	}
 
 	/**
 	 * Factory method to create a new {@link ResourceFile} from the given
 	 * {@link InputStreamSource}.
-	 * @param path the relative path of the file or {@code null} to have the
-	 * path deduced
+	 * @param name the relative path of the file
 	 * @param inputStreamSource the source for the file
 	 * @return a {@link SourceFile} instance
 	 */
-	public static ResourceFile of(@Nullable String path,
-			InputStreamSource inputStreamSource) {
-		return of(path, appendable -> appendable.append(FileCopyUtils.copyToString(
+	public static ResourceFile of(String name, InputStreamSource inputStreamSource) {
+		return of(name, appendable -> appendable.append(FileCopyUtils.copyToString(
 				new InputStreamReader(inputStreamSource.getInputStream(), StandardCharsets.UTF_8))));
 	}
 
 	/**
 	 * Factory method to create a new {@link SourceFile} from the given
 	 * {@link WritableContent}.
-	 * @param path the relative path of the file or {@code null} to have the
-	 * path deduced
+	 * @param name the relative path of the file
 	 * @param writableContent the content to write to the file
 	 * @return a {@link SourceFile} instance
 	 */
-	public static ResourceFile of(String path, WritableContent writableContent) {
-		return new ResourceFile(path, toString(writableContent));
+	public static ResourceFile of(String name, WritableContent writableContent) {
+		return new ResourceFile(name, toString(writableContent));
 	}
 
 	/**
@@ -86,8 +82,8 @@ public final class ResourceFile extends DynamicFile
 	 */
 	@Override
 	@Deprecated
-	public ResourceFileAssert assertThat() {
-		return new ResourceFileAssert(this);
+	public ResourceTextFileAssert assertThat() {
+		return new ResourceTextFileAssert(this);
 	}
 
 }

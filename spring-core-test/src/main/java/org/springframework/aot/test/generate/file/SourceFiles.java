@@ -114,13 +114,13 @@ public final class SourceFiles implements Iterable<SourceFile> {
 
 	/**
 	 * Get the {@link SourceFile} with the given
-	 * {@code DynamicFile#getPath() path}.
-	 * @param path the path to find
+	 * {@link DynamicFile#getName() name}.
+	 * @param name the path to find
 	 * @return a {@link SourceFile} instance or {@code null}
 	 */
 	@Nullable
-	public SourceFile get(String path) {
-		return this.files.get(path);
+	public SourceFile get(String name) {
+		return this.files.get(name);
 	}
 
 	/**
