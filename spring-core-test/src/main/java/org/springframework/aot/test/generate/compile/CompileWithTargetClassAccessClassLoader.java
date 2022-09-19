@@ -44,6 +44,7 @@ final class CompileWithTargetClassAccessClassLoader extends ClassLoader {
 	}
 
 	// Invoked reflectively by DynamicClassLoader constructor
+	@SuppressWarnings("unused")
 	void setClassResourceLookup(Function<String, byte[]> classResourceLookup) {
 		this.classResourceLookup = classResourceLookup;
 	}
@@ -62,7 +63,8 @@ final class CompileWithTargetClassAccessClassLoader extends ClassLoader {
 		return (bytes != null) ? defineClass(name, bytes, 0, bytes.length, null) : super.findClass(name);
 	}
 
-	protected byte[] findClassBytes(String name) {
+	@Nullable
+	private byte[] findClassBytes(String name) {
 		byte[] bytes = this.classResourceLookup.apply(name);
 		if (bytes != null) {
 			return bytes;
@@ -74,12 +76,14 @@ final class CompileWithTargetClassAccessClassLoader extends ClassLoader {
 				return stream.readAllBytes();
 			}
 			catch (IOException ex) {
+				// ignore
 			}
 		}
 		return null;
 	}
 
 	// Invoked reflectively by DynamicClassLoader.findDefineClassMethod(ClassLoader)
+	@SuppressWarnings("unused")
 	Class<?> defineClassWithTargetAccess(String name, byte[] b, int off, int len) {
 		return super.defineClass(name, b, off, len);
 	}

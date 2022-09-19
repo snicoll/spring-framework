@@ -99,7 +99,7 @@ class DynamicJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> 
 	}
 
 	Map<String, DynamicClassFileObject> getCompiledClasses() {
-		return compiledClasses;
+		return this.compiledClasses;
 	}
 
 }

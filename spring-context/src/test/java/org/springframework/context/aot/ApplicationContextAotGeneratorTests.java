@@ -272,6 +272,7 @@ class ApplicationContextAotGeneratorTests {
 	}
 
 	@Test
+	@CompileWithTargetClassAccess
 	void processAheadOfTimeWhenHasCglibProxyWriteProxyAndGenerateReflectionHints() throws IOException {
 		GenericApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 		applicationContext.registerBean(CglibConfiguration.class);
@@ -328,7 +329,7 @@ class ApplicationContextAotGeneratorTests {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void testCompiledResult(TestGenerationContext generationContext,
 			BiConsumer<ApplicationContextInitializer<GenericApplicationContext>, Compiled> result) {
-		TestCompiler.forSystem().withFiles(generationContext.getGeneratedFiles()).printFiles(System.out).compile(compiled ->
+		TestCompiler.forSystem().withFiles(generationContext.getGeneratedFiles()).compile(compiled ->
 				result.accept(compiled.getInstance(ApplicationContextInitializer.class), compiled));
 	}
 

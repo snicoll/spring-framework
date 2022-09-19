@@ -71,9 +71,10 @@ public class DynamicClassLoader extends ClassLoader {
 					getParent(), (Function<String, byte[]>) this::findClassBytes);
 			this.defineClassMethod = ReflectionUtils.findMethod(parentClass,
 					"defineClassWithTargetAccess", String.class, byte[].class, int.class, int.class);
-			ReflectionUtils.makeAccessible(defineClassMethod);
+			ReflectionUtils.makeAccessible(this.defineClassMethod);
 			this.compiledClasses.forEach((name, file) -> defineClass(name, file.getBytes()));
-		} else {
+		}
+		else {
 			this.defineClassMethod = null;
 		}
 	}
@@ -88,6 +89,7 @@ public class DynamicClassLoader extends ClassLoader {
 		return super.findClass(name);
 	}
 
+	@Nullable
 	private byte[] findClassBytes(String name) {
 		DynamicClassFileObject compiledClass = this.compiledClasses.get(name);
 		if(compiledClass != null) {
@@ -96,6 +98,7 @@ public class DynamicClassLoader extends ClassLoader {
 		return findClassFileBytes(name);
 	}
 
+	@Nullable
 	private byte[] findClassFileBytes(String name) {
 		ClassFile classFile = this.classFiles.get(name);
 		if (classFile != null) {
