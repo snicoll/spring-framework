@@ -19,6 +19,7 @@ package org.springframework.aot.generate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.UnaryOperator;
 
 import org.springframework.javapoet.ClassName;
 import org.springframework.lang.Nullable;
@@ -28,7 +29,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * Generate unique class names based on a target {@link ClassName} and a
- * feature name.
+ * feature name. By default, the input class name is used as is but a
+ * {@code target} resolver can be specified to control the final location
+ * of the class.
  *
  * <p>This class is stateful, so the same instance should be used for all name
  * generation.
@@ -43,9 +46,13 @@ public final class ClassNameGenerator {
 
 	private static final String AOT_FEATURE = "Aot";
 
+	private static final UnaryOperator<ClassName> DEFAULT_TARGET_RESOLVER = className -> className;
+
 	private final ClassName defaultTarget;
 
 	private final String featureNamePrefix;
+
+	private final UnaryOperator<ClassName> targetResolver;
 
 	private final Map<String, AtomicInteger> sequenceGenerator;
 
@@ -66,14 +73,28 @@ public final class ClassNameGenerator {
 	 * @param featureNamePrefix the prefix to use to qualify feature names
 	 */
 	public ClassNameGenerator(ClassName defaultTarget, String featureNamePrefix) {
-		this(defaultTarget, featureNamePrefix, new ConcurrentHashMap<>());
+		this(defaultTarget, featureNamePrefix, null);
+	}
+
+	/**
+	 * Create a new instance using the specified {@code defaultTarget}, feature
+	 * name prefix, and {@code target} resolver.
+	 * @param defaultTarget the default target class to use
+	 * @param featureNamePrefix the prefix to use to qualify feature names
+	 * @param targetResolver resolve the target class based on a candidate
+	 */
+	public ClassNameGenerator(ClassName defaultTarget, String featureNamePrefix,
+			@Nullable UnaryOperator<ClassName> targetResolver) {
+		this(defaultTarget, featureNamePrefix, targetResolver, new ConcurrentHashMap<>());
 	}
 
 	private ClassNameGenerator(ClassName defaultTarget, String featureNamePrefix,
+			@Nullable UnaryOperator<ClassName> targetResolver,
 			Map<String, AtomicInteger> sequenceGenerator) {
 		Assert.notNull(defaultTarget, "'defaultTarget' must not be null");
 		this.defaultTarget = defaultTarget;
 		this.featureNamePrefix = (!StringUtils.hasText(featureNamePrefix) ? "" : featureNamePrefix);
+		this.targetResolver = (targetResolver != null ? targetResolver : DEFAULT_TARGET_RESOLVER);
 		this.sequenceGenerator = sequenceGenerator;
 	}
 
@@ -105,7 +126,7 @@ public final class ClassNameGenerator {
 	private String getRootName(String featureName, @Nullable ClassName target) {
 		Assert.hasLength(featureName, "'featureName' must not be empty");
 		featureName = clean(featureName);
-		ClassName targetToUse = (target != null ? target : this.defaultTarget);
+		ClassName targetToUse = this.targetResolver.apply(target != null ? target : this.defaultTarget);
 		String featureNameToUse = this.featureNamePrefix + featureName;
 		return toName(targetToUse).replace("$", "_") + SEPARATOR + StringUtils.capitalize(featureNameToUse);
 	}
@@ -144,7 +165,7 @@ public final class ClassNameGenerator {
 	 */
 	ClassNameGenerator withFeatureNamePrefix(String featureNamePrefix) {
 		return new ClassNameGenerator(this.defaultTarget, featureNamePrefix,
-				this.sequenceGenerator);
+				this.targetResolver, this.sequenceGenerator);
 	}
 
 	private static String toName(ClassName className) {

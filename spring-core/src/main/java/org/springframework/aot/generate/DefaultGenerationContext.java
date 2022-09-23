@@ -99,7 +99,6 @@ public class DefaultGenerationContext implements GenerationContext {
 		this.runtimeHints = existing.runtimeHints;
 	}
 
-
 	@Override
 	public GeneratedClasses getGeneratedClasses() {
 		return this.generatedClasses;
