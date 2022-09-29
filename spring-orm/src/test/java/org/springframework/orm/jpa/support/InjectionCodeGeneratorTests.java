@@ -32,6 +32,7 @@ import org.springframework.beans.testfixture.beans.TestBeanWithPrivateMethod;
 import org.springframework.beans.testfixture.beans.TestBeanWithPublicField;
 import org.springframework.core.test.tools.Compiled;
 import org.springframework.core.test.tools.TestCompiler;
+import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.JavaFile;
 import org.springframework.javapoet.MethodSpec;
@@ -50,16 +51,16 @@ class InjectionCodeGeneratorTests {
 
 	private static final String INSTANCE_VARIABLE = "instance";
 
-	private RuntimeHints hints = new RuntimeHints();
+	private static final ClassName TEST_TARGET = ClassName.get("com.example", "Test");
 
-	private InjectionCodeGenerator generator = new InjectionCodeGenerator(hints);
+	private final RuntimeHints hints = new RuntimeHints();
 
 	@Test
 	void generateCodeWhenPublicFieldInjectsValue() {
 		TestBeanWithPublicField bean = new TestBeanWithPublicField();
 		Field field = ReflectionUtils.findField(bean.getClass(), "age");
-		CodeBlock generatedCode = this.generator.generateInjectionCode(field, INSTANCE_VARIABLE,
-				CodeBlock.of("$L", 123));
+		CodeBlock generatedCode = createGenerator(TEST_TARGET).generateInjectionCode(
+				field, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		testCompiledResult(generatedCode, TestBeanWithPublicField.class, (actual, compiled) -> {
 			TestBeanWithPublicField instance = new TestBeanWithPublicField();
 			actual.accept(instance);
@@ -72,8 +73,8 @@ class InjectionCodeGeneratorTests {
 	void generateCodeWhenPrivateFieldInjectsValueUsingReflection() {
 		TestBean bean = new TestBean();
 		Field field = ReflectionUtils.findField(bean.getClass(), "age");
-		CodeBlock generatedCode = this.generator.generateInjectionCode(field, INSTANCE_VARIABLE,
-				CodeBlock.of("$L", 123));
+		CodeBlock generatedCode = createGenerator(ClassName.get(TestBean.class)).generateInjectionCode(
+				field, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		testCompiledResult(generatedCode, TestBean.class, (actual, compiled) -> {
 			TestBean instance = new TestBean();
 			actual.accept(instance);
@@ -86,7 +87,8 @@ class InjectionCodeGeneratorTests {
 	void generateCodeWhenPrivateFieldAddsHint() {
 		TestBean bean = new TestBean();
 		Field field = ReflectionUtils.findField(bean.getClass(), "age");
-		this.generator.generateInjectionCode(field, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
+		createGenerator(TEST_TARGET).generateInjectionCode(
+				field, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		assertThat(RuntimeHintsPredicates.reflection().onField(TestBean.class, "age"))
 				.accepts(this.hints);
 	}
@@ -95,8 +97,8 @@ class InjectionCodeGeneratorTests {
 	void generateCodeWhenPublicMethodInjectsValue() {
 		TestBean bean = new TestBean();
 		Method method = ReflectionUtils.findMethod(bean.getClass(), "setAge", int.class);
-		CodeBlock generatedCode = this.generator.generateInjectionCode(method, INSTANCE_VARIABLE,
-				CodeBlock.of("$L", 123));
+		CodeBlock generatedCode = createGenerator(TEST_TARGET).generateInjectionCode(
+				method, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		testCompiledResult(generatedCode, TestBean.class, (actual, compiled) -> {
 			TestBean instance = new TestBean();
 			actual.accept(instance);
@@ -109,8 +111,8 @@ class InjectionCodeGeneratorTests {
 	void generateCodeWhenPrivateMethodInjectsValueUsingReflection() {
 		TestBeanWithPrivateMethod bean = new TestBeanWithPrivateMethod();
 		Method method = ReflectionUtils.findMethod(bean.getClass(), "setAge", int.class);
-		CodeBlock generatedCode = this.generator.generateInjectionCode(method, INSTANCE_VARIABLE,
-				CodeBlock.of("$L", 123));
+		CodeBlock generatedCode = createGenerator(ClassName.get(TestBeanWithPrivateMethod.class))
+				.generateInjectionCode(method, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		testCompiledResult(generatedCode, TestBeanWithPrivateMethod.class, (actual, compiled) -> {
 			TestBeanWithPrivateMethod instance = new TestBeanWithPrivateMethod();
 			actual.accept(instance);
@@ -123,9 +125,14 @@ class InjectionCodeGeneratorTests {
 	void generateCodeWhenPrivateMethodAddsHint() {
 		TestBeanWithPrivateMethod bean = new TestBeanWithPrivateMethod();
 		Method method = ReflectionUtils.findMethod(bean.getClass(), "setAge", int.class);
-		this.generator.generateInjectionCode(method, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
+		createGenerator(TEST_TARGET).generateInjectionCode(
+				method, INSTANCE_VARIABLE, CodeBlock.of("$L", 123));
 		assertThat(RuntimeHintsPredicates.reflection()
 				.onMethod(TestBeanWithPrivateMethod.class, "setAge").invoke()).accepts(this.hints);
+	}
+
+	private InjectionCodeGenerator createGenerator(ClassName target) {
+		return new InjectionCodeGenerator(this.hints, target);
 	}
 
 	@SuppressWarnings("unchecked")
