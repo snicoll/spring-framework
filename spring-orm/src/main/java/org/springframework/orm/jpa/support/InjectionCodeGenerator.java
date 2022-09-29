@@ -26,6 +26,7 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -42,6 +43,7 @@ import org.springframework.util.ReflectionUtils;
  * member is not visible.
  *
  * @author Phillip Webb
+ * @author Stephane Nicoll
  * @since 6.0
  */
 class InjectionCodeGenerator {
@@ -80,8 +82,10 @@ class InjectionCodeGenerator {
 		AccessControl accessControl = AccessControl.forMember(field);
 		if (!accessControl.isAccessibleFrom(this.targetClassName)) {
 			this.hints.reflection().registerField(field);
-			code.addStatement("$T field = $T.findField($T.class, $S)", Field.class,
-					ReflectionUtils.class, field.getDeclaringClass(), field.getName());
+			Class<?> declaringClass = field.getDeclaringClass();
+			code.addStatement(declareClass("declaringType", declaringClass));
+			code.addStatement("$T field = $T.findField($L, $S)", Field.class,
+					ReflectionUtils.class, "declaringType", field.getName());
 			code.addStatement("$T.makeAccessible($L)", ReflectionUtils.class, "field");
 			code.addStatement("$T.setField($L, $L, $L)", ReflectionUtils.class,
 					"field", instanceVariable, resourceToInject);
@@ -102,8 +106,9 @@ class InjectionCodeGenerator {
 		AccessControl accessControl = AccessControl.forMember(method);
 		if (!accessControl.isAccessibleFrom(this.targetClassName)) {
 			this.hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
-			code.addStatement("$T method = $T.findMethod($T.class, $S, $T.class)",
-					Method.class, ReflectionUtils.class, method.getDeclaringClass(),
+			code.addStatement(declareClass("declaringClass", method.getDeclaringClass()));
+			code.addStatement("$T method = $T.findMethod($L, $S, $T.class)",
+					Method.class, ReflectionUtils.class, "declaringClass",
 					method.getName(), method.getParameterTypes()[0]);
 			code.addStatement("$T.makeAccessible($L)", ReflectionUtils.class,
 					"method");
@@ -115,6 +120,16 @@ class InjectionCodeGenerator {
 					resourceToInject);
 		}
 		return code.build();
+	}
+
+	private CodeBlock declareClass(String variableName, Class<?> type) {
+		if (!AccessControl.forClass(type).isAccessibleFrom(this.targetClassName)) {
+			return CodeBlock.of("$T<?> $L = $T.resolveClassName($S, null)",
+					Class.class, variableName, ClassUtils.class, type.getName());
+		}
+		else {
+			return CodeBlock.of("$T<?> $L = $T.class", Class.class, variableName, type);
+		}
 	}
 
 }
