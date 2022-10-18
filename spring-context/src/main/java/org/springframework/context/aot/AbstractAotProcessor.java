@@ -37,13 +37,21 @@ import org.springframework.util.FileSystemUtils;
  * @author Andy Wilkinson
  * @author Phillip Webb
  * @author Sam Brannen
- * @since 6.0
+ * @param <T> the type of the processing result
  * @see FileSystemGeneratedFiles
  * @see FileNativeConfigurationWriter
  * @see org.springframework.context.aot.ContextAotProcessor
  * @see org.springframework.test.context.aot.TestAotProcessor
+ * @since 6.0
  */
-public abstract class AbstractAotProcessor {
+public abstract class AbstractAotProcessor<T> {
+
+	/**
+	 * The name of a system property that is made available when the processor
+	 * runs.
+	 * @see #doProcess()
+	 */
+	private static final String AOT_PROCESSING = "spring.aot.processing";
 
 	private final Settings settings;
 
@@ -63,6 +71,22 @@ public abstract class AbstractAotProcessor {
 	protected Settings getSettings() {
 		return this.settings;
 	}
+
+	/**
+	 * Run AOT processing.
+	 * @return the result of the processing.
+	 */
+	public final T process() {
+		try {
+			System.setProperty(AOT_PROCESSING, "true");
+			return doProcess();
+		}
+		finally {
+			System.clearProperty(AOT_PROCESSING);
+		}
+	}
+
+	protected abstract T doProcess();
 
 	/**
 	 * Delete the source, resource, and class output directories.
