@@ -14,7 +14,7 @@ Applying such optimizations early implies the following restrictions:
 * The classpath is fixed and fully defined at build time.
 * The beans defined in your application cannot change at runtime, meaning:
 ** `@Profile`, in particular profile-specific configuration need to be chosen at build time and can't be changed at runtime.
-** Environment properties that impact the presence of a bean (`@Conditional`) are not supported.
+** Environment properties that impact the presence of a bean (`@Conditional`) are not supported at runtime.
 
 When these restrictions are in place, it becomes possible to perform ahead-of-time processing during build-time and generate additional assets.
 A Spring AOT processed application typically generates:
@@ -125,4 +125,66 @@ We generally recommend that this interface is only used with infrastructure bean
 If such a bean is registered using a factory `@Bean` method, make sure to make it `static` so that its enclosing `@Configuration` class does not have to be initialized.
 ====
 
+If no `BeanRegistrationAotProcessor` is able to handle a particular registered bean, the default implementation processes it.
+This should be the default behavior, as tuning the generated code for a bean definition should be restricted to corner cases.
 
+Taking our previous example, let's assume that `DataSourceConfiguration` is as follows:
+
+[source,java,indent=0]
+----
+	@Configuration(proxyBeanMethods = false)
+	public class DataSourceConfiguration {
+
+		@Bean
+		public SimpleDataSource dataSource() {
+			return new SimpleDataSource();
+		}
+
+	}
+----
+
+As there isn't any particular condition on this class, `dataSourceConfiguration` and `dataSource` are identified as candidates.
+The AOT engine would convert the configuration class above to code like this:
+
+[source,java,indent=0]
+----
+    /**
+     * Bean definitions for {@link DataSourceConfiguration}
+     */
+    public class DataSourceConfiguration__BeanDefinitions {
+        /**
+         * Get the bean definition for 'dataSourceConfiguration'
+         */
+        public static BeanDefinition getDataSourceConfigurationBeanDefinition() {
+            Class<?> beanType = DataSourceConfiguration.class;
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+            beanDefinition.setInstanceSupplier(DataSourceConfiguration::new);
+            return beanDefinition;
+        }
+
+        /**
+         * Get the bean instance supplier for 'dataSource'.
+         */
+        private static BeanInstanceSupplier<SimpleDataSource> getDataSourceInstanceSupplier() {
+            return BeanInstanceSupplier.<SimpleDataSource>forFactoryMethod(DataSourceConfiguration.class, "dataSource")
+                    .withGenerator((registeredBean) -> registeredBean.getBeanFactory().getBean(DataSourceConfiguration.class).dataSource());
+        }
+
+        /**
+         * Get the bean definition for 'dataSource'
+         */
+        public static BeanDefinition getDataSourceBeanDefinition() {
+            Class<?> beanType = SimpleDataSource.class;
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+            beanDefinition.setInstanceSupplier(getDataSourceInstanceSupplier());
+            return beanDefinition;
+        }
+    }
+----
+
+NOTE: The exact code generated may differ depending on the exact nature of your bean definitions.
+
+The generated code above create equivalent bean definitions to the `@Configuration` class, but in a direct way and without the use of reflection if at all possible.
+There is a bean definition for "`dataSourceConfiguration`" bean and one for "`dataSourceBean`".
+When a `datasource` instance is required, a `BeanInstanceSupplier` is called.
+This supplier invokes the `dataSource()` method on the `dataSourceConfiguration` bean.
