@@ -98,6 +98,16 @@ public class InjectionMetadata {
 	}
 
 	/**
+	 * Return the {@link InjectedElement elements} to inject based on the
+	 * specified {@link PropertyValues} that determine if an element should
+	 * be skipped.
+	 * @return the elements to inject
+	 */
+	public Collection<InjectedElement> getInjectedElements(@Nullable PropertyValues pvs) {
+		return this.injectedElements.stream().filter(candidate -> candidate.shouldInject(pvs)).toList();
+	}
+
+	/**
 	 * Determine whether this metadata instance needs to be refreshed.
 	 * @param clazz the current target class
 	 * @return {@code true} indicating a refresh, {@code false} otherwise
@@ -228,6 +238,15 @@ public class InjectionMetadata {
 							"] is incompatible with resource type [" + resourceType.getName() + "]");
 				}
 			}
+		}
+
+		protected boolean shouldInject(@Nullable PropertyValues pvs) {
+			if (this.isField) {
+				return true;
+			}
+			boolean propertySkip = checkPropertySkipping(pvs);
+			clearPropertySkipping(pvs);
+			return !propertySkip;
 		}
 
 		/**
