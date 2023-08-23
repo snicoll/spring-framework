@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ abstract class AnnotationsScanner {
 	}
 
 	/**
-	 * Scan the the specified elements using {@link SearchStrategy#DIRECT} for
+	 * Scan the specified elements using {@link SearchStrategy#DIRECT} for
 	 * relevant annotations and call the processor as required.
 	 * @param context an optional context object that will be passed back to the
 	 * processor
