@@ -234,7 +234,8 @@ public class PropertyPlaceholderConfigurer extends PlaceholderConfigurerSupport 
 
 		public PlaceholderResolvingStringValueResolver(Properties props) {
 			this.helper = new PropertyPlaceholderHelper(
-					placeholderPrefix, placeholderSuffix, valueSeparator, ignoreUnresolvablePlaceholders);
+					placeholderPrefix, placeholderSuffix, valueSeparator,
+					ignoreUnresolvablePlaceholders, placeholderEscape);
 			this.resolver = new PropertyPlaceholderConfigurerResolver(props);
 		}
 

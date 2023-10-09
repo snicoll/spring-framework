@@ -59,6 +59,9 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 	private String placeholderSuffix = SystemPropertyUtils.PLACEHOLDER_SUFFIX;
 
 	@Nullable
+	private Character placeholderEscape = SystemPropertyUtils.PLACEHOLDER_ESCAPE;
+
+	@Nullable
 	private String valueSeparator = SystemPropertyUtils.VALUE_SEPARATOR;
 
 	private final Set<String> requiredProperties = new LinkedHashSet<>();
@@ -107,6 +110,17 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 	public void setPlaceholderSuffix(String placeholderSuffix) {
 		Assert.notNull(placeholderSuffix, "'placeholderSuffix' must not be null");
 		this.placeholderSuffix = placeholderSuffix;
+	}
+
+	/**
+	 * Set the escape character to use to prefix a property placeholder that should
+	 * not be resolved.
+	 * <p>The default is {@code \}
+	 * @see org.springframework.util.SystemPropertyUtils#PLACEHOLDER_ESCAPE
+	 */
+	@Override
+	public void setPlaceholderEscape(Character placeholderEscape) {
+		this.placeholderEscape = placeholderEscape;
 	}
 
 	/**
@@ -232,7 +246,7 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 
 	private PropertyPlaceholderHelper createPlaceholderHelper(boolean ignoreUnresolvablePlaceholders) {
 		return new PropertyPlaceholderHelper(this.placeholderPrefix, this.placeholderSuffix,
-				this.valueSeparator, ignoreUnresolvablePlaceholders);
+				this.valueSeparator, ignoreUnresolvablePlaceholders, this.placeholderEscape);
 	}
 
 	private String doResolvePlaceholders(String text, PropertyPlaceholderHelper helper) {

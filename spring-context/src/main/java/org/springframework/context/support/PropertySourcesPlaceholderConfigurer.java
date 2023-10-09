@@ -192,6 +192,7 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 
 		propertyResolver.setPlaceholderPrefix(this.placeholderPrefix);
 		propertyResolver.setPlaceholderSuffix(this.placeholderSuffix);
+		propertyResolver.setPlaceholderEscape(this.placeholderEscape);
 		propertyResolver.setValueSeparator(this.valueSeparator);
 
 		StringValueResolver valueResolver = strVal -> {

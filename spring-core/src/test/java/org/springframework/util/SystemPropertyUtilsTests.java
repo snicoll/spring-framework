@@ -136,4 +136,16 @@ class SystemPropertyUtilsTests {
 		}
 	}
 
+	@Test
+	void replaceWithEscapeCharacter() {
+		String resolved = SystemPropertyUtils.resolvePlaceholders("\\${test.prop}");
+		assertThat(resolved).isEqualTo("${test.prop}");
+	}
+
+	@Test
+	void replaceWithDefaultContainingEscapeCharacter() {
+		String resolved = SystemPropertyUtils.resolvePlaceholders("${test.prop:\\${foo.bar}}");
+		assertThat(resolved).isEqualTo("${foo.bar}");
+	}
+
 }

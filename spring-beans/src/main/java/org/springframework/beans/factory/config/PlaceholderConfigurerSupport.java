@@ -97,6 +97,9 @@ public abstract class PlaceholderConfigurerSupport extends PropertyResourceConfi
 	/** Default placeholder suffix: {@value}. */
 	public static final String DEFAULT_PLACEHOLDER_SUFFIX = "}";
 
+	/** Default placeholder escape: {@value}. */
+	public static final char DEFAULT_PLACEHOLDER_ESCAPE = '\\';
+
 	/** Default value separator: {@value}. */
 	public static final String DEFAULT_VALUE_SEPARATOR = ":";
 
@@ -106,6 +109,10 @@ public abstract class PlaceholderConfigurerSupport extends PropertyResourceConfi
 
 	/** Defaults to {@value #DEFAULT_PLACEHOLDER_SUFFIX}. */
 	protected String placeholderSuffix = DEFAULT_PLACEHOLDER_SUFFIX;
+
+	/** Defaults to {@value #DEFAULT_PLACEHOLDER_ESCAPE}. */
+	@Nullable
+	protected Character placeholderEscape = DEFAULT_PLACEHOLDER_ESCAPE;
 
 	/** Defaults to {@value #DEFAULT_VALUE_SEPARATOR}. */
 	@Nullable
@@ -139,6 +146,17 @@ public abstract class PlaceholderConfigurerSupport extends PropertyResourceConfi
 	 */
 	public void setPlaceholderSuffix(String placeholderSuffix) {
 		this.placeholderSuffix = placeholderSuffix;
+	}
+
+	/**
+	 * Specify the escape character to use to prefix a property placeholder that should
+	 * not be resolved.
+	 * The default is {@value #DEFAULT_PLACEHOLDER_ESCAPE}. Use {@code null} to always
+	 * resolve a matching property placeholder.
+	 * @since 6.1
+	 */
+	public void setPlaceholderEscape(@Nullable Character placeholderEscape) {
+		this.placeholderEscape = placeholderEscape;
 	}
 
 	/**

@@ -23,7 +23,8 @@ import org.springframework.lang.Nullable;
  *
  * <p>A text may contain {@code ${...}} placeholders, to be resolved as system properties:
  * e.g. {@code ${user.dir}}. Default values can be supplied using the ":" separator
- * between key and value.
+ * between key and value. If the placeholder needs to be escaped (not processed) it can
+ * be prefixed by {@code \}.
  *
  * @author Juergen Hoeller
  * @author Rob Harrop
@@ -41,15 +42,20 @@ public abstract class SystemPropertyUtils {
 	/** Suffix for system property placeholders: "}". */
 	public static final String PLACEHOLDER_SUFFIX = "}";
 
+	/** Escape character for system property placeholders: '\'. */
+	public static final Character PLACEHOLDER_ESCAPE = '\\';
+
 	/** Value separator for system property placeholders: ":". */
 	public static final String VALUE_SEPARATOR = ":";
 
 
 	private static final PropertyPlaceholderHelper strictHelper =
-			new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX, VALUE_SEPARATOR, false);
+			new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX,
+					VALUE_SEPARATOR, false, PLACEHOLDER_ESCAPE);
 
 	private static final PropertyPlaceholderHelper nonStrictHelper =
-			new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX, VALUE_SEPARATOR, true);
+			new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX,
+					VALUE_SEPARATOR, true, PLACEHOLDER_ESCAPE);
 
 
 	/**

@@ -68,6 +68,13 @@ public interface ConfigurablePropertyResolver extends PropertyResolver {
 	void setPlaceholderSuffix(String placeholderSuffix);
 
 	/**
+	 * Set the escape character to use to prefix a property placeholder that should
+	 * not be resolved.
+	 * @since 6.1
+	 */
+	void setPlaceholderEscape(@Nullable Character placeholderEscape);
+
+	/**
 	 * Specify the separating character between the placeholders replaced by this
 	 * resolver and their associated default value, or {@code null} if no such
 	 * special character should be processed as a value separator.

@@ -517,6 +517,11 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 	}
 
 	@Override
+	public void setPlaceholderEscape(@Nullable Character placeholderEscape) {
+		this.propertyResolver.setPlaceholderEscape(placeholderEscape);
+	}
+
+	@Override
 	public void setValueSeparator(@Nullable String valueSeparator) {
 		this.propertyResolver.setValueSeparator(valueSeparator);
 	}
