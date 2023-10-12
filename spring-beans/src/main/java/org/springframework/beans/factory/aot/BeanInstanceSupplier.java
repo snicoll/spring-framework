@@ -20,7 +20,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -248,7 +250,7 @@ public final class BeanInstanceSupplier<T> extends AutowiredElementResolver impl
 		Assert.isTrue(this.shortcuts == null || this.shortcuts.length == resolved.length,
 				() -> "'shortcuts' must contain " + resolved.length + " elements");
 
-		ConstructorArgumentValues argumentValues = resolveArgumentValues(registeredBean);
+		ValueHolder[] argumentValues = resolveArgumentValues(registeredBean, executable);
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(resolved.length * 2);
 		for (int i = startIndex; i < parameterCount; i++) {
 			MethodParameter parameter = getMethodParameter(executable, i);
@@ -257,7 +259,7 @@ public final class BeanInstanceSupplier<T> extends AutowiredElementResolver impl
 			if (shortcut != null) {
 				descriptor = new ShortcutDependencyDescriptor(descriptor, shortcut);
 			}
-			ValueHolder argumentValue = argumentValues.getIndexedArgumentValue(i, null);
+			ValueHolder argumentValue = argumentValues[i];
 			resolved[i - startIndex] = resolveArgument(registeredBean, descriptor, argumentValue, autowiredBeanNames);
 		}
 		registerDependentBeans(registeredBean.getBeanFactory(), registeredBean.getBeanName(), autowiredBeanNames);
@@ -275,18 +277,27 @@ public final class BeanInstanceSupplier<T> extends AutowiredElementResolver impl
 		throw new IllegalStateException("Unsupported executable: " + executable.getClass().getName());
 	}
 
-	private ConstructorArgumentValues resolveArgumentValues(RegisteredBean registeredBean) {
-		ConstructorArgumentValues resolved = new ConstructorArgumentValues();
+	private ValueHolder[] resolveArgumentValues(RegisteredBean registeredBean, Executable executable) {
+		Parameter[] parameters = executable.getParameters();
+		ValueHolder[] resolved = new ValueHolder[parameters.length];
 		RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();
 		if (beanDefinition.hasConstructorArgumentValues() &&
 				registeredBean.getBeanFactory() instanceof AbstractAutowireCapableBeanFactory beanFactory) {
 			BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(
 					beanFactory, registeredBean.getBeanName(), beanDefinition, beanFactory.getTypeConverter());
 			ConstructorArgumentValues values = beanDefinition.getConstructorArgumentValues();
-			values.getIndexedArgumentValues().forEach((index, valueHolder) -> {
-				ValueHolder resolvedValue = resolveArgumentValue(valueResolver, valueHolder);
-				resolved.addIndexedArgumentValue(index, resolvedValue);
-			});
+			Set<ValueHolder> usedValueHolders = new HashSet<>(parameters.length);
+			for (int i = 0; i < parameters.length; i++) {
+				Class<?> parameterType = parameters[i].getType();
+				String parameterName = (parameters[i].isNamePresent() ? parameters[i].getName() : null);
+				ValueHolder valueHolder = values.getArgumentValue(
+						i, parameterType, parameterName, usedValueHolders);
+				if (valueHolder != null) {
+					ValueHolder resolvedValue = resolveArgumentValue(valueResolver, valueHolder);
+					resolved[i] = resolvedValue;
+					usedValueHolders.add(valueHolder);
+				}
+			}
 		}
 		return resolved;
 	}

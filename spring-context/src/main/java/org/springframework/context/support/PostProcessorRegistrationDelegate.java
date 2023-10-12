@@ -479,26 +479,25 @@ final class PostProcessorRegistrationDelegate {
 			BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.beanFactory, beanName, bd);
 			postProcessors.forEach(postProcessor -> postProcessor.postProcessMergedBeanDefinition(bd, beanType, beanName));
 			for (PropertyValue propertyValue : bd.getPropertyValues().getPropertyValueList()) {
-				Object value = propertyValue.getValue();
-				if (value instanceof AbstractBeanDefinition innerBd) {
-					Class<?> innerBeanType = resolveBeanType(innerBd);
-					resolveInnerBeanDefinition(valueResolver, innerBd, (innerBeanName, innerBeanDefinition)
-							-> postProcessRootBeanDefinition(postProcessors, innerBeanName, innerBeanType, innerBeanDefinition));
-				}
-				if (value instanceof TypedStringValue typedStringValue) {
-					resolveTypeStringValue(typedStringValue);
-				}
+				postProcessValue(postProcessors, valueResolver, propertyValue.getValue());
 			}
 			for (ValueHolder valueHolder : bd.getConstructorArgumentValues().getIndexedArgumentValues().values()) {
-				Object value = valueHolder.getValue();
-				if (value instanceof AbstractBeanDefinition innerBd) {
-					Class<?> innerBeanType = resolveBeanType(innerBd);
-					resolveInnerBeanDefinition(valueResolver, innerBd, (innerBeanName, innerBeanDefinition)
-							-> postProcessRootBeanDefinition(postProcessors, innerBeanName, innerBeanType, innerBeanDefinition));
-				}
-				if (value instanceof TypedStringValue typedStringValue) {
-					resolveTypeStringValue(typedStringValue);
-				}
+				postProcessValue(postProcessors, valueResolver, valueHolder.getValue());
+			}
+			for (ValueHolder valueHolder : bd.getConstructorArgumentValues().getGenericArgumentValues()) {
+				postProcessValue(postProcessors, valueResolver, valueHolder.getValue());
+			}
+		}
+
+		private void postProcessValue(List<MergedBeanDefinitionPostProcessor> postProcessors,
+				BeanDefinitionValueResolver valueResolver, @Nullable Object value) {
+			if (value instanceof AbstractBeanDefinition innerBd) {
+				Class<?> innerBeanType = resolveBeanType(innerBd);
+				resolveInnerBeanDefinition(valueResolver, innerBd, (innerBeanName, innerBeanDefinition)
+						-> postProcessRootBeanDefinition(postProcessors, innerBeanName, innerBeanType, innerBeanDefinition));
+			}
+			if (value instanceof TypedStringValue typedStringValue) {
+				resolveTypeStringValue(typedStringValue);
 			}
 		}
 

@@ -219,7 +219,7 @@ class BeanDefinitionPropertiesCodeGeneratorTests {
 	}
 
 	@Test
-	void constructorArgumentValuesWhenValues() {
+	void constructorArgumentValuesWhenIndexedValues() {
 		this.beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, String.class);
 		this.beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(1, "test");
 		this.beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(2, 123);
@@ -229,6 +229,31 @@ class BeanDefinitionPropertiesCodeGeneratorTests {
 			assertThat(values.get(1).getValue()).isEqualTo("test");
 			assertThat(values.get(2).getValue()).isEqualTo(123);
 		});
+	}
+
+	@Test
+	void constructorArgumentValuesWhenGenericValuesWithName() {
+		this.beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(String.class);
+		this.beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(2, Long.class.getName());
+		this.beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
+				new ValueHolder("value", null, "param1"));
+		this.beanDefinition.getConstructorArgumentValues().addGenericArgumentValue
+				(new ValueHolder("another", CharSequence.class.getName(), "param2"));
+		compile((actual, compiled) -> {
+			List<ValueHolder> values = actual.getConstructorArgumentValues().getGenericArgumentValues();
+			assertThat(values.get(0)).satisfies(assertValueHolder(String.class, null, null));
+			assertThat(values.get(1)).satisfies(assertValueHolder(2, Long.class, null));
+			assertThat(values.get(2)).satisfies(assertValueHolder("value", null, "param1"));
+			assertThat(values.get(3)).satisfies(assertValueHolder("another", CharSequence.class, "param2"));
+		});
+	}
+
+	private Consumer<ValueHolder> assertValueHolder(Object value, @Nullable Class<?> type, @Nullable String name) {
+		return valueHolder -> {
+			assertThat(valueHolder.getValue()).isEqualTo(value);
+			assertThat(valueHolder.getType()).isEqualTo((type != null ? type.getName() : null));
+			assertThat(valueHolder.getName()).isEqualTo(name);
+		};
 	}
 
 	@Test
