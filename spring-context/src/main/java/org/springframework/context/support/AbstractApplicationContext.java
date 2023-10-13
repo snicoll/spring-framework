@@ -42,6 +42,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.support.ResourceEditorRegistrar;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -619,20 +620,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				finishRefresh();
 			}
 
-			catch (BeansException ex) {
+			catch (RuntimeException ex) {
 				if (logger.isWarnEnabled()) {
 					logger.warn("Exception encountered during context initialization - " +
 							"cancelling refresh attempt: " + ex);
 				}
+				BeansException beansException = (ex instanceof BeansException bex) ? bex
+						: new ApplicationContextException(ex.getMessage(), ex);
 
 				// Destroy already created singletons to avoid dangling resources.
 				destroyBeans();
 
 				// Reset 'active' flag.
-				cancelRefresh(ex);
+				cancelRefresh(beansException);
 
 				// Propagate exception to caller.
-				throw ex;
+				throw beansException;
 			}
 
 			finally {
