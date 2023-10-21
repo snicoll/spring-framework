@@ -97,15 +97,17 @@ class BeanDefinitionPropertiesCodeGenerator {
 
 	BeanDefinitionPropertiesCodeGenerator(RuntimeHints hints,
 			Predicate<String> attributeFilter, GeneratedMethods generatedMethods,
+			List<Delegate> additionalDelegates,
 			BiFunction<String, Object, CodeBlock> customValueCodeGenerator) {
 
 		this.hints = hints;
 		this.attributeFilter = attributeFilter;
-		this.valueCodeGenerator = ValueCodeGenerator
-				.with(new ValueCodeGeneratorDelegateAdapter(customValueCodeGenerator))
-				.add(BeanDefinitionPropertyValueCodeGeneratorDelegates.INSTANCES)
-				.add(ValueCodeGeneratorDelegates.INSTANCES)
-				.scoped(generatedMethods);
+		List<Delegate> allDelegates = new ArrayList<>();
+		allDelegates.add((valueCodeGenerator, value) -> customValueCodeGenerator.apply(PropertyNamesStack.peek(), value));
+		allDelegates.addAll(additionalDelegates);
+		allDelegates.addAll(BeanDefinitionPropertyValueCodeGeneratorDelegates.INSTANCES);
+		allDelegates.addAll(ValueCodeGeneratorDelegates.INSTANCES);
+		this.valueCodeGenerator = ValueCodeGenerator.with(allDelegates).scoped(generatedMethods);
 	}
 
 
@@ -350,21 +352,6 @@ class BeanDefinitionPropertiesCodeGenerator {
 		if (filter.test(defaultValue, actualValue)) {
 			code.addStatement(format, BEAN_DEFINITION_VARIABLE, formatter.apply(actualValue));
 		}
-	}
-
-	static class ValueCodeGeneratorDelegateAdapter implements Delegate {
-
-		private final BiFunction<String, Object, CodeBlock> customValueCodeGenerator;
-
-		ValueCodeGeneratorDelegateAdapter(BiFunction<String, Object, CodeBlock> customValueCodeGenerator) {
-			this.customValueCodeGenerator = customValueCodeGenerator;
-		}
-
-		@Override
-		public CodeBlock generateCode(ValueCodeGenerator valueCodeGenerator, Object value) {
-			return this.customValueCodeGenerator.apply(PropertyNamesStack.peek(), value);
-		}
-
 	}
 
 	static class PropertyNamesStack {

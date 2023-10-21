@@ -18,6 +18,7 @@ package org.springframework.beans.factory.aot;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
 import org.springframework.aot.generate.GeneratedClass;
+import org.springframework.aot.generate.ValueCodeGenerator.Delegate;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.aot.test.generate.TestGenerationContext;
@@ -50,6 +52,7 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.ManagedSet;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.testfixture.beans.factory.aot.CustomPropertyValue;
 import org.springframework.beans.testfixture.beans.factory.aot.DeferredTypeBuilder;
 import org.springframework.core.test.tools.Compiled;
 import org.springframework.core.test.tools.TestCompiler;
@@ -352,6 +355,21 @@ class BeanDefinitionPropertiesCodeGeneratorTests {
 	}
 
 	@Test
+	void propertyValuesWhenCustomValuesUsingDelegate() {
+		this.beanDefinition.setTargetType(PropertyValuesBean.class);
+		this.beanDefinition.getPropertyValues().add("test", new CustomPropertyValue("test"));
+		this.beanDefinition.getPropertyValues().add("spring", new CustomPropertyValue("framework"));
+		compile(value -> true, List.of(new CustomPropertyValue.ValueCodeGeneratorDelegate()), (actual, compiled) -> {
+			assertThat(actual.getPropertyValues().get("test")).isInstanceOfSatisfying(CustomPropertyValue.class,
+					customPropertyValue -> assertThat(customPropertyValue.value()).isEqualTo("test"));
+			assertThat(actual.getPropertyValues().get("spring")).isInstanceOfSatisfying(CustomPropertyValue.class,
+					customPropertyValue -> assertThat(customPropertyValue.value()).isEqualTo("framework"));
+		});
+		assertHasMethodInvokeHints(PropertyValuesBean.class, "setTest", "setSpring");
+		assertHasDecalredFieldsHint(PropertyValuesBean.class);
+	}
+
+	@Test
 	void attributesWhenAllFiltered() {
 		this.beanDefinition.setAttribute("a", "A");
 		this.beanDefinition.setAttribute("b", "B");
@@ -512,12 +530,18 @@ class BeanDefinitionPropertiesCodeGeneratorTests {
 		compile(attribute -> true, result);
 	}
 
-	private void compile(Predicate<String> attributeFilter, BiConsumer<RootBeanDefinition, Compiled> result) {
+	private void compile(Predicate<String> attributeFilter,
+			BiConsumer<RootBeanDefinition, Compiled> result) {
+		compile(attributeFilter, Collections.emptyList(), result);
+	}
+
+	private void compile(Predicate<String> attributeFilter, List<Delegate> additionalDelegates,
+			BiConsumer<RootBeanDefinition, Compiled> result) {
 		DeferredTypeBuilder typeBuilder = new DeferredTypeBuilder();
 		GeneratedClass generatedClass = this.generationContext.getGeneratedClasses().addForFeature("TestCode", typeBuilder);
 		BeanDefinitionPropertiesCodeGenerator codeGenerator = new BeanDefinitionPropertiesCodeGenerator(
 				this.generationContext.getRuntimeHints(), attributeFilter,
-				generatedClass.getMethods(), (name, value) -> null);
+				generatedClass.getMethods(), additionalDelegates, (name, value) -> null);
 		CodeBlock generatedCode = codeGenerator.generateCode(this.beanDefinition);
 		typeBuilder.set(type -> {
 			type.addModifiers(Modifier.PUBLIC);
