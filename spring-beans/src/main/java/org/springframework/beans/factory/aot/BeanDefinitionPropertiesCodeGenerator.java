@@ -174,10 +174,12 @@ class BeanDefinitionPropertiesCodeGenerator {
 		Map<Integer, ValueHolder> indexedValues = constructorValues.getIndexedArgumentValues();
 		if (!indexedValues.isEmpty()) {
 			indexedValues.forEach((index, valueHolder) -> {
-				CodeBlock valueCode = generateValue(valueHolder.getName(), valueHolder.getValue());
+				Object value = valueHolder.getValue();
+				CodeBlock valueCode = generateValue(valueHolder.getName(), value);
+				CodeBlock valueArgument = (value != null) ? valueCode : cast(Object.class, valueCode);
 				code.addStatement(
 						"$L.getConstructorArgumentValues().addIndexedArgumentValue($L, $L)",
-						BEAN_DEFINITION_VARIABLE, index, valueCode);
+						BEAN_DEFINITION_VARIABLE, index, valueArgument);
 			});
 		}
 		List<ValueHolder> genericValues = constructorValues.getGenericArgumentValues();
@@ -344,6 +346,10 @@ class BeanDefinitionPropertiesCodeGenerator {
 		if (filter.test(defaultValue, actualValue)) {
 			code.addStatement(format, BEAN_DEFINITION_VARIABLE, formatter.apply(actualValue));
 		}
+	}
+
+	private CodeBlock cast(Class<?> castType, CodeBlock valueCode) {
+		return CodeBlock.of("($T) $L", castType, valueCode);
 	}
 
 	static class PropertyNamesStack {
