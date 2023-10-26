@@ -39,6 +39,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.SpringProperties;
 import org.springframework.core.io.ProtocolResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -103,6 +104,22 @@ import org.springframework.util.Assert;
  * @see org.springframework.beans.factory.support.PropertiesBeanDefinitionReader
  */
 public class GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry {
+
+	/**
+	 * Property name for configuring context startup: {@value}.
+	 *
+	 * @see #STARTUP_APP_CDS
+	 * @since 6.2
+	 */
+	public static final String STARTUP_PROPERTY_NAME = "spring.context.startup";
+
+	/**
+	 * Start the context for AppCDS training run: {@value}.
+	 *
+	 * @see #STARTUP_PROPERTY_NAME
+	 * @since 6.2
+	 */
+	public static final String STARTUP_APP_CDS = "AppCDS";
 
 	private final DefaultListableBeanFactory beanFactory;
 
@@ -336,6 +353,18 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 	public AutowireCapableBeanFactory getAutowireCapableBeanFactory() throws IllegalStateException {
 		assertBeanFactoryActive();
 		return this.beanFactory;
+	}
+
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		String startupMode = SpringProperties.getProperty(STARTUP_PROPERTY_NAME);
+		if (STARTUP_APP_CDS.equalsIgnoreCase(startupMode)) {
+			// FIXME
+			refreshForAotProcessing(new RuntimeHints());
+		}
+		else {
+			super.refresh();
+		}
 	}
 
 
