@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.sql.DataSource;
 
@@ -121,6 +122,9 @@ public class DefaultPersistenceUnitManager
 
 	@Nullable
 	private String[] packagesToScan;
+
+	@Nullable
+	private Predicate<String> managedClassNameFilter;
 
 	@Nullable
 	private String[] mappingResources;
@@ -229,12 +233,23 @@ public class DefaultPersistenceUnitManager
 	 * resource for the default unit if the mapping file is not co-located with a
 	 * {@code persistence.xml} file (in which case we assume it is only meant to be
 	 * used with the persistence units defined there, like in standard JPA).
+	 * @see #setManagedClassNameFilter(Predicate)
 	 * @see #setManagedTypes(PersistenceManagedTypes)
 	 * @see #setDefaultPersistenceUnitName
 	 * @see #setMappingResources
 	 */
 	public void setPackagesToScan(String... packagesToScan) {
 		this.packagesToScan = packagesToScan;
+	}
+
+	/**
+	 * Set the {@linkplain Predicate filter} to apply on entity classes discovered
+	 * using {@linkplain #setPackagesToScan(String...) classpath scanning}.
+	 * @param managedClassNameFilter the predicate to filter entity classes
+	 * @since 6.2
+	 */
+	public void setManagedClassNameFilter(Predicate<String> managedClassNameFilter) {
+		this.managedClassNameFilter = managedClassNameFilter;
 	}
 
 	/**
@@ -546,8 +561,9 @@ public class DefaultPersistenceUnitManager
 			applyManagedTypes(scannedUnit, this.managedTypes);
 		}
 		else if (this.packagesToScan != null) {
-			applyManagedTypes(scannedUnit, new PersistenceManagedTypesScanner(
-					this.resourcePatternResolver).scan(this.packagesToScan));
+			PersistenceManagedTypesScanner scanner = new PersistenceManagedTypesScanner(
+					this.resourcePatternResolver, this.managedClassNameFilter);
+			applyManagedTypes(scannedUnit, scanner.scan(this.packagesToScan));
 		}
 
 		if (this.mappingResources != null) {

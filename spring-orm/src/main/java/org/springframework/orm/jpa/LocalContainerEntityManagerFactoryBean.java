@@ -16,6 +16,8 @@
 
 package org.springframework.orm.jpa;
 
+import java.util.function.Predicate;
+
 import javax.sql.DataSource;
 
 import jakarta.persistence.EntityManagerFactory;
@@ -198,6 +200,16 @@ public class LocalContainerEntityManagerFactoryBean extends AbstractEntityManage
 	 */
 	public void setPackagesToScan(String... packagesToScan) {
 		this.internalPersistenceUnitManager.setPackagesToScan(packagesToScan);
+	}
+
+	/**
+	 * Set the {@linkplain Predicate filter} to apply on entity classes discovered
+	 * using {@linkplain #setPackagesToScan(String...) classpath scanning}.
+	 * @param managedClassNameFilter the predicate to filter entity classes
+	 * @since 6.2
+	 */
+	public void setManagedClassNameFilter(Predicate<String> managedClassNameFilter) {
+		this.internalPersistenceUnitManager.setManagedClassNameFilter(managedClassNameFilter);
 	}
 
 	/**
