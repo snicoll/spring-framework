@@ -267,7 +267,7 @@ class InstanceSupplierCodeGeneratorTests {
 	class DeprecationTests {
 
 		private static final TestCompiler TEST_COMPILER = TestCompiler.forSystem()
-				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Werror");
+				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Xlint:-processing", "-Werror");
 
 		@Test
 		@Disabled("Need to move to a separate method so that the warning can be suppressed")
@@ -323,7 +323,7 @@ class InstanceSupplierCodeGeneratorTests {
 	class DeprecationForRemovalTests {
 
 		private static final TestCompiler TEST_COMPILER = TestCompiler.forSystem()
-				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Werror");
+				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Xlint:-processing", "-Werror");
 
 		@Test
 		@Disabled("Need to move to a separate method so that the warning can be suppressed")

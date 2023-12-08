@@ -747,7 +747,7 @@ class BeanDefinitionMethodGeneratorTests {
 	class DeprecationTests {
 
 		private static final TestCompiler TEST_COMPILER = TestCompiler.forSystem()
-				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Werror");
+				.withCompilerOptions("-Xlint:all", "-Xlint:-rawtypes", "-Xlint:-processing", "-Werror");
 
 		@Test
 		void generateBeanDefinitionMethodWithDeprecatedTargetClass() {
