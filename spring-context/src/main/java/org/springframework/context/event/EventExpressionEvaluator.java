@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,10 +50,10 @@ class EventExpressionEvaluator extends CachedExpressionEvaluator {
 	 * Determine if the condition defined by the specified expression evaluates
 	 * to {@code true}.
 	 */
-	public boolean condition(String conditionExpression, ApplicationEvent event, Method targetMethod,
-			AnnotatedElementKey methodKey, Object[] args) {
+	public boolean condition(String conditionExpression, ApplicationEvent event, Object target,
+			Method targetMethod, AnnotatedElementKey methodKey, Object[] args) {
 
-		EventExpressionRootObject rootObject = new EventExpressionRootObject(event, args);
+		EventExpressionRootObject rootObject = new EventExpressionRootObject(event, target, args);
 		EvaluationContext evaluationContext = createEvaluationContext(rootObject, targetMethod, args);
 		return (Boolean.TRUE.equals(getExpression(this.conditionCache, methodKey, conditionExpression).getValue(
 				evaluationContext, Boolean.class)));

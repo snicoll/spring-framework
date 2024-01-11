@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,8 +233,9 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 	 */
 	public void processEvent(ApplicationEvent event) {
 		Object[] args = resolveArguments(event);
-		if (shouldHandle(event, args)) {
-			Object result = doInvoke(args);
+		Object target = getTargetBean();
+		if (shouldHandle(event, target, args)) {
+			Object result = doInvoke(target, args);
 			if (result != null) {
 				handleResult(result);
 			}
@@ -247,14 +248,15 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 	/**
 	 * Determine whether the listener method would actually handle the given
 	 * event, checking if the condition matches.
+	 * @param target the object the listener method is invoked from
 	 * @param event the event to process through the listener method
-	 * @since 6.1
+	 * @since 6.2
 	 */
-	public boolean shouldHandle(ApplicationEvent event) {
-		return shouldHandle(event, resolveArguments(event));
+	public boolean shouldHandle(Object target, ApplicationEvent event) {
+		return shouldHandle(event, target, resolveArguments(event));
 	}
 
-	private boolean shouldHandle(ApplicationEvent event, @Nullable Object[] args) {
+	private boolean shouldHandle(ApplicationEvent event, Object target, @Nullable Object[] args) {
 		if (args == null) {
 			return false;
 		}
@@ -262,7 +264,7 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 		if (StringUtils.hasText(condition)) {
 			Assert.notNull(this.evaluator, "EventExpressionEvaluator must not be null");
 			return this.evaluator.condition(
-					condition, event, this.targetMethod, this.methodKey, args);
+					condition, event, target, this.targetMethod, this.methodKey, args);
 		}
 		return true;
 	}
@@ -350,26 +352,25 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 	 * Invoke the event listener method with the given argument values.
 	 */
 	@Nullable
-	protected Object doInvoke(Object... args) {
-		Object bean = getTargetBean();
+	protected Object doInvoke(Object target, Object... args) {
 		// Detect package-protected NullBean instance through equals(null) check
-		if (bean.equals(null)) {
+		if (target.equals(null)) {
 			return null;
 		}
 
 		ReflectionUtils.makeAccessible(this.method);
 		try {
 			if (KotlinDetector.isSuspendingFunction(this.method)) {
-				return CoroutinesUtils.invokeSuspendingFunction(this.method, bean, args);
+				return CoroutinesUtils.invokeSuspendingFunction(this.method, target, args);
 			}
-			return this.method.invoke(bean, args);
+			return this.method.invoke(target, args);
 		}
 		catch (IllegalArgumentException ex) {
-			assertTargetBean(this.method, bean, args);
-			throw new IllegalStateException(getInvocationErrorMessage(bean, ex.getMessage(), args), ex);
+			assertTargetBean(this.method, target, args);
+			throw new IllegalStateException(getInvocationErrorMessage(target, ex.getMessage(), args), ex);
 		}
 		catch (IllegalAccessException ex) {
-			throw new IllegalStateException(getInvocationErrorMessage(bean, ex.getMessage(), args), ex);
+			throw new IllegalStateException(getInvocationErrorMessage(target, ex.getMessage(), args), ex);
 		}
 		catch (InvocationTargetException ex) {
 			// Throw underlying exception
@@ -378,7 +379,7 @@ public class ApplicationListenerMethodAdapter implements GenericApplicationListe
 				throw runtimeException;
 			}
 			else {
-				String msg = getInvocationErrorMessage(bean, "Failed to invoke event listener method", args);
+				String msg = getInvocationErrorMessage(target, "Failed to invoke event listener method", args);
 				throw new UndeclaredThrowableException(targetException, msg);
 			}
 		}

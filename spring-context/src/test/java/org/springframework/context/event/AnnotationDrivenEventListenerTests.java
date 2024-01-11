@@ -611,6 +611,15 @@ class AnnotationDrivenEventListenerTests {
 		this.context.publishEvent(42d);
 		this.eventCollector.assertEvent(listener, event, "OK", timestamp, 42d);
 		this.eventCollector.assertTotalEventsCount(4);
+
+		listener.setStarted(true);
+		this.context.publishEvent('A');
+		this.eventCollector.assertEvent(listener, event, "OK", timestamp, 42d, 'A');
+		this.eventCollector.assertTotalEventsCount(5);
+
+		listener.setStarted(false);
+		this.context.publishEvent('B');
+		this.eventCollector.assertTotalEventsCount(5);
 	}
 
 	@Test
@@ -1021,12 +1030,21 @@ class AnnotationDrivenEventListenerTests {
 		void handleTimestamp(Long timestamp);
 
 		void handleRatio(Double ratio);
+
+		void setStarted(boolean started);
+
+		boolean isStarted();
+
+		void handleCharacter(Character character);
+
 	}
 
 
 	@Component
 	@Validated
 	static class ConditionalEventListener extends TestEventListener implements ConditionalEventInterface {
+
+		private boolean started;
 
 		@EventListener(condition = "'OK'.equals(#root.event.msg)")
 		@Override
@@ -1051,6 +1069,23 @@ class AnnotationDrivenEventListenerTests {
 		public void handleRatio(Double ratio) {
 			collectEvent(ratio);
 		}
+
+		@Override
+		public void setStarted(boolean started) {
+			this.started = started;
+		}
+
+		@Override
+		public boolean isStarted() {
+			return this.started;
+		}
+
+		@Override
+		@EventListener(condition = "{#root.target.started}")
+		public void handleCharacter(Character character) {
+			collectEvent(character);
+		}
+
 	}
 
 
