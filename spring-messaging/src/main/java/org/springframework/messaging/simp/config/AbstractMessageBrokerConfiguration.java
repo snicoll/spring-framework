@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -29,7 +30,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.SmartApplicationListener;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.converter.ByteArrayMessageConverter;
@@ -153,7 +153,7 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 
 	@Bean
 	public AbstractSubscribableChannel clientInboundChannel(
-			@Qualifier("clientInboundChannelExecutor") TaskExecutor executor) {
+			@Qualifier("clientInboundChannelExecutor") Executor executor) {
 
 		ExecutorSubscribableChannel channel = new ExecutorSubscribableChannel(executor);
 		channel.setLogger(SimpLogging.forLog(channel.getLogger()));
@@ -165,9 +165,9 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 	}
 
 	@Bean
-	public TaskExecutor clientInboundChannelExecutor() {
-		return getTaskExecutor(getClientInboundChannelRegistration(),
-				"clientInboundChannel-", this::defaultTaskExecutor);
+	public Executor clientInboundChannelExecutor() {
+		return getExecutor(getClientInboundChannelRegistration(),
+				"clientInboundChannel-", this::defaultExecutor);
 	}
 
 	protected final ChannelRegistration getClientInboundChannelRegistration() {
@@ -189,7 +189,7 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 
 	@Bean
 	public AbstractSubscribableChannel clientOutboundChannel(
-			@Qualifier("clientOutboundChannelExecutor") TaskExecutor executor) {
+			@Qualifier("clientOutboundChannelExecutor") Executor executor) {
 
 		ExecutorSubscribableChannel channel = new ExecutorSubscribableChannel(executor);
 		channel.setLogger(SimpLogging.forLog(channel.getLogger()));
@@ -201,9 +201,9 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 	}
 
 	@Bean
-	public TaskExecutor clientOutboundChannelExecutor() {
-		return getTaskExecutor(getClientOutboundChannelRegistration(),
-				"clientOutboundChannel-", this::defaultTaskExecutor);
+	public Executor clientOutboundChannelExecutor() {
+		return getExecutor(getClientOutboundChannelRegistration(),
+				"clientOutboundChannel-", this::defaultExecutor);
 	}
 
 	protected final ChannelRegistration getClientOutboundChannelRegistration() {
@@ -226,11 +226,11 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 	@Bean
 	public AbstractSubscribableChannel brokerChannel(
 			AbstractSubscribableChannel clientInboundChannel, AbstractSubscribableChannel clientOutboundChannel,
-			@Qualifier("brokerChannelExecutor") TaskExecutor executor) {
+			@Qualifier("brokerChannelExecutor") Executor executor) {
 
 		MessageBrokerRegistry registry = getBrokerRegistry(clientInboundChannel, clientOutboundChannel);
 		ChannelRegistration registration = registry.getBrokerChannelRegistration();
-		ExecutorSubscribableChannel channel = (registration.hasTaskExecutor() ?
+		ExecutorSubscribableChannel channel = (registration.hasExecutor() ?
 				new ExecutorSubscribableChannel(executor) : new ExecutorSubscribableChannel());
 		registration.interceptors(new ImmutableMessageChannelInterceptor());
 		channel.setLogger(SimpLogging.forLog(channel.getLogger()));
@@ -239,34 +239,34 @@ public abstract class AbstractMessageBrokerConfiguration implements ApplicationC
 	}
 
 	@Bean
-	public TaskExecutor brokerChannelExecutor(
+	public Executor brokerChannelExecutor(
 			AbstractSubscribableChannel clientInboundChannel, AbstractSubscribableChannel clientOutboundChannel) {
 
 		MessageBrokerRegistry registry = getBrokerRegistry(clientInboundChannel, clientOutboundChannel);
 		ChannelRegistration registration = registry.getBrokerChannelRegistration();
-		return getTaskExecutor(registration, "brokerChannel-", () -> {
+		return getExecutor(registration, "brokerChannel-", () -> {
 			// Should never be used
-			ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-			threadPoolTaskExecutor.setCorePoolSize(0);
-			threadPoolTaskExecutor.setMaxPoolSize(1);
-			threadPoolTaskExecutor.setQueueCapacity(0);
-			return threadPoolTaskExecutor;
+			ThreadPoolTaskExecutor fallbackExecutor = new ThreadPoolTaskExecutor();
+			fallbackExecutor.setCorePoolSize(0);
+			fallbackExecutor.setMaxPoolSize(1);
+			fallbackExecutor.setQueueCapacity(0);
+			return fallbackExecutor;
 		});
 	}
 
-	private TaskExecutor defaultTaskExecutor() {
+	private Executor defaultExecutor() {
 		return new TaskExecutorRegistration().getTaskExecutor();
 	}
 
-	private static TaskExecutor getTaskExecutor(ChannelRegistration registration,
-			String threadNamePrefix, Supplier<TaskExecutor> fallback) {
+	private static Executor getExecutor(ChannelRegistration registration,
+			String threadNamePrefix, Supplier<Executor> fallback) {
 
-		return registration.getTaskExecutor(fallback,
+		return registration.getExecutor(fallback,
 				executor -> setThreadNamePrefix(executor, threadNamePrefix));
 	}
 
-	private static void setThreadNamePrefix(TaskExecutor taskExecutor, String name) {
-		if (taskExecutor instanceof CustomizableThreadCreator ctc) {
+	private static void setThreadNamePrefix(Executor executor, String name) {
+		if (executor instanceof CustomizableThreadCreator ctc) {
 			ctc.setThreadNamePrefix(name);
 		}
 	}
