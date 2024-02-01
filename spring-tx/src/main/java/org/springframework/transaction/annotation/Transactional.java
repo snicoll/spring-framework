@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,7 @@ public @interface Transactional {
 	 * bean definition.
 	 * @since 4.2
 	 * @see #value
+	 * @see TransactionConfig#transactionManager()
 	 * @see org.springframework.transaction.PlatformTransactionManager
 	 * @see org.springframework.transaction.ReactiveTransactionManager
 	 */
@@ -230,6 +231,7 @@ public @interface Transactional {
 	 * in a type-safe manner. See the {@linkplain Transactional class-level javadocs}
 	 * for further details on rollback rule semantics.
 	 * @see #rollbackForClassName
+	 * @see TransactionConfig#rollbackForClassName()
 	 * @see org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(Class)
 	 * @see org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)
 	 */
@@ -243,6 +245,7 @@ public @interface Transactional {
 	 * on rollback rule semantics, patterns, and warnings regarding possible
 	 * unintentional matches.
 	 * @see #rollbackFor
+	 * @see TransactionConfig#rollbackFor()
 	 * @see org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(String)
 	 * @see org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)
 	 */
@@ -257,6 +260,7 @@ public @interface Transactional {
 	 * in a type-safe manner. See the {@linkplain Transactional class-level javadocs}
 	 * for further details on rollback rule semantics.
 	 * @see #noRollbackForClassName
+	 * @see TransactionConfig#noRollbackFor()
 	 * @see org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(Class)
 	 * @see org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)
 	 */
@@ -270,6 +274,7 @@ public @interface Transactional {
 	 * on rollback rule semantics, patterns, and warnings regarding possible
 	 * unintentional matches.
 	 * @see #noRollbackFor
+	 * @see TransactionConfig#noRollbackForClassName()
 	 * @see org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(String)
 	 * @see org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)
 	 */

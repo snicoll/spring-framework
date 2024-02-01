@@ -250,6 +250,78 @@ class AnnotationTransactionAttributeSourceTests {
 	}
 
 	@Nested
+	class CacheConfigTests {
+
+		@Test
+		void cacheConfigDoesNotEnableTransaction() {
+			Method method = getMethod(TestConfigBean1.class, "getAge");
+			assertThat(attributeSource.getTransactionAttribute(method, TestConfigBean1.class)).isNull();
+		}
+
+		@Test
+		void cacheConfigConfigureOperation() {
+			TransactionAttribute actual = getTransactionAttribute(TestConfigBean2.class, "getAge");
+			assertThat(actual.getQualifier()).isEqualTo("myTransactionManager");
+			assertThat(actual).satisfies(hasRollbackRules(new RollbackRuleAttribute(Exception.class),
+					new NoRollbackRuleAttribute(IOException.class)));
+		}
+
+		@Test
+		void cacheConfigMetaAnnotatedConfigureOperation() {
+			TransactionAttribute actual = getTransactionAttribute(TestConfigBean3.class, "getAge");
+			assertThat(actual.getQualifier()).isEqualTo("");
+			assertThat(actual).satisfies(hasRollbackRules(new RollbackRuleAttribute(Exception.class),
+					new NoRollbackRuleAttribute(IOException.class)));
+		}
+
+
+		@TransactionConfig(transactionManager = "myTransactionManager")
+		static class TestConfigBean1 {
+
+			public int getAge() {
+				return 10;
+			}
+		}
+
+		@TransactionConfig(transactionManager = "myTransactionManager", rollbackFor = Exception.class, noRollbackFor = IOException.class)
+		static class TestConfigBean2 {
+
+			@Transactional
+			public int getAge() {
+				return 10;
+			}
+
+		}
+
+		@Retention(RetentionPolicy.RUNTIME)
+		@TransactionConfig(rollbackFor = Exception.class, noRollbackFor = IOException.class)
+		@interface TxConfig {
+		}
+
+		@TxConfig
+		static class TestConfigBean3 {
+
+			@Transactional
+			public int getAge() {
+				return 10;
+			}
+
+		}
+
+		@Retention(RetentionPolicy.RUNTIME)
+		@TransactionConfig(rollbackFor = Exception.class, noRollbackFor = IOException.class)
+		@interface TxConfigWithAttribute {
+
+			@AliasFor(annotation = TransactionConfig.class)
+			String transactionManager();
+		}
+
+
+	}
+
+
+
+	@Nested
 	class JtaAttributeTests {
 
 		@Test
