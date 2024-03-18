@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.test.annotation.DirtiesContext;
@@ -122,6 +123,9 @@ public abstract class AbstractDirtiesContextTestExecutionListener extends Abstra
 			HierarchyMode hierarchyMode = (methodAnnotated ? methodAnn.hierarchyMode() : classAnn.hierarchyMode());
 			dirtyContext(testContext, hierarchyMode);
 		}
+		else {
+			clearResourceCache(testContext);
+		}
 	}
 
 	/**
@@ -157,6 +161,18 @@ public abstract class AbstractDirtiesContextTestExecutionListener extends Abstra
 
 		if (classMode == requiredClassMode) {
 			dirtyContext(testContext, dirtiesContext.hierarchyMode());
+		}
+		else {
+			clearResourceCache(testContext);
+		}
+	}
+
+	private void clearResourceCache(TestContext testContext) {
+		if (testContext.hasApplicationContext()) {
+			ApplicationContext applicationContext = testContext.getApplicationContext();
+			if (applicationContext instanceof AbstractApplicationContext ctx) {
+				ctx.clearResourceCaches();
+			}
 		}
 	}
 

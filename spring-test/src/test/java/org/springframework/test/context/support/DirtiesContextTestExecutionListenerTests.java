@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -65,6 +66,21 @@ class DirtiesContextTestExecutionListenerTests {
 	@Nested
 	@DisplayName("Before and after test method")
 	class BeforeAndAfterTestMethodTests {
+
+		@Test
+		void notDeclaredClearResourceCache() throws Exception {
+			Class<?> clazz = DirtiesContextNotDeclared.class;
+			AbstractApplicationContext applicationContext = mock(AbstractApplicationContext.class);
+			BDDMockito.<Class<?>> given(testContext.getTestClass()).willReturn(clazz);
+			given(testContext.getTestMethod()).willReturn(clazz.getDeclaredMethod("test"));
+			BDDMockito.given(testContext.hasApplicationContext()).willReturn(true);
+			BDDMockito.given(testContext.getApplicationContext()).willReturn(applicationContext);
+			beforeListener.beforeTestMethod(testContext);
+			afterListener.beforeTestMethod(testContext);
+			verify(testContext, times(1)).hasApplicationContext();
+			verify(testContext, times(1)).getApplicationContext();
+			verify(applicationContext, times(1)).clearResourceCaches();
+		}
 
 		@Test
 		void declaredLocallyOnMethodWithBeforeMethodMode() throws Exception {
@@ -176,6 +192,21 @@ class DirtiesContextTestExecutionListenerTests {
 	@Nested
 	@DisplayName("Before and after test class")
 	class BeforeAndAfterTestClassTests {
+
+		@Test
+		void notDeclaredClearResourceCache() throws Exception {
+			Class<?> clazz = DirtiesContextNotDeclared.class;
+			AbstractApplicationContext applicationContext = mock(AbstractApplicationContext.class);
+			BDDMockito.<Class<?>> given(testContext.getTestClass()).willReturn(clazz);
+			given(testContext.getTestMethod()).willReturn(clazz.getDeclaredMethod("test"));
+			BDDMockito.given(testContext.hasApplicationContext()).willReturn(true);
+			BDDMockito.given(testContext.getApplicationContext()).willReturn(applicationContext);
+			beforeListener.beforeTestClass(testContext);
+			afterListener.beforeTestClass(testContext);
+			verify(testContext, times(1)).hasApplicationContext();
+			verify(testContext, times(1)).getApplicationContext();
+			verify(applicationContext, times(1)).clearResourceCaches();
+		}
 
 		@Test
 		void declaredLocallyOnMethod() throws Exception {
@@ -395,6 +426,12 @@ class DirtiesContextTestExecutionListenerTests {
 
 	@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 	static class DirtiesContextDeclaredLocallyAfterEachTestMethod {
+
+		void test() {
+		}
+	}
+
+	static class DirtiesContextNotDeclared {
 
 		void test() {
 		}
