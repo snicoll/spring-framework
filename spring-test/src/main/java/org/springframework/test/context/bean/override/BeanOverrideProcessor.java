@@ -48,9 +48,9 @@ public interface BeanOverrideProcessor {
 	 * {@link ResolvableType}, additionally tracking the source class if the
 	 * field's type is a {@link TypeVariable}.
 	 */
-	default ResolvableType getOrDeduceType(Field field, Annotation annotation, Class<?> source) {
+	default ResolvableType getOrDeduceType(Field field, Annotation annotation, Class<?> testClass) {
 		return (field.getGenericType() instanceof TypeVariable ?
-				ResolvableType.forField(field, source) : ResolvableType.forField(field));
+				ResolvableType.forField(field, testClass) : ResolvableType.forField(field));
 	}
 
 	/**
@@ -63,9 +63,12 @@ public interface BeanOverrideProcessor {
 	 * @param field the annotated field
 	 * @param overrideAnnotation the field annotation
 	 * @param typeToOverride the target type
+	 * @param testClass the test class being processed, which can be different
+	 * from the {@code field.getDeclaringClass()} in case the field is inherited
+	 * from a superclass
 	 * @return a new {@link OverrideMetadata} instance
 	 * @see #getOrDeduceType(Field, Annotation, Class)
 	 */
-	OverrideMetadata createMetadata(Field field, Annotation overrideAnnotation, ResolvableType typeToOverride);
-
+	OverrideMetadata createMetadata(Field field, Annotation overrideAnnotation, ResolvableType typeToOverride,
+			Class<?> testClass);
 }

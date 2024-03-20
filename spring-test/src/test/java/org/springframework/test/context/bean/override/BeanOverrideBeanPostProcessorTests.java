@@ -59,7 +59,7 @@ class BeanOverrideBeanPostProcessorTests {
 	void canReplaceExistingBeanDefinitions() {
 		this.parser.parse(ReplaceBeans.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(ReplaceBeans.class);
 		context.registerBean("explicit", ExampleService.class, () -> new RealExampleService("unexpected"));
 		context.registerBean("implicitName", ExampleService.class, () -> new RealExampleService("unexpected"));
@@ -74,20 +74,21 @@ class BeanOverrideBeanPostProcessorTests {
 	void cannotReplaceIfNoBeanMatching() {
 		this.parser.parse(ReplaceBeans.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(ReplaceBeans.class);
 		//note we don't register any original bean here
 
 		assertThatIllegalStateException()
 				.isThrownBy(context::refresh)
-				.withMessage("Unable to override test bean; expected a bean definition to replace with name 'explicit'");
+				.withMessage("Unable to override @ExampleBeanOverrideAnnotation bean; " +
+						"expected a bean definition to replace with name 'explicit'");
 	}
 
 	@Test
 	void canReplaceExistingBeanDefinitionsWithCreateReplaceStrategy() {
 		this.parser.parse(CreateIfOriginalIsMissingBean.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(CreateIfOriginalIsMissingBean.class);
 		context.registerBean("explicit", ExampleService.class, () -> new RealExampleService("unexpected"));
 		context.registerBean("implicitName", ExampleService.class, () -> new RealExampleService("unexpected"));
@@ -102,7 +103,7 @@ class BeanOverrideBeanPostProcessorTests {
 	void canCreateIfOriginalMissingWithCreateReplaceStrategy() {
 		this.parser.parse(CreateIfOriginalIsMissingBean.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(CreateIfOriginalIsMissingBean.class);
 		//note we don't register original beans here
 
@@ -116,7 +117,7 @@ class BeanOverrideBeanPostProcessorTests {
 	void canOverrideBeanProducedByFactoryBeanWithClassObjectTypeAttribute() {
 		this.parser.parse(OverriddenFactoryBean.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		RootBeanDefinition factoryBeanDefinition = new RootBeanDefinition(TestFactoryBean.class);
 		factoryBeanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, SomeInterface.class);
 		context.registerBeanDefinition("beanToBeOverridden", factoryBeanDefinition);
@@ -131,7 +132,7 @@ class BeanOverrideBeanPostProcessorTests {
 	void canOverrideBeanProducedByFactoryBeanWithResolvableTypeObjectTypeAttribute() {
 		this.parser.parse(OverriddenFactoryBean.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		BeanOverrideBeanPostProcessor.register(context, parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		RootBeanDefinition factoryBeanDefinition = new RootBeanDefinition(TestFactoryBean.class);
 		ResolvableType objectType = ResolvableType.forClass(SomeInterface.class);
 		factoryBeanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, objectType);
@@ -148,7 +149,7 @@ class BeanOverrideBeanPostProcessorTests {
 		this.parser.parse(EagerInitBean.class);
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(FactoryBeanRegisteringPostProcessor.class);
-		BeanOverrideBeanPostProcessor.register(context, parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(EarlyBeanInitializationDetector.class);
 		context.register(EagerInitBean.class);
 
@@ -162,7 +163,7 @@ class BeanOverrideBeanPostProcessorTests {
 		RootBeanDefinition definition = new RootBeanDefinition(String.class, () -> "ORIGINAL");
 		definition.setScope(BeanDefinition.SCOPE_SINGLETON);
 		context.registerBeanDefinition("singleton", definition);
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(SingletonBean.class);
 
 		assertThatNoException().isThrownBy(context::refresh);
@@ -179,7 +180,7 @@ class BeanOverrideBeanPostProcessorTests {
 		definition.setScope("customScope");
 		definition.setPrimary(true);
 		context.registerBeanDefinition("singleton", definition);
-		BeanOverrideBeanPostProcessor.register(context, this.parser.getOverrideMetadata());
+		BeanOverrideBeanPostProcessor.register(context, this.parser.getDetectedClasses());
 		context.register(SingletonBean.class);
 
 		assertThatNoException().isThrownBy(context::refresh);

@@ -38,6 +38,9 @@ import org.springframework.test.context.bean.override.BeanOverride;
  * with a suffix equal to {@value #CONVENTION_SUFFIX} and starting with either the
  * name of the annotated field or the name of the bean.</li>
  * </ul>
+ * Note that superclasses are also inspected, prioritizing factory methods on
+ * the leaf class in case of method hiding. However, an exception is thrown
+ * if several candidate names have a match in the hierarchy.
  *
  * <p>Consider the following example.
  *
@@ -119,8 +122,8 @@ public @interface TestBean {
 	String name() default "";
 
 	/**
-	 * Name of a static factory method to look for in the test class, which will
-	 * be used to instantiate the bean to override.
+	 * Name of a static factory method to look for in the test class hierarchy,
+	 * which will be used to instantiate the bean to override.
 	 * <p>If left unspecified, the name of the factory method will be detected
 	 * based on convention.
 	 * @see #CONVENTION_SUFFIX

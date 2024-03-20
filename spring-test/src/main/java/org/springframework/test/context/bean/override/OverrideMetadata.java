@@ -16,7 +16,6 @@
 
 package org.springframework.test.context.bean.override;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
@@ -25,39 +24,49 @@ import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.lang.Nullable;
+import org.springframework.test.context.MergedContextConfiguration;
+import org.springframework.util.ObjectUtils;
 
 /**
- * Metadata for Bean Overrides.
+ * Metadata for Bean Override injection points.
+ *
+ * <p><strong>WARNING</strong>: implementations that add fields must take care
+ * to implement correct {@link Object#equals(Object) equals} and
+ * {@link Object#hashCode() hashCode} methods since override metadata is stored
+ * in a {@link org.springframework.test.context.ContextCustomizer} and thus
+ * form part of the {@link MergedContextConfiguration} which is used as a cache
+ * key.
  *
  * @author Simon Baslé
  * @since 6.2
  */
 public abstract class OverrideMetadata {
 
+	protected static final int HASHCODE_MULTIPLIER = 31;
+
 	private final Field field;
 
-	private final Annotation overrideAnnotation;
-
-	private final ResolvableType typeToOverride;
+	private final ResolvableType fieldType;
 
 	private final BeanOverrideStrategy strategy;
 
 
-	protected OverrideMetadata(Field field, Annotation overrideAnnotation,
-			ResolvableType typeToOverride, BeanOverrideStrategy strategy) {
+	protected OverrideMetadata(Field field, ResolvableType fieldType,
+			BeanOverrideStrategy strategy) {
 
 		this.field = field;
-		this.overrideAnnotation = overrideAnnotation;
-		this.typeToOverride = typeToOverride;
+		this.fieldType = fieldType;
 		this.strategy = strategy;
 	}
 
 
 	/**
-	 * Return a short, human-readable description of the kind of override this
-	 * instance handles.
+	 * The human-readable type of Bean Override this metadata represents.
+	 * <p>This should be one or two words typically displayed in error messages.
+	 * A good option is a string representation of the associated annotation
+	 * &mdash; for example, {@code @TestBean}.
 	 */
-	public abstract String getBeanOverrideDescription();
+	public abstract String getType();
 
 	/**
 	 * Return the expected bean name to override.
@@ -72,30 +81,22 @@ public abstract class OverrideMetadata {
 	/**
 	 * Return the annotated {@link Field}.
 	 */
-	public Field field() {
+	public final Field getField() {
 		return this.field;
-	}
-
-	/**
-	 * Return the concrete override annotation, that is the one meta-annotated
-	 * with {@link BeanOverride @BeanOverride}.
-	 */
-	public Annotation overrideAnnotation() {
-		return this.overrideAnnotation;
 	}
 
 	/**
 	 * Return the bean {@link ResolvableType type} to override.
 	 */
-	public ResolvableType typeToOverride() {
-		return this.typeToOverride;
+	public final ResolvableType getFieldType() {
+		return this.fieldType;
 	}
 
 	/**
 	 * Return the {@link BeanOverrideStrategy} for this instance, as a hint on
 	 * how and when the override instance should be created.
 	 */
-	public final BeanOverrideStrategy getBeanOverrideStrategy() {
+	public final BeanOverrideStrategy getStrategy() {
 		return this.strategy;
 	}
 
@@ -133,25 +134,27 @@ public abstract class OverrideMetadata {
 			return false;
 		}
 		OverrideMetadata that = (OverrideMetadata) obj;
-		return Objects.equals(this.field, that.field) &&
-				Objects.equals(this.overrideAnnotation, that.overrideAnnotation) &&
-				Objects.equals(this.strategy, that.strategy) &&
-				Objects.equals(typeToOverride(), that.typeToOverride());
+		return Objects.equals(this.strategy, that.strategy) &&
+				Objects.equals(this.field, that.field) &&
+				Objects.equals(this.fieldType, that.fieldType);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.field, this.overrideAnnotation, this.strategy, typeToOverride());
+		int result = 1;
+		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.strategy);
+		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.field);
+		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.fieldType);
+		return result;
 	}
 
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)
-				.append("category", getBeanOverrideDescription())
-				.append("field", this.field)
-				.append("overrideAnnotation", this.overrideAnnotation)
+				.append("type", getType())
 				.append("strategy", this.strategy)
-				.append("typeToOverride", typeToOverride())
+				.append("field", this.field)
+				.append("fieldType", this.fieldType)
 				.toString();
 	}
 

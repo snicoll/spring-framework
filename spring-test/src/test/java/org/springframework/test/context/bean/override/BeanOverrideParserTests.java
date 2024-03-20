@@ -34,8 +34,9 @@ import static org.assertj.core.api.Assertions.assertThatRuntimeException;
  */
 class BeanOverrideParserTests {
 
-	// Copy of ExampleBeanOverrideProcessor.DUPLICATE_TRIGGER which is package-private.
-	private static final String DUPLICATE_TRIGGER = "DUPLICATE";
+	// Metadata built from a String that starts with DUPLICATE_TRIGGER are considered equal
+	private static final String DUPLICATE_TRIGGER1 = ExampleBeanOverrideAnnotation.DUPLICATE_TRIGGER + "-v1";
+	private static final String DUPLICATE_TRIGGER2 = ExampleBeanOverrideAnnotation.DUPLICATE_TRIGGER + "-v2";
 
 	private final BeanOverrideParser parser = new BeanOverrideParser();
 
@@ -45,7 +46,7 @@ class BeanOverrideParserTests {
 		parser.parse(SingleAnnotationOnField.class);
 
 		assertThat(parser.getOverrideMetadata())
-				.map(om -> ((ExampleBeanOverrideAnnotation) om.overrideAnnotation()).value())
+				.map(Object::toString)
 				.containsExactly("onField");
 	}
 
@@ -54,7 +55,7 @@ class BeanOverrideParserTests {
 		parser.parse(AnnotationsOnMultipleFields.class);
 
 		assertThat(parser.getOverrideMetadata())
-				.map(om -> ((ExampleBeanOverrideAnnotation) om.overrideAnnotation()).value())
+				.map(Object::toString)
 				.containsExactlyInAnyOrder("onField1", "onField2");
 	}
 
@@ -67,10 +68,12 @@ class BeanOverrideParserTests {
 	}
 
 	@Test
-	void detectsDuplicateMetadata() {
-		assertThatRuntimeException()
-				.isThrownBy(() -> parser.parse(DuplicateConf.class))
-				.withMessage("Duplicate test OverrideMetadata: {DUPLICATE_TRIGGER}");
+	void keepsFirstOccurrenceOfEqualMetadata() {
+		parser.parse(DuplicateConf.class);
+
+		assertThat(parser.getOverrideMetadata())
+				.map(Object::toString)
+				.containsExactly("{DUPLICATE-v1}");
 	}
 
 
@@ -114,10 +117,10 @@ class BeanOverrideParserTests {
 
 	static class DuplicateConf {
 
-		@ExampleBeanOverrideAnnotation(DUPLICATE_TRIGGER)
+		@ExampleBeanOverrideAnnotation(DUPLICATE_TRIGGER1)
 		String message1;
 
-		@ExampleBeanOverrideAnnotation(DUPLICATE_TRIGGER)
+		@ExampleBeanOverrideAnnotation(DUPLICATE_TRIGGER2)
 		String message2;
 	}
 

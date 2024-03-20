@@ -26,22 +26,14 @@ import org.springframework.test.context.bean.override.OverrideMetadata;
 // Intentionally NOT public
 class ExampleBeanOverrideProcessor implements BeanOverrideProcessor {
 
-	static final String DUPLICATE_TRIGGER = "DUPLICATE";
-
-	private static final TestOverrideMetadata CONSTANT = new TestOverrideMetadata() {
-		@Override
-		public String toString() {
-			return "{DUPLICATE_TRIGGER}";
-		}
-	};
-
 	@Override
-	public OverrideMetadata createMetadata(Field field, Annotation overrideAnnotation, ResolvableType typeToOverride) {
+	public OverrideMetadata createMetadata(Field field, Annotation overrideAnnotation, ResolvableType typeToOverride,
+			Class<?> testClass) {
 		if (!(overrideAnnotation instanceof ExampleBeanOverrideAnnotation annotation)) {
 			throw new IllegalStateException("unexpected annotation");
 		}
-		if (annotation.value().equals(DUPLICATE_TRIGGER)) {
-			return CONSTANT;
+		if (annotation.value().startsWith(ExampleBeanOverrideAnnotation.DUPLICATE_TRIGGER)) {
+			return new TestOverrideMetadata(annotation.value());
 		}
 		return new TestOverrideMetadata(field, annotation, typeToOverride);
 	}

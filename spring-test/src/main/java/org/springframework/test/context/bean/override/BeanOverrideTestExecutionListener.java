@@ -62,7 +62,7 @@ public class BeanOverrideTestExecutionListener extends AbstractTestExecutionList
 	 */
 	protected void injectFields(TestContext testContext) {
 		postProcessFields(testContext, (testMetadata, postProcessor) -> postProcessor.inject(
-				testMetadata.overrideMetadata.field(), testMetadata.testInstance, testMetadata.overrideMetadata));
+				testMetadata.testInstance, testMetadata.overrideMetadata));
 	}
 
 	/**
@@ -79,10 +79,10 @@ public class BeanOverrideTestExecutionListener extends AbstractTestExecutionList
 
 			postProcessFields(testContext, (testMetadata, postProcessor) -> {
 				Object testInstance = testMetadata.testInstance;
-				Field field = testMetadata.overrideMetadata.field();
+				Field field = testMetadata.overrideMetadata.getField();
 				ReflectionUtils.makeAccessible(field);
 				ReflectionUtils.setField(field, testInstance, null);
-				postProcessor.inject(field, testInstance, testMetadata.overrideMetadata);
+				postProcessor.inject(testInstance, testMetadata.overrideMetadata);
 			});
 		}
 	}
@@ -100,7 +100,7 @@ public class BeanOverrideTestExecutionListener extends AbstractTestExecutionList
 					testContext.getApplicationContext().getBean(BeanOverrideBeanPostProcessor.class);
 			// The class should have already been parsed by the context customizer.
 			for (OverrideMetadata metadata : postProcessor.getOverrideMetadata()) {
-				if (!metadata.field().getDeclaringClass().equals(testClass)) {
+				if (!metadata.getField().getDeclaringClass().isAssignableFrom(testClass)) {
 					continue;
 				}
 				consumer.accept(new TestContextOverrideMetadata(testInstance, metadata), postProcessor);

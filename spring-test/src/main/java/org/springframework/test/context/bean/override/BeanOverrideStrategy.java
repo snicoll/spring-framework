@@ -16,9 +16,12 @@
 
 package org.springframework.test.context.bean.override;
 
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
 /**
- * Strategies for bean override instantiation, implemented in
- * {@link BeanOverrideBeanPostProcessor}.
+ * Strategies for bean override instantiation. The Test Context Framework
+ * automatically registers the {@code BeanOverrideBeanPostProcessor}, a
+ * {@link BeanPostProcessor} that handles all of these strategies.
  *
  * @author Simon Baslé
  * @since 6.2
@@ -39,10 +42,11 @@ public enum BeanOverrideStrategy {
 	REPLACE_OR_CREATE_DEFINITION,
 
 	/**
-	 * Intercept and wrap the actual bean instance upon creation, during the {@linkplain
-	 * org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference(Object, String)
-	 * early bean reference} phase.
+	 * Intercept and process an {@link org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor#getEarlyBeanReference(Object, String)
+	 * early bean reference} rather than a bean definition, allowing variants of
+	 * bean overriding to wrap the instance (e.g. to delegate to actual methods
+	 * in the context of a mocking "spy").
 	 */
-	WRAP_EARLY_BEAN
+	WRAP_BEAN
 
 }

@@ -16,7 +16,6 @@
 
 package org.springframework.test.context.bean.override.mockito;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 
@@ -44,23 +43,22 @@ import static org.mockito.Mockito.mock;
  * @author Phillip Webb
  * @since 6.2
  */
-class SpyDefinition extends Definition {
+class MockitoSpyBeanMetadata extends MockitoMetadata {
 
-	SpyDefinition(MockitoSpyBean spyAnnotation, Field field, ResolvableType typeToSpy) {
-		this(spyAnnotation.name(), spyAnnotation.reset(), spyAnnotation.proxyTargetAware(), field,
-				spyAnnotation, typeToSpy);
+	MockitoSpyBeanMetadata(MockitoSpyBean spyAnnotation, Field field, ResolvableType typeToSpy) {
+		this(spyAnnotation.name(), spyAnnotation.reset(), spyAnnotation.proxyTargetAware(),
+				field, typeToSpy);
 	}
 
-	SpyDefinition(String name, MockReset reset, boolean proxyTargetAware, Field field, Annotation annotation,
-			ResolvableType typeToSpy) {
+	MockitoSpyBeanMetadata(String name, MockReset reset, boolean proxyTargetAware, Field field, ResolvableType typeToSpy) {
 
-		super(name, reset, proxyTargetAware, field, annotation, typeToSpy, BeanOverrideStrategy.WRAP_EARLY_BEAN);
+		super(name, reset, proxyTargetAware, field, typeToSpy, BeanOverrideStrategy.WRAP_BEAN);
 		Assert.notNull(typeToSpy, "typeToSpy must not be null");
 	}
 
 
 	@Override
-	public String getBeanOverrideDescription() {
+	public String getType() {
 		return "@MockitoSpyBean";
 	}
 
@@ -82,22 +80,20 @@ class SpyDefinition extends Definition {
 		if (obj == null || obj.getClass() != getClass()) {
 			return false;
 		}
-		SpyDefinition that = (SpyDefinition) obj;
-		return (super.equals(obj) && ObjectUtils.nullSafeEquals(typeToOverride(), that.typeToOverride()));
+		MockitoSpyBeanMetadata that = (MockitoSpyBeanMetadata) obj;
+		return (super.equals(obj) && ObjectUtils.nullSafeEquals(getFieldType(), that.getFieldType()));
 	}
 
 	@Override
 	public int hashCode() {
-		int result = super.hashCode();
-		result = MULTIPLIER * result + ObjectUtils.nullSafeHashCode(typeToOverride());
-		return result;
+		return super.hashCode();
 	}
 
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)
 				.append("name", this.name)
-				.append("typeToSpy", typeToOverride())
+				.append("fieldType", getFieldType())
 				.append("reset", getReset())
 				.toString();
 	}
@@ -109,7 +105,7 @@ class SpyDefinition extends Definition {
 	@SuppressWarnings("unchecked")
 	<T> T createSpy(String name, Object instance) {
 		Assert.notNull(instance, "Instance must not be null");
-		Class<?> resolvedTypeToOverride = typeToOverride().resolve();
+		Class<?> resolvedTypeToOverride = getFieldType().resolve();
 		Assert.notNull(resolvedTypeToOverride, "Failed to resolve type to override");
 		Assert.isInstanceOf(resolvedTypeToOverride, instance);
 		if (Mockito.mockingDetails(instance).isSpy()) {
@@ -125,7 +121,7 @@ class SpyDefinition extends Definition {
 		Class<?> toSpy;
 		if (Proxy.isProxyClass(instance.getClass())) {
 			settings.defaultAnswer(AdditionalAnswers.delegatesTo(instance));
-			toSpy = typeToOverride().toClass();
+			toSpy = getFieldType().toClass();
 		}
 		else {
 			settings.defaultAnswer(Mockito.CALLS_REAL_METHODS);

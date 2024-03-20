@@ -30,12 +30,12 @@ import org.springframework.test.context.TestContextAnnotationUtils;
 
 /**
  * {@link ContextCustomizerFactory} which provides support for Bean Overriding
- * in tests.
+ * in tests. This is automatically registered via spring.factories.
  *
  * @author Simon Baslé
  * @since 6.2
  */
-public class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
+public final class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
 
 	@Override
 	@Nullable
@@ -43,18 +43,18 @@ public class BeanOverrideContextCustomizerFactory implements ContextCustomizerFa
 			List<ContextConfigurationAttributes> configAttributes) {
 
 		BeanOverrideParser parser = new BeanOverrideParser();
-		parseMetadata(testClass, parser);
-		if (parser.getOverrideMetadata().isEmpty()) {
+		findClassesWithBeanOverride(testClass, parser);
+		if (parser.getDetectedClasses().isEmpty()) {
 			return null;
 		}
 
-		return new BeanOverrideContextCustomizer(parser.getOverrideMetadata());
+		return new BeanOverrideContextCustomizer(parser.getDetectedClasses());
 	}
 
-	private void parseMetadata(Class<?> testClass, BeanOverrideParser parser) {
-		parser.parse(testClass);
+	private void findClassesWithBeanOverride(Class<?> testClass, BeanOverrideParser parser) {
+		parser.hasBeanOverride(testClass);
 		if (TestContextAnnotationUtils.searchEnclosingClass(testClass)) {
-			parseMetadata(testClass.getEnclosingClass(), parser);
+			findClassesWithBeanOverride(testClass.getEnclosingClass(), parser);
 		}
 	}
 
@@ -63,22 +63,22 @@ public class BeanOverrideContextCustomizerFactory implements ContextCustomizerFa
 	 */
 	private static final class BeanOverrideContextCustomizer implements ContextCustomizer {
 
-		private final Set<OverrideMetadata> metadata;
+		private final Set<Class<?>> detectedClasses;
 
 		/**
-		 * Construct a context customizer given some pre-existing override
-		 * metadata.
-		 * @param metadata a set of concrete {@link OverrideMetadata} provided
-		 * by the underlying {@link BeanOverrideParser}
+		 * Construct a context customizer given a set of classes that have been
+		 * determined to contain bean overriding annotations, typically by a
+		 * {@link BeanOverrideParser}.
+		 * @param detectedClasses the set of test classes with bean overriding
 		 */
-		BeanOverrideContextCustomizer(Set<OverrideMetadata> metadata) {
-			this.metadata = metadata;
+		BeanOverrideContextCustomizer(Set<Class<?>> detectedClasses) {
+			this.detectedClasses = detectedClasses;
 		}
 
 		@Override
 		public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
 			if (context instanceof BeanDefinitionRegistry registry) {
-				BeanOverrideBeanPostProcessor.register(registry, this.metadata);
+				BeanOverrideBeanPostProcessor.register(registry, this.detectedClasses);
 			}
 		}
 
@@ -91,12 +91,12 @@ public class BeanOverrideContextCustomizerFactory implements ContextCustomizerFa
 				return false;
 			}
 			BeanOverrideContextCustomizer other = (BeanOverrideContextCustomizer) obj;
-			return this.metadata.equals(other.metadata);
+			return this.detectedClasses.equals(other.detectedClasses);
 		}
 
 		@Override
 		public int hashCode() {
-			return this.metadata.hashCode();
+			return this.detectedClasses.hashCode();
 		}
 	}
 
