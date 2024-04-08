@@ -16,6 +16,7 @@
 
 package org.springframework.test.context.bean.override;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,31 +31,33 @@ import org.springframework.test.context.TestContextAnnotationUtils;
 
 /**
  * {@link ContextCustomizerFactory} which provides support for Bean Overriding
- * in tests. This is automatically registered via spring.factories.
+ * in tests.
  *
  * @author Simon Baslé
  * @since 6.2
  */
-public final class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
+class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
 
 	@Override
 	@Nullable
 	public ContextCustomizer createContextCustomizer(Class<?> testClass,
 			List<ContextConfigurationAttributes> configAttributes) {
 
-		BeanOverrideParser parser = new BeanOverrideParser();
-		findClassesWithBeanOverride(testClass, parser);
-		if (parser.getDetectedClasses().isEmpty()) {
+		Set<Class<?>> detectedClasses = new LinkedHashSet<>();
+		findClassesWithBeanOverride(testClass, detectedClasses);
+		if (detectedClasses.isEmpty()) {
 			return null;
 		}
 
-		return new BeanOverrideContextCustomizer(parser.getDetectedClasses());
+		return new BeanOverrideContextCustomizer(detectedClasses);
 	}
 
-	private void findClassesWithBeanOverride(Class<?> testClass, BeanOverrideParser parser) {
-		parser.hasBeanOverride(testClass);
+	private void findClassesWithBeanOverride(Class<?> testClass, Set<Class<?>> detectedClasses) {
+		if (BeanOverrideParsingUtils.hasBeanOverride(testClass)) {
+			detectedClasses.add(testClass);
+		}
 		if (TestContextAnnotationUtils.searchEnclosingClass(testClass)) {
-			findClassesWithBeanOverride(testClass.getEnclosingClass(), parser);
+			findClassesWithBeanOverride(testClass.getEnclosingClass(), detectedClasses);
 		}
 	}
 
@@ -68,7 +71,7 @@ public final class BeanOverrideContextCustomizerFactory implements ContextCustom
 		/**
 		 * Construct a context customizer given a set of classes that have been
 		 * determined to contain bean overriding annotations, typically by a
-		 * {@link BeanOverrideParser}.
+		 * {@link BeanOverrideParsingUtils}.
 		 * @param detectedClasses the set of test classes with bean overriding
 		 */
 		BeanOverrideContextCustomizer(Set<Class<?>> detectedClasses) {

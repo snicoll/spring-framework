@@ -18,7 +18,6 @@ package org.springframework.test.context.bean.override;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.TypeVariable;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.ResolvableType;
@@ -41,21 +40,8 @@ import org.springframework.core.ResolvableType;
 public interface BeanOverrideProcessor {
 
 	/**
-	 * Determine the {@link ResolvableType} for which an {@link OverrideMetadata}
-	 * instance will be created &mdash; for example, by using the supplied annotation
-	 * to determine the type.
-	 * <p>The default implementation deduces the field's corresponding
-	 * {@link ResolvableType}, additionally tracking the source class if the
-	 * field's type is a {@link TypeVariable}.
-	 */
-	default ResolvableType getOrDeduceType(Field field, Annotation annotation, Class<?> testClass) {
-		return (field.getGenericType() instanceof TypeVariable ?
-				ResolvableType.forField(field, testClass) : ResolvableType.forField(field));
-	}
-
-	/**
 	 * Create an {@link OverrideMetadata} instance for the given annotated field
-	 * and target {@link #getOrDeduceType(Field, Annotation, Class) type}.
+	 * and target {@link ResolvableType}.
 	 * <p>Specific implementations of metadata can have state to be used during
 	 * override {@linkplain OverrideMetadata#createOverride(String, BeanDefinition,
 	 * Object) instance creation} &mdash; for example, from further parsing of the
@@ -67,7 +53,6 @@ public interface BeanOverrideProcessor {
 	 * from the {@code field.getDeclaringClass()} in case the field is inherited
 	 * from a superclass
 	 * @return a new {@link OverrideMetadata} instance
-	 * @see #getOrDeduceType(Field, Annotation, Class)
 	 */
 	OverrideMetadata createMetadata(Field field, Annotation overrideAnnotation, ResolvableType typeToOverride,
 			Class<?> testClass);

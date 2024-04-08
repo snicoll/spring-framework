@@ -28,33 +28,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 /**
- * Unit tests for {@link BeanOverrideParser}.
+ * Unit tests for {@link BeanOverrideParsingUtils}.
  *
  * @since 6.2
  */
-class BeanOverrideParserTests {
+class BeanOverrideParsingUtilsTests {
 
 	// Metadata built from a String that starts with DUPLICATE_TRIGGER are considered equal
 	private static final String DUPLICATE_TRIGGER1 = ExampleBeanOverrideAnnotation.DUPLICATE_TRIGGER + "-v1";
 	private static final String DUPLICATE_TRIGGER2 = ExampleBeanOverrideAnnotation.DUPLICATE_TRIGGER + "-v2";
 
-	private final BeanOverrideParser parser = new BeanOverrideParser();
-
-
 	@Test
 	void findsOnField() {
-		parser.parse(SingleAnnotationOnField.class);
-
-		assertThat(parser.getOverrideMetadata())
+		assertThat(BeanOverrideParsingUtils.parse(SingleAnnotationOnField.class))
 				.map(Object::toString)
 				.containsExactly("onField");
 	}
 
 	@Test
 	void allowsMultipleProcessorsOnDifferentElements() {
-		parser.parse(AnnotationsOnMultipleFields.class);
-
-		assertThat(parser.getOverrideMetadata())
+		assertThat(BeanOverrideParsingUtils.parse(AnnotationsOnMultipleFields.class))
 				.map(Object::toString)
 				.containsExactlyInAnyOrder("onField1", "onField2");
 	}
@@ -63,15 +56,13 @@ class BeanOverrideParserTests {
 	void rejectsMultipleAnnotationsOnSameElement() {
 		Field field = ReflectionUtils.findField(MultipleAnnotationsOnField.class, "message");
 		assertThatRuntimeException()
-				.isThrownBy(() -> parser.parse(MultipleAnnotationsOnField.class))
+				.isThrownBy(() -> BeanOverrideParsingUtils.parse(MultipleAnnotationsOnField.class))
 				.withMessage("Multiple @BeanOverride annotations found on field: " + field);
 	}
 
 	@Test
 	void keepsFirstOccurrenceOfEqualMetadata() {
-		parser.parse(DuplicateConf.class);
-
-		assertThat(parser.getOverrideMetadata())
+		assertThat(BeanOverrideParsingUtils.parse(DuplicateConf.class))
 				.map(Object::toString)
 				.containsExactly("{DUPLICATE-v1}");
 	}

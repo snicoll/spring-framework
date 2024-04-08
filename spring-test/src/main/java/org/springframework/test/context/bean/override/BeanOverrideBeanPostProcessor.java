@@ -53,14 +53,18 @@ import org.springframework.util.StringUtils;
  * A {@link BeanFactoryPostProcessor} used to register and inject overriding
  * bean metadata with the {@link ApplicationContext}.
  *
- * <p>A set of {@link OverrideMetadata} must be provided to this processor. A
- * {@link BeanOverrideParser} can typically be used to parse this metadata from
- * test classes that use any annotation meta-annotated with
- * {@link BeanOverride @BeanOverride} to mark override sites.
+ * <p>A set of classes from which to parse {@link OverrideMetadata} must be
+ * provided to this processor. These test classes are expected to use any
+ * annotation meta-annotated with {@link BeanOverride @BeanOverride} to mark
+ * override sites. The {@link BeanOverrideParsingUtils#hasBeanOverride(Class)}
+ * method can be used to check if a class matches the above criteria.
  *
- * <p>This processor supports all of the {@link BeanOverrideStrategy} strategies.
- * It also provides support for injecting the overridden bean instances into
- * their corresponding annotated {@link Field fields}.
+ * <p>The provided classes are fully parsed at creation to build a metadata set.
+ * This processor implements several {@link BeanOverrideStrategy overriding
+ * strategy} and chooses the correct one according to each override metadata
+ * {@link OverrideMetadata#getStrategy()} method. Additionally, it provides
+ * support for injecting the overridden bean instances into their corresponding
+ * annotated {@link Field fields}.
  *
  * @author Simon Baslé
  * @since 6.2
@@ -90,9 +94,7 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 	 * @param classesToParse the class set
 	 */
 	public BeanOverrideBeanPostProcessor(Set<Class<?>> classesToParse) {
-		BeanOverrideParser parser = new BeanOverrideParser();
-		classesToParse.forEach(parser::parse);
-		Set<OverrideMetadata> metadata = parser.getOverrideMetadata();
+		Set<OverrideMetadata> metadata = BeanOverrideParsingUtils.parse(classesToParse);
 		Assert.state(!metadata.isEmpty(), "Expected metadata to be produced by parser");
 		this.overrideMetadata = metadata;
 	}
@@ -220,7 +222,7 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 	}
 
 	private RootBeanDefinition createBeanDefinition(OverrideMetadata metadata) {
-		RootBeanDefinition definition = new RootBeanDefinition(metadata.getFieldType().resolve());
+		RootBeanDefinition definition = new RootBeanDefinition();
 		definition.setTargetType(metadata.getFieldType());
 		return definition;
 	}
@@ -274,10 +276,10 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 	 * {@link org.springframework.core.io.support.SpringFactoriesLoader SpringFactoriesLoader}
 	 * mechanism.
 	 * @param registry the bean definition registry
-	 * @param testClassesWithOverride the initial set of classes that contain
-	 * bean overriding annotations, to be parsed at runtime
+	 * @param detectedTestClasses the initial set of classes that have been
+	 * detected to contain bean overriding annotations, to be parsed at runtime
 	 */
-	public static void register(BeanDefinitionRegistry registry, @Nullable Set<Class<?>> testClassesWithOverride) {
+	public static void register(BeanDefinitionRegistry registry, @Nullable Set<Class<?>> detectedTestClasses) {
 		// Early processor
 		getOrAddInfrastructureBeanDefinition(
 				registry, WrapEarlyBeanPostProcessor.class, EARLY_INFRASTRUCTURE_BEAN_NAME, constructorArgs ->
@@ -291,8 +293,8 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 				definition.getConstructorArgumentValues().getIndexedArgumentValue(0, Set.class);
 		@SuppressWarnings({"unchecked", "NullAway"})
 		Set<Class<?>> existing = (Set<Class<?>>) constructorArg.getValue();
-		if (testClassesWithOverride != null && existing != null) {
-			existing.addAll(testClassesWithOverride);
+		if (detectedTestClasses != null && existing != null) {
+			existing.addAll(detectedTestClasses);
 		}
 	}
 
