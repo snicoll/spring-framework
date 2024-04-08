@@ -89,5 +89,9 @@ class AbstractTestBeanIntegrationTestCase {
 		Pojo pojo() {
 			return new ProdPojo();
 		}
+		@Bean
+		Pojo pojo2() {
+			return new ProdPojo();
+		}
 	}
 }

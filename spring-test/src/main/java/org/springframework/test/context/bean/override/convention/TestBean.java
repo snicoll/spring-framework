@@ -28,9 +28,11 @@ import org.springframework.test.context.bean.override.BeanOverride;
 /**
  * Mark a field to override a bean instance in the {@code BeanFactory}.
  *
- * <p>The instance is created from a zero-argument static factory method in the test
- * class whose return type is compatible with the annotated field. The method
- * is deduced as follows.
+ * <p>The instance is created from a zero-argument static factory method in the
+ * test class whose return type is compatible with the annotated field. In the
+ * case of a nested test, the enclosing test class(es) are also considered.
+ * Similarly, in case the test class inherits from a base class the whole class
+ * hierarchy is considered. The method is deduced as follows.
  * <ul>
  * <li>If the {@link #methodName()} is specified, look for a static method with
  * that name.</li>
@@ -38,9 +40,6 @@ import org.springframework.test.context.bean.override.BeanOverride;
  * with a suffix equal to {@value #CONVENTION_SUFFIX} and starting with either the
  * name of the annotated field or the name of the bean.</li>
  * </ul>
- * Note that superclasses are also inspected, prioritizing factory methods on
- * the leaf class in case of method hiding. However, an exception is thrown
- * if several candidate names have a match in the hierarchy.
  *
  * <p>Consider the following example.
  *
@@ -122,8 +121,11 @@ public @interface TestBean {
 	String name() default "";
 
 	/**
-	 * Name of a static factory method to look for in the test class hierarchy,
-	 * which will be used to instantiate the bean to override.
+	 * Name of a static factory method to look for in the test class, which will
+	 * be used to instantiate the bean to override.
+	 * <p>In the case of a nested test, the enclosing test class(es) are also
+	 * considered. Similarly, in case the test class inherits from a base class
+	 * the whole class hierarchy is considered.
 	 * <p>If left unspecified, the name of the factory method will be detected
 	 * based on convention.
 	 * @see #CONVENTION_SUFFIX

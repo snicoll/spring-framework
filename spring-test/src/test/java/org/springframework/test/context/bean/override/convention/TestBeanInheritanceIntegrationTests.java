@@ -31,12 +31,19 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 public class TestBeanInheritanceIntegrationTests {
 
+	static AbstractTestBeanIntegrationTestCase.Pojo nestedBeanOverride() {
+		return new AbstractTestBeanIntegrationTestCase.FakePojo("in enclosing test class");
+	}
+
 	@Nested
 	@DisplayName("Concrete inherited test with correct @TestBean setup")
 	class ConcreteTestBeanIntegrationTests extends AbstractTestBeanIntegrationTestCase {
 
 		@TestBean(methodName = "commonBeanOverride")
 		Pojo pojo;
+
+		@TestBean(methodName = "nestedBeanOverride")
+		Pojo pojo2;
 
 		static Pojo someBeanTestOverride() {
 			return new FakePojo("someBeanOverride");
@@ -52,6 +59,12 @@ public class TestBeanInheritanceIntegrationTests {
 		void fieldInTypeMethodInSuperType(ApplicationContext ctx) {
 			assertThat(ctx.getBean("pojo")).as("applicationContext").hasToString("in superclass");
 			assertThat(this.pojo.getValue()).as("injection point").isEqualTo("in superclass");
+		}
+
+		@Test
+		void fieldInTypeMethodInEnclosingClass(ApplicationContext ctx) {
+			assertThat(ctx.getBean("pojo2")).as("applicationContext").hasToString("in enclosing test class");
+			assertThat(this.pojo2.getValue()).as("injection point").isEqualTo("in enclosing test class");
 		}
 
 		@Test

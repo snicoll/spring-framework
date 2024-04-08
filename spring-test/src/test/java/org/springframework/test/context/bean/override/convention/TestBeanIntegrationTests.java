@@ -166,6 +166,21 @@ public class TestBeanIntegrationTests {
 
 	}
 
+	@Nested
+	@DisplayName("With factory method on enclosing class")
+	class TestBeanNested2 {
+
+		@TestBean(methodName = "nestedFieldTestOverride", name = "nestedField")
+		String nestedField2;
+
+		@Test
+		void fieldHasOverride(ApplicationContext ctx) {
+			assertThat(ctx.getBean("nestedField")).as("applicationContext").isEqualTo("nestedFieldOverride");
+			assertThat(this.nestedField2).isEqualTo("nestedFieldOverride");
+		}
+
+	}
+
 
 	@Configuration
 	static class Config {

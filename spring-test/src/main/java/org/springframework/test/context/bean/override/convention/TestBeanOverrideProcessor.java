@@ -30,6 +30,7 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
+import org.springframework.test.context.TestContextAnnotationUtils;
 import org.springframework.test.context.bean.override.BeanOverrideProcessor;
 import org.springframework.test.context.bean.override.BeanOverrideStrategy;
 import org.springframework.test.context.bean.override.OverrideMetadata;
@@ -59,6 +60,11 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 	 * <li>The method's return type matches the supplied {@code methodReturnType}.</li>
 	 * <li>The method's name is one of the supplied {@code methodNames}.</li>
 	 * </ul>
+	 * <p>If the test class inherits from another class, the class hierarchy is
+	 * searched for factory methods. Matching factory methods are prioritized
+	 * from closest to furthest from the test class in the class hierarchy,
+	 * provided they have the same name. However, if multiple methods are found
+	 * that match distinct candidate names, an exception is thrown.
 	 * @param clazz the class in which to search for the factory method
 	 * @param methodReturnType the return type for the factory method
 	 * @param methodNames a set of supported names for the factory method
@@ -75,16 +81,25 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 						methodReturnType.isAssignableFrom(method.getReturnType()))
 				.toList();
 
+		if (methods.isEmpty() && TestContextAnnotationUtils.searchEnclosingClass(clazz)) {
+			methods = Arrays.stream(ReflectionUtils.getAllDeclaredMethods(clazz.getEnclosingClass()))
+					.filter(method -> Modifier.isStatic(method.getModifiers()) &&
+							supportedNames.contains(method.getName()) &&
+							methodReturnType.isAssignableFrom(method.getReturnType()))
+					.toList();
+		}
+
 		Assert.state(!methods.isEmpty(), () -> """
 				Failed to find a static test bean factory method in %s with return type %s \
 				whose name matches one of the supported candidates %s""".formatted(
 						clazz.getName(), methodReturnType.getName(), supportedNames));
 
 		long nameCount = methods.stream().map(Method::getName).distinct().count();
+		int methodCount = methods.size();
 		Assert.state(nameCount == 1, () -> """
 				Found %d competing static test bean factory methods in %s with return type %s \
 				whose name matches one of the supported candidates %s""".formatted(
-						methods.size(), clazz.getName(), methodReturnType.getName(), supportedNames));
+					methodCount, clazz.getName(), methodReturnType.getName(), supportedNames));
 
 		return methods.get(0);
 	}

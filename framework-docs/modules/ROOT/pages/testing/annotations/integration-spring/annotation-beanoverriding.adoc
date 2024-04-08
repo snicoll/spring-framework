@@ -47,10 +47,9 @@ Java::
 <2> The result of this static method will be used as the instance and injected into the field
 ======
 
-NOTE: If the test class inherits from another class, the class hierarchy is searched for
-factory methods. Matching factory methods are prioritized from closest to furthest from
-the test class in the class hierarchy, provided they have the same name. However, if
-multiple methods are found that match _distinct_ candidate names, an exception is thrown.
+NOTE: If the test class inherits from another class or is a nested test class, the parent
+hierarchy / enclosing class are also considered. However, if multiple methods are found
+that match _distinct_ candidate names, an exception is thrown.
 
 [[spring-testing-annotation-beanoverriding-mockitobean]]
 == `@MockitoBean` and `@MockitoSpyBean`
