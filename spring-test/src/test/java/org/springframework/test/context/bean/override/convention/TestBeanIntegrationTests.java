@@ -91,8 +91,8 @@ public class TestBeanIntegrationTests {
 						.getThrowable()).get(THROWABLE)
 						.cause()
 						.isInstanceOf(IllegalStateException.class)
-						.hasMessage("Unable to override @TestBean bean; expected a bean definition " +
-								"to replace with name 'noOriginalBean'"));
+						.hasMessage("Unable to override bean 'noOriginalBean'; " +
+								"there is no bean definition to replace with that name"));
 	}
 
 	@Test
@@ -106,8 +106,8 @@ public class TestBeanIntegrationTests {
 						.getThrowable()).get(THROWABLE)
 						.cause()
 						.isInstanceOf(IllegalStateException.class)
-						.hasMessage("Unable to override @TestBean bean; expected a bean definition " +
-								"to replace with name 'notPresent'"));
+						.hasMessage("Unable to override bean 'notPresent'; " +
+								"there is no bean definition to replace with that name"));
 	}
 
 	@Test

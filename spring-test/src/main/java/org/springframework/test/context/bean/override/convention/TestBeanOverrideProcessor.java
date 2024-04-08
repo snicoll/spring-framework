@@ -137,11 +137,6 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 		}
 
 		@Override
-		public String getType() {
-			return "@TestBean";
-		}
-
-		@Override
 		protected String getExpectedBeanName() {
 			return this.beanName;
 		}

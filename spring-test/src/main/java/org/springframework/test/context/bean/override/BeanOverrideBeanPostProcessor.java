@@ -167,8 +167,8 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 			registry.removeBeanDefinition(beanName);
 		}
 		else if (enforceExistingDefinition) {
-			throw new IllegalStateException("Unable to override " + overrideMetadata.getType() +
-					" bean; expected a bean definition to replace with name '" + beanName + "'");
+			throw new IllegalStateException("Unable to override bean '" + beanName + "'; there is no" +
+					" bean definition to replace with that name");
 		}
 		registry.registerBeanDefinition(beanName, beanDefinition);
 

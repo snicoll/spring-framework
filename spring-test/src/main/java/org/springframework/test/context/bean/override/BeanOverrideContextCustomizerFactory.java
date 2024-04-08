@@ -70,8 +70,7 @@ class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
 
 		/**
 		 * Construct a context customizer given a set of classes that have been
-		 * determined to contain bean overriding annotations, typically by a
-		 * {@link BeanOverrideParsingUtils}.
+		 * previously determined to contain bean overriding annotations.
 		 * @param detectedClasses the set of test classes with bean overriding
 		 */
 		BeanOverrideContextCustomizer(Set<Class<?>> detectedClasses) {

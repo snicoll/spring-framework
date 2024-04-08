@@ -58,11 +58,6 @@ class MockitoSpyBeanMetadata extends MockitoMetadata {
 
 
 	@Override
-	public String getType() {
-		return "@MockitoSpyBean";
-	}
-
-	@Override
 	protected Object createOverride(String beanName, @Nullable BeanDefinition existingBeanDefinition,
 			@Nullable Object existingBeanInstance) {
 

@@ -95,11 +95,6 @@ class TestOverrideMetadata extends OverrideMetadata {
 	}
 
 	@Override
-	public String getType() {
-		return "@ExampleBeanOverrideAnnotation";
-	}
-
-	@Override
 	protected String getExpectedBeanName() {
 		if (StringUtils.hasText(this.beanName)) {
 			return this.beanName;

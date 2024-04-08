@@ -80,11 +80,6 @@ class MockitoBeanMetadata extends MockitoMetadata {
 		return Collections.unmodifiableSet(classSet);
 	}
 
-	@Override
-	public String getType() {
-		return "@MockitoBean";
-	}
-
 	/**
 	 * Return the extra interfaces.
 	 * @return the extra interfaces or an empty set

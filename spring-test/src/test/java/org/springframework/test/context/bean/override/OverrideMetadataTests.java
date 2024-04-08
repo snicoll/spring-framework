@@ -60,11 +60,6 @@ class OverrideMetadataTests {
 		}
 
 		@Override
-		public String getType() {
-			return ConcreteOverrideMetadata.class.getSimpleName();
-		}
-
-		@Override
 		protected Object createOverride(String beanName, @Nullable BeanDefinition existingBeanDefinition,
 				@Nullable Object existingBeanInstance) {
 

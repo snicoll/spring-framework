@@ -76,8 +76,8 @@ class BeanOverrideBeanPostProcessorTests {
 
 		assertThatIllegalStateException()
 				.isThrownBy(context::refresh)
-				.withMessage("Unable to override @ExampleBeanOverrideAnnotation bean; " +
-						"expected a bean definition to replace with name 'explicit'");
+				.withMessage("Unable to override bean 'explicit'; " +
+						"there is no bean definition to replace with that name");
 	}
 
 	@Test

@@ -59,15 +59,6 @@ public abstract class OverrideMetadata {
 		this.strategy = strategy;
 	}
 
-
-	/**
-	 * The human-readable type of Bean Override this metadata represents.
-	 * <p>This should be one or two words typically displayed in error messages.
-	 * A good option is a string representation of the associated annotation
-	 * &mdash; for example, {@code @TestBean}.
-	 */
-	public abstract String getType();
-
 	/**
 	 * Return the expected bean name to override.
 	 * <p>Typically, this is either explicitly set in a concrete annotation or
@@ -151,7 +142,6 @@ public abstract class OverrideMetadata {
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)
-				.append("type", getType())
 				.append("strategy", this.strategy)
 				.append("field", this.field)
 				.append("fieldType", this.fieldType)
