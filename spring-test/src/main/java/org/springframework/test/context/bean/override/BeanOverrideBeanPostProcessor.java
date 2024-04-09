@@ -40,7 +40,6 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.ResolvableType;
@@ -50,13 +49,14 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * A {@link BeanFactoryPostProcessor} used to register and inject overriding
- * bean metadata with the {@link ApplicationContext}.
+ * A {@link BeanFactoryPostProcessor} implementation that processes test classes
+ * and adapt the {@link BeanDefinitionRegistry} for any {@link BeanOverride} it
+ * may define.
  *
  * <p>A set of classes from which to parse {@link OverrideMetadata} must be
- * provided to this processor. These test classes are expected to use any
+ * provided to this processor. Each test class is expected to use any
  * annotation meta-annotated with {@link BeanOverride @BeanOverride} to mark
- * override sites. The {@link BeanOverrideParsingUtils#hasBeanOverride(Class)}
+ * beans to override. The {@link BeanOverrideParsingUtils#hasBeanOverride(Class)}
  * method can be used to check if a class matches the above criteria.
  *
  * <p>The provided classes are fully parsed at creation to build a metadata set.
@@ -129,7 +129,6 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 	}
 
 	private void postProcessWithRegistry(BeanDefinitionRegistry registry) {
-		// Note that a tracker bean is registered down the line only if there is some overrideMetadata parsed.
 		for (OverrideMetadata metadata : getOverrideMetadata()) {
 			registerBeanOverride(registry, metadata);
 		}
@@ -158,7 +157,7 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 			boolean enforceExistingDefinition) {
 
 		RootBeanDefinition beanDefinition = createBeanDefinition(overrideMetadata);
-		String beanName = overrideMetadata.getExpectedBeanName();
+		String beanName = overrideMetadata.getBeanName();
 
 		BeanDefinition existingBeanDefinition = null;
 		if (registry.containsBeanDefinition(beanName)) {
@@ -193,11 +192,11 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 	 * phase.
 	 */
 	private void registerWrapBean(OverrideMetadata metadata) {
-		Set<String> existingBeanNames = getExistingBeanNames(metadata.getFieldType());
-		String beanName = metadata.getExpectedBeanName();
+		Set<String> existingBeanNames = getExistingBeanNames(metadata.getBeanType());
+		String beanName = metadata.getBeanName();
 		if (!existingBeanNames.contains(beanName)) {
 			throw new IllegalStateException("Unable to override bean '" + beanName + "' by wrapping," +
-					" no existing bean instance by this name of type " + metadata.getFieldType());
+					" no existing bean instance by this name of type " + metadata.getBeanType());
 		}
 		this.earlyOverrideMetadata.put(beanName, metadata);
 		this.beanNameRegistry.put(metadata, beanName);
@@ -223,7 +222,7 @@ class BeanOverrideBeanPostProcessor implements BeanFactoryAware, BeanFactoryPost
 
 	private RootBeanDefinition createBeanDefinition(OverrideMetadata metadata) {
 		RootBeanDefinition definition = new RootBeanDefinition();
-		definition.setTargetType(metadata.getFieldType());
+		definition.setTargetType(metadata.getBeanType());
 		return definition;
 	}
 

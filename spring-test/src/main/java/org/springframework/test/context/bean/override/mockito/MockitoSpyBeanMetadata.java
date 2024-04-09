@@ -68,15 +68,15 @@ class MockitoSpyBeanMetadata extends MockitoMetadata {
 
 	@Override
 	public boolean equals(@Nullable Object obj) {
-		// For SpyBean we want the class to be exactly the same.
 		if (obj == this) {
 			return true;
 		}
+		// For SpyBean we want the class to be exactly the same.
 		if (obj == null || obj.getClass() != getClass()) {
 			return false;
 		}
 		MockitoSpyBeanMetadata that = (MockitoSpyBeanMetadata) obj;
-		return (super.equals(obj) && ObjectUtils.nullSafeEquals(getFieldType(), that.getFieldType()));
+		return (super.equals(obj) && ObjectUtils.nullSafeEquals(getBeanType(), that.getBeanType()));
 	}
 
 	@Override
@@ -88,19 +88,15 @@ class MockitoSpyBeanMetadata extends MockitoMetadata {
 	public String toString() {
 		return new ToStringCreator(this)
 				.append("name", this.name)
-				.append("fieldType", getFieldType())
+				.append("fieldType", getBeanType())
 				.append("reset", getReset())
 				.toString();
-	}
-
-	<T> T createSpy(Object instance) {
-		return createSpy(this.name, instance);
 	}
 
 	@SuppressWarnings("unchecked")
 	<T> T createSpy(String name, Object instance) {
 		Assert.notNull(instance, "Instance must not be null");
-		Class<?> resolvedTypeToOverride = getFieldType().resolve();
+		Class<?> resolvedTypeToOverride = getBeanType().resolve();
 		Assert.notNull(resolvedTypeToOverride, "Failed to resolve type to override");
 		Assert.isInstanceOf(resolvedTypeToOverride, instance);
 		if (Mockito.mockingDetails(instance).isSpy()) {
@@ -116,7 +112,7 @@ class MockitoSpyBeanMetadata extends MockitoMetadata {
 		Class<?> toSpy;
 		if (Proxy.isProxyClass(instance.getClass())) {
 			settings.defaultAnswer(AdditionalAnswers.delegatesTo(instance));
-			toSpy = getFieldType().toClass();
+			toSpy = getBeanType().toClass();
 		}
 		else {
 			settings.defaultAnswer(Mockito.CALLS_REAL_METHODS);

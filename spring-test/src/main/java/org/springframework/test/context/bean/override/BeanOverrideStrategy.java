@@ -16,12 +16,8 @@
 
 package org.springframework.test.context.bean.override;
 
-import org.springframework.beans.factory.config.BeanPostProcessor;
-
 /**
- * Strategies for bean override instantiation. The Test Context Framework
- * automatically registers the {@code BeanOverrideBeanPostProcessor}, a
- * {@link BeanPostProcessor} that handles all of these strategies.
+ * Strategies for bean override instantiation.
  *
  * @author Simon Baslé
  * @since 6.2

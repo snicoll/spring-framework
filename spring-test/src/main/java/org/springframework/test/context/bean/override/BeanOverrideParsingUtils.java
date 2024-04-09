@@ -34,52 +34,26 @@ import org.springframework.util.ReflectionUtils;
 import static org.springframework.core.annotation.MergedAnnotations.SearchStrategy.DIRECT;
 
 /**
- * Internal parsing utilities that can be used to discover annotations
- * meta-annotated with {@link BeanOverride @BeanOverride} on fields of a given
- * set of classes and to create {@link OverrideMetadata} accordingly.
+ * Internal parsing utilities to discover the presence of
+ * {@link BeanOverride @BeanOverride} on fields, and create the relevant
+ * {@link OverrideMetadata} accordingly.
  *
  * @author Simon Baslé
  * @author Sam Brannen
  * @since 6.2
  */
-final class BeanOverrideParsingUtils {
-
-	private BeanOverrideParsingUtils() {
-	}
+abstract class BeanOverrideParsingUtils {
 
 	/**
-	 * Discover fields of the provided classes that are meta-annotated with
-	 * {@link BeanOverride @BeanOverride}, then instantiate the corresponding
-	 * {@link BeanOverrideProcessor} and use it to create {@link OverrideMetadata}
-	 * for each field. The complete set of {@link OverrideMetadata} is returned.
-	 * @param testClasses the test classes in which to inspect fields
-	 */
-	static Set<OverrideMetadata> parse(Iterable<Class<?>> testClasses) {
-		Set<OverrideMetadata> result = new LinkedHashSet<>();
-		testClasses.forEach(c -> ReflectionUtils.doWithFields(c, field -> parseField(field, c, result)));
-		return result;
-	}
-
-	/**
-	 * Convenience method to {@link #parse(Iterable) parse} a single test class.
-	 */
-	static Set<OverrideMetadata> parse(Class<?> singleTestClass) {
-		return parse(List.of(singleTestClass));
-	}
-
-	/**
-	 * Check if any field of the provided {@code testClass} is meta-annotated
+	 * Check if at lease one field of the given {@code clazz} is meta-annotated
 	 * with {@link BeanOverride @BeanOverride}.
-	 * <p>This is similar to the initial discovery of fields in
-	 * {@link #parse(Iterable)})} without the heavier steps of instantiating
-	 * processors and creating {@link OverrideMetadata}.
-	 * @param testClass the class which fields to inspect
-	 * @return true if there is a bean override annotation present, false otherwise
-	 * @see #parse(Iterable)
+	 * @param clazz the class which fields to inspect
+	 * @return {@code true} if there is a bean override annotation present,
+	 * {@code false} otherwise
 	 */
-	static boolean hasBeanOverride(Class<?> testClass) {
+	static boolean hasBeanOverride(Class<?> clazz) {
 		AtomicBoolean hasBeanOverride = new AtomicBoolean();
-		ReflectionUtils.doWithFields(testClass, field -> {
+		ReflectionUtils.doWithFields(clazz, field -> {
 			if (hasBeanOverride.get()) {
 				return;
 			}
@@ -93,7 +67,26 @@ final class BeanOverrideParsingUtils {
 	}
 
 	/**
-	 * Determine the field's {@link ResolvableType} for which an
+	 * Parse the specified classes for the presence of fields annotated with
+	 * {@link BeanOverride @BeanOverride}, and create an {@link OverrideMetadata}
+	 * for each.
+	 * @param classes the classes to parse
+	 */
+	static Set<OverrideMetadata> parse(Iterable<Class<?>> classes) {
+		Set<OverrideMetadata> result = new LinkedHashSet<>();
+		classes.forEach(c -> ReflectionUtils.doWithFields(c, field -> parseField(field, c, result)));
+		return result;
+	}
+
+	/**
+	 * Convenience method to {@link #parse(Iterable) parse} a single test class.
+	 */
+	static Set<OverrideMetadata> parse(Class<?> clazz) {
+		return parse(List.of(clazz));
+	}
+
+	/**
+	 * Determine the {@link ResolvableType} of the field for which an
 	 * {@link OverrideMetadata} instance will be created, additionally using
 	 * the source class if the field type is a generic type.
 	 */

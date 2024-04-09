@@ -35,15 +35,14 @@ import org.springframework.test.context.bean.override.BeanOverrideProcessor;
 import org.springframework.test.context.bean.override.BeanOverrideStrategy;
 import org.springframework.test.context.bean.override.OverrideMetadata;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link BeanOverrideProcessor} implementation associated with the
- * {@link TestBean @TestBean} annotation. It creates metadata for annotated
- * fields in a given class and ensures that a corresponding static factory
- * method exists, according to the conventions documented in {@link TestBean}.
+ * {@link BeanOverrideProcessor} implementation for {@link TestBean @TestBean}
+ * support. It creates metadata for annotated fields in a given class and
+ * ensures that a corresponding static factory method exists, according to the
+ * {@linkplain TestBean documented conventions}.
  *
  * @author Simon Baslé
  * @author Sam Brannen
@@ -70,7 +69,7 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 	 * @param methodNames a set of supported names for the factory method
 	 * @return the corresponding factory method
 	 * @throws IllegalStateException if a matching factory method cannot
-	 * be found or multiple methodNames have a match
+	 * be found or multiple methods have a match
 	 */
 	static Method findTestBeanFactoryMethod(Class<?> clazz, Class<?> methodReturnType, String... methodNames) {
 		Assert.isTrue(methodNames.length > 0, "At least one candidate method name is required");
@@ -152,7 +151,7 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 		}
 
 		@Override
-		protected String getExpectedBeanName() {
+		protected String getBeanName() {
 			return this.beanName;
 		}
 
@@ -171,7 +170,7 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 			if (this == o) {
 				return true;
 			}
@@ -181,17 +180,14 @@ class TestBeanOverrideProcessor implements BeanOverrideProcessor {
 			if (!super.equals(o)) {
 				return false;
 			}
-			final TestBeanOverrideMetadata that = (TestBeanOverrideMetadata) o;
-			return Objects.equals(this.overrideMethod, that.overrideMethod) &&
-					Objects.equals(this.beanName, that.beanName);
+			TestBeanOverrideMetadata that = (TestBeanOverrideMetadata) o;
+			return Objects.equals(this.overrideMethod, that.overrideMethod)
+					&& Objects.equals(this.beanName, that.beanName);
 		}
 
 		@Override
 		public int hashCode() {
-			int result = super.hashCode();
-			result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.overrideMethod);
-			result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.beanName);
-			return result;
+			return Objects.hash(super.hashCode(), this.overrideMethod, this.beanName);
 		}
 	}
 

@@ -47,9 +47,9 @@ Java::
 <2> The result of this static method will be used as the instance and injected into the field
 ======
 
-NOTE: If the test class inherits from another class or is a nested test class, the parent
-hierarchy / enclosing class are also considered. However, if multiple methods are found
-that match _distinct_ candidate names, an exception is thrown.
+NOTE: The method to invoke is searched in the test class and any enclosing class it might
+have, as well as its hierarchy. This typically allows nested test class to provide the
+method to use in the root test class.
 
 [[spring-testing-annotation-beanoverriding-mockitobean]]
 == `@MockitoBean` and `@MockitoSpyBean`

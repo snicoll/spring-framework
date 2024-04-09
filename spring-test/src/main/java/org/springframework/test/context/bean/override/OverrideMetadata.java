@@ -24,25 +24,17 @@ import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.lang.Nullable;
-import org.springframework.test.context.MergedContextConfiguration;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Metadata for Bean Override injection points.
  *
- * <p><strong>WARNING</strong>: implementations that add fields must take care
- * to implement correct {@link Object#equals(Object) equals} and
- * {@link Object#hashCode() hashCode} methods since override metadata is stored
- * in a {@link org.springframework.test.context.ContextCustomizer} and thus
- * form part of the {@link MergedContextConfiguration} which is used as a cache
- * key.
+ * <p><strong>WARNING</strong>: implementations are used as a cache key and
+ * must implement proper {@code equals} and {@code hashCode}t methods.
  *
  * @author Simon Baslé
  * @since 6.2
  */
 public abstract class OverrideMetadata {
-
-	protected static final int HASHCODE_MULTIPLIER = 31;
 
 	private final Field field;
 
@@ -60,34 +52,31 @@ public abstract class OverrideMetadata {
 	}
 
 	/**
-	 * Return the expected bean name to override.
-	 * <p>Typically, this is either explicitly set in a concrete annotation or
-	 * inferred from the annotated field's name.
-	 * @return the expected bean name
+	 * Return the bean name to override.
 	 */
-	protected String getExpectedBeanName() {
+	protected String getBeanName() {
 		return this.field.getName();
-	}
-
-	/**
-	 * Return the annotated {@link Field}.
-	 */
-	public final Field getField() {
-		return this.field;
 	}
 
 	/**
 	 * Return the bean {@link ResolvableType type} to override.
 	 */
-	public final ResolvableType getFieldType() {
+	public ResolvableType getBeanType() {
 		return this.fieldType;
+	}
+
+	/**
+	 * Return the annotated {@link Field}.
+	 */
+	public Field getField() {
+		return this.field;
 	}
 
 	/**
 	 * Return the {@link BeanOverrideStrategy} for this instance, as a hint on
 	 * how and when the override instance should be created.
 	 */
-	public final BeanOverrideStrategy getStrategy() {
+	public BeanOverrideStrategy getStrategy() {
 		return this.strategy;
 	}
 
@@ -132,11 +121,7 @@ public abstract class OverrideMetadata {
 
 	@Override
 	public int hashCode() {
-		int result = 1;
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.strategy);
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.field);
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.fieldType);
-		return result;
+		return Objects.hash(this.strategy, this.field, this.fieldType);
 	}
 
 	@Override

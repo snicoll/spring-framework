@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.mockito.Answers;
@@ -72,7 +73,7 @@ class MockitoBeanMetadata extends MockitoMetadata {
 		return createMock(beanName);
 	}
 
-	private Set<Class<?>> asClassSet(Class<?>[] classes) {
+	private Set<Class<?>> asClassSet(@Nullable Class<?>[] classes) {
 		Set<Class<?>> classSet = new LinkedHashSet<>();
 		if (classes != null) {
 			classSet.addAll(Arrays.asList(classes));
@@ -89,8 +90,8 @@ class MockitoBeanMetadata extends MockitoMetadata {
 	}
 
 	/**
-	 * Return the answers mode.
-	 * @return the answers mode; never {@code null}
+	 * Return the {@link Answers}.
+	 * @return the answers mode
 	 */
 	Answers getAnswer() {
 		return this.answer;
@@ -122,27 +123,19 @@ class MockitoBeanMetadata extends MockitoMetadata {
 
 	@Override
 	public int hashCode() {
-		int result = super.hashCode();
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.extraInterfaces);
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.answer);
-		result = HASHCODE_MULTIPLIER * result + Boolean.hashCode(this.serializable);
-		return result;
+		return Objects.hash(super.hashCode(), this.extraInterfaces, this.answer, this.serializable);
 	}
 
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)
 				.append("name", this.name)
-				.append("fieldType", getFieldType())
+				.append("fieldType", getBeanType())
 				.append("extraInterfaces", this.extraInterfaces)
 				.append("answer", this.answer)
 				.append("serializable", this.serializable)
 				.append("reset", getReset())
 				.toString();
-	}
-
-	<T> T createMock() {
-		return createMock(this.name);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -158,7 +151,7 @@ class MockitoBeanMetadata extends MockitoMetadata {
 		if (this.serializable) {
 			settings.serializable();
 		}
-		return (T) mock(getFieldType().resolve(), settings);
+		return (T) mock(getBeanType().resolve(), settings);
 	}
 
 }

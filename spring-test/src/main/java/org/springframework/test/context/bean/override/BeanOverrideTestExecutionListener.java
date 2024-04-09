@@ -93,11 +93,9 @@ public class BeanOverrideTestExecutionListener extends AbstractTestExecutionList
 		Class<?> testClass = testContext.getTestClass();
 		Object testInstance = testContext.getTestInstance();
 
-		// Avoid full parsing, but validate that this particular class has some bean override field(s).
 		if (BeanOverrideParsingUtils.hasBeanOverride(testClass)) {
 			BeanOverrideBeanPostProcessor postProcessor =
 					testContext.getApplicationContext().getBean(BeanOverrideBeanPostProcessor.class);
-			// The class should have already been parsed by the context customizer.
 			for (OverrideMetadata metadata : postProcessor.getOverrideMetadata()) {
 				if (!metadata.getField().getDeclaringClass().isAssignableFrom(testClass)) {
 					continue;

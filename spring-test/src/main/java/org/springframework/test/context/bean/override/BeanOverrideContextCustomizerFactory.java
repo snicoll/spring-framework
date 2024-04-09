@@ -30,11 +30,12 @@ import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.TestContextAnnotationUtils;
 
 /**
- * {@link ContextCustomizerFactory} which provides support for Bean Overriding
- * in tests.
+ * {@link ContextCustomizerFactory} implementation that provides support for
+ * Bean Overriding.
  *
  * @author Simon Baslé
  * @since 6.2
+ * @see BeanOverride
  */
 class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
 
@@ -61,18 +62,10 @@ class BeanOverrideContextCustomizerFactory implements ContextCustomizerFactory {
 		}
 	}
 
-	/**
-	 * {@link ContextCustomizer} for Bean Overriding in tests.
-	 */
 	private static final class BeanOverrideContextCustomizer implements ContextCustomizer {
 
 		private final Set<Class<?>> detectedClasses;
 
-		/**
-		 * Construct a context customizer given a set of classes that have been
-		 * previously determined to contain bean overriding annotations.
-		 * @param detectedClasses the set of test classes with bean overriding
-		 */
 		BeanOverrideContextCustomizer(Set<Class<?>> detectedClasses) {
 			this.detectedClasses = detectedClasses;
 		}

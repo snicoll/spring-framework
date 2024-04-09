@@ -17,6 +17,7 @@
 package org.springframework.test.context.bean.override.mockito;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.SingletonBeanRegistry;
@@ -34,7 +35,6 @@ import org.springframework.util.StringUtils;
  * @since 6.2
  */
 abstract class MockitoMetadata extends OverrideMetadata {
-
 
 	protected final String name;
 
@@ -54,11 +54,11 @@ abstract class MockitoMetadata extends OverrideMetadata {
 
 
 	@Override
-	protected String getExpectedBeanName() {
+	protected String getBeanName() {
 		if (StringUtils.hasText(this.name)) {
 			return this.name;
 		}
-		return super.getExpectedBeanName();
+		return super.getBeanName();
 	}
 
 	@Override
@@ -111,11 +111,7 @@ abstract class MockitoMetadata extends OverrideMetadata {
 
 	@Override
 	public int hashCode() {
-		int result = super.hashCode();
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.name);
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.reset);
-		result = HASHCODE_MULTIPLIER * result + ObjectUtils.nullSafeHashCode(this.proxyTargetAware);
-		return result;
+		return Objects.hash(super.hashCode(), this.name, this.reset, this.proxyTargetAware);
 	}
 
 }
