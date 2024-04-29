@@ -42,6 +42,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.cache.Cache;
@@ -266,16 +267,21 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 		if (getCacheResolver() == null) {
 			// Lazily initialize cache resolver via default cache manager
 			Assert.state(this.beanFactory != null, "CacheResolver or BeanFactory must be set on cache aspect");
-			try {
+			ObjectProvider<CacheManager> beanProvider = this.beanFactory.getBeanProvider(CacheManager.class);
+			CacheManager cacheManager = beanProvider.getIfUnique();
+			if (cacheManager != null) {
 				setCacheManager(this.beanFactory.getBean(CacheManager.class));
 			}
-			catch (NoUniqueBeanDefinitionException ex) {
-				throw new IllegalStateException("No CacheResolver specified, and no unique bean of type " +
-						"CacheManager found. Mark one as primary or declare a specific CacheManager to use.", ex);
-			}
-			catch (NoSuchBeanDefinitionException ex) {
-				throw new IllegalStateException("No CacheResolver specified, and no bean of type CacheManager found. " +
-						"Register a CacheManager bean or remove the @EnableCaching annotation from your configuration.", ex);
+			else {
+				List<CacheManager> candidates = beanProvider.orderedStream().toList();
+				if (candidates.isEmpty()) {
+					throw new NoSuchBeanDefinitionException(CacheManager.class, "No CacheResolver specified, and no bean of type CacheManager found. " +
+							"Register a CacheManager bean or remove the @EnableCaching annotation from your configuration.");
+				}
+				else {
+					throw new NoUniqueBeanDefinitionException(CacheManager.class, candidates.size(), "No CacheResolver specified, and no unique bean of type " +
+							"CacheManager found. Mark one as primary or declare a specific CacheManager to use.");
+				}
 			}
 		}
 		this.initialized = true;
