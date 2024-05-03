@@ -18,16 +18,13 @@ package org.springframework.context.aot;
 
 import java.util.Arrays;
 
-import org.springframework.aot.generate.GenerationContext;
-import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.annotation.Reflective;
 import org.springframework.aot.hint.annotation.ReflectiveProcessor;
-import org.springframework.aot.hint.annotation.ReflectiveRuntimeHintsRegistrar;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
-import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.lang.Nullable;
 
 /**
  * AOT {@code BeanFactoryInitializationAotProcessor} that detects the presence
@@ -39,32 +36,13 @@ import org.springframework.beans.factory.support.RegisteredBean;
  */
 class ReflectiveProcessorBeanFactoryInitializationAotProcessor implements BeanFactoryInitializationAotProcessor {
 
-	private static final ReflectiveRuntimeHintsRegistrar registrar = new ReflectiveRuntimeHintsRegistrar();
-
-
 	@Override
+	@Nullable
 	public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
 		Class<?>[] beanTypes = Arrays.stream(beanFactory.getBeanDefinitionNames())
 				.map(beanName -> RegisteredBean.of(beanFactory, beanName).getBeanClass())
 				.toArray(Class<?>[]::new);
-		return new ReflectiveProcessorBeanFactoryInitializationAotContribution(beanTypes);
-	}
-
-
-	private static class ReflectiveProcessorBeanFactoryInitializationAotContribution
-			implements BeanFactoryInitializationAotContribution {
-
-		private final Class<?>[] types;
-
-		public ReflectiveProcessorBeanFactoryInitializationAotContribution(Class<?>[] types) {
-			this.types = types;
-		}
-
-		@Override
-		public void applyTo(GenerationContext generationContext, BeanFactoryInitializationCode beanFactoryInitializationCode) {
-			RuntimeHints runtimeHints = generationContext.getRuntimeHints();
-			registrar.registerRuntimeHints(runtimeHints, this.types);
-		}
+		return ReflectiveProcessorAotContributionProvider.from(beanTypes);
 	}
 
 }
