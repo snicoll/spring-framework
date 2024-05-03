@@ -17,6 +17,7 @@
 package org.springframework.beans.factory.aot;
 
 import org.springframework.aot.generate.GenerationContext;
+import org.springframework.lang.Nullable;
 
 /**
  * AOT contribution from a {@link BeanFactoryInitializationAotProcessor} used to
@@ -27,6 +28,7 @@ import org.springframework.aot.generate.GenerationContext;
  * {@link org.springframework.beans.factory.aot.BeanRegistrationExcludeFilter}.
  *
  * @author Phillip Webb
+ * @author Stephane Nicoll
  * @since 6.0
  * @see BeanFactoryInitializationAotProcessor
  */
@@ -40,5 +42,32 @@ public interface BeanFactoryInitializationAotContribution {
 	 */
 	void applyTo(GenerationContext generationContext,
 			BeanFactoryInitializationCode beanFactoryInitializationCode);
+
+	/**
+	 * Create a contribution that applies the contribution of the first contribution
+	 * followed by the second contribution. Any contribution can be {@code null} to be
+	 * ignored and the concatenated contribution is {@code null} if both inputs are
+	 * {@code null}.
+	 * @param a the first contribution
+	 * @param b the second contribution
+	 * @return the concatenation of the two contributions, or {@code null} if
+	 * they are both {@code null}.
+	 * @since 6.2
+	 */
+	@Nullable
+	static BeanFactoryInitializationAotContribution concat(@Nullable BeanFactoryInitializationAotContribution a,
+			@Nullable BeanFactoryInitializationAotContribution b) {
+
+		if (a == null) {
+			return b;
+		}
+		if (b == null) {
+			return a;
+		}
+		return (generationContext, code) -> {
+			a.applyTo(generationContext, code);
+			b.applyTo(generationContext, code);
+		};
+	}
 
 }
