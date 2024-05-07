@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -29,7 +29,6 @@ import org.assertj.core.api.AbstractObjectAssert;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.MapAssert;
 
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.function.SingletonSupplier;
 import org.springframework.web.context.request.async.DeferredResult;
 

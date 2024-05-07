@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import java.nio.charset.Charset;
 
@@ -25,7 +25,6 @@ import org.assertj.core.api.ByteArrayAssert;
 
 import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.lang.Nullable;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.json.AbstractJsonContentAssert;
 import org.springframework.test.json.JsonContentAssert;
 import org.springframework.test.web.UriAssert;

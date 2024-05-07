@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.test.web.servlet;
 
 import java.util.LinkedHashSet;
 import java.util.Map;

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
-
-import org.springframework.mock.web.MockHttpServletRequest;
+package org.springframework.mock.web;
 
 /**
  * AssertJ {@link org.assertj.core.api.Assert assertions} that can be applied to

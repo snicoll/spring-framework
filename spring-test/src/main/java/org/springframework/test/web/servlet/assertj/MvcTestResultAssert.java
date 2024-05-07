@@ -32,8 +32,13 @@ import org.assertj.core.internal.Failures;
 
 import org.springframework.http.converter.GenericHttpMessageConverter;
 import org.springframework.lang.Nullable;
+import org.springframework.mock.web.AbstractHttpServletRequestAssert;
+import org.springframework.mock.web.AbstractMockHttpServletRequestAssert;
+import org.springframework.mock.web.AbstractMockHttpServletResponseAssert;
+import org.springframework.mock.web.CookieMapAssert;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.web.servlet.ModelAssert;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.ResultMatcher;

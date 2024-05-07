@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +23,6 @@ import org.assertj.core.api.AssertProvider;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.json.JsonContent;
 
 import static org.assertj.core.api.Assertions.assertThat;

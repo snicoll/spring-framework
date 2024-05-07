@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;

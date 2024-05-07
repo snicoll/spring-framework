@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,8 +24,6 @@ import jakarta.servlet.http.HttpSession;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;

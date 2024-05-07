@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.mock.web;
 
 import org.junit.jupiter.api.Test;
-
-import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * Tests for {@link AbstractMockHttpServletRequestAssert}.
