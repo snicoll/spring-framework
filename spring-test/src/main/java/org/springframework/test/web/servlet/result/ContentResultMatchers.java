@@ -28,7 +28,11 @@ import org.hamcrest.Matcher;
 import org.w3c.dom.Node;
 
 import org.springframework.http.MediaType;
-import org.springframework.test.util.JsonExpectationsHelper;
+import org.springframework.test.json.JsonAssert;
+import org.springframework.test.json.JsonComparator;
+import org.springframework.test.json.JsonCompareMode;
+import org.springframework.test.json.JsonComparison;
+import org.springframework.test.json.JsonComparison.Result;
 import org.springframework.test.util.XmlExpectationsHelper;
 import org.springframework.test.web.servlet.ResultMatcher;
 
@@ -51,8 +55,6 @@ public class ContentResultMatchers {
 
 	private final XmlExpectationsHelper xmlHelper;
 
-	private final JsonExpectationsHelper jsonHelper;
-
 
 	/**
 	 * Protected constructor.
@@ -60,7 +62,6 @@ public class ContentResultMatchers {
 	 */
 	protected ContentResultMatchers() {
 		this.xmlHelper = new XmlExpectationsHelper();
-		this.jsonHelper = new JsonExpectationsHelper();
 	}
 
 
@@ -200,8 +201,11 @@ public class ContentResultMatchers {
 	 * are "similar" - i.e. they contain the same attribute-value pairs
 	 * regardless of formatting with a lenient checking (extensible, and non-strict array
 	 * ordering).
+	 * <p>Use of this matcher requires the <a
+	 * href="https://jsonassert.skyscreamer.org/">JSONassert</a> library.
 	 * @param jsonContent the expected JSON content
 	 * @since 4.1
+	 * @see JsonAssert
 	 */
 	public ResultMatcher json(String jsonContent) {
 		return json(jsonContent, false);
@@ -220,11 +224,30 @@ public class ContentResultMatchers {
 	 * @param jsonContent the expected JSON content
 	 * @param strict enables strict checking
 	 * @since 4.2
+	 * @see JsonAssert
 	 */
 	public ResultMatcher json(String jsonContent, boolean strict) {
+		JsonCompareMode compareMode = (strict ? JsonCompareMode.STRICT : JsonCompareMode.LENIENT);
+		return json(jsonContent, JsonAssert.comparator(compareMode));
+	}
+
+	/**
+	 * Parse the response content and the given string as JSON and assert the two
+	 * using the given {@link JsonComparator}. If the comparison failed, throws an
+	 * {@link AssertionError} with the message of the {@link JsonComparison}.
+	 * <p>Use this matcher if you require a custom JSONAssert configuration or
+	 * if you desire to use another assertion library.
+	 * @param jsonContent the expected JSON content
+	 * @param jsonComparator the json comparator
+	 * @since 6.2
+	 */
+	public ResultMatcher json(String jsonContent, JsonComparator jsonComparator) {
 		return result -> {
 			String content = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
-			this.jsonHelper.assertJsonEqual(jsonContent, content, strict);
+			JsonComparison compare = jsonComparator.compare(jsonContent, content);
+			if (compare.getResult() == Result.MISMATCH) {
+				throw new AssertionError(compare.getMessage());
+			}
 		};
 	}
 
