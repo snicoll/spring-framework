@@ -19,22 +19,16 @@ package org.springframework.test.web.servlet.assertj;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.GenericHttpMessageConverter;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.lang.Nullable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
-import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -79,7 +73,7 @@ import org.springframework.web.context.WebApplicationContext;
  *         .withMessage("Test exception");
  * </code></pre>
  *
- * <p>{@link MockMvcTester} can be configured with a list of
+ * <p>{@code MockMvcTester} can be configured with a list of
  * {@linkplain HttpMessageConverter message converters} to allow the response
  * body to be deserialized, rather than asserting on the raw values.
  *
@@ -87,117 +81,56 @@ import org.springframework.web.context.WebApplicationContext;
  * @author Brian Clozel
  * @since 6.2
  */
-public final class MockMvcTester {
-
-	private static final MediaType JSON = MediaType.APPLICATION_JSON;
-
-	private final MockMvc mockMvc;
-
-	@Nullable
-	private final GenericHttpMessageConverter<Object> jsonMessageConverter;
-
-
-	private MockMvcTester(MockMvc mockMvc, @Nullable GenericHttpMessageConverter<Object> jsonMessageConverter) {
-		Assert.notNull(mockMvc, "mockMVC should not be null");
-		this.mockMvc = mockMvc;
-		this.jsonMessageConverter = jsonMessageConverter;
-	}
+public interface MockMvcTester {
 
 	/**
-	 * Create a {@link MockMvcTester} instance that delegates to the given
-	 * {@link MockMvc} instance.
-	 * @param mockMvc the MockMvc instance to delegate calls to
+	 * Prepare an HTTP GET request.
+	 * @return a spec for specifying the target URL
 	 */
-	public static MockMvcTester create(MockMvc mockMvc) {
-		return new MockMvcTester(mockMvc, null);
-	}
+	MockMvcRequestBuilder get();
 
 	/**
-	 * Create an {@link MockMvcTester} instance using the given, fully
-	 * initialized (i.e., <em>refreshed</em>) {@link WebApplicationContext}. The
-	 * given {@code customizations} are applied to the {@link DefaultMockMvcBuilder}
-	 * that ultimately creates the underlying {@link MockMvc} instance.
-	 * <p>If no further customization of the underlying {@link MockMvc} instance
-	 * is required, use {@link #from(WebApplicationContext)}.
-	 * @param applicationContext the application context to detect the Spring
-	 * MVC infrastructure and application controllers from
-	 * @param customizations a function that creates a {@link MockMvc}
-	 * instance based on a {@link DefaultMockMvcBuilder}
-	 * @see MockMvcBuilders#webAppContextSetup(WebApplicationContext)
+	 * Prepare an HTTP HEAD request.
+	 * @return a spec for specifying the target URL
 	 */
-	public static MockMvcTester from(WebApplicationContext applicationContext,
-			Function<DefaultMockMvcBuilder, MockMvc> customizations) {
-
-		DefaultMockMvcBuilder builder = MockMvcBuilders.webAppContextSetup(applicationContext);
-		MockMvc mockMvc = customizations.apply(builder);
-		return create(mockMvc);
-	}
+	MockMvcRequestBuilder head();
 
 	/**
-	 * Shortcut to create an {@link MockMvcTester} instance using the given,
-	 * fully initialized (i.e., <em>refreshed</em>) {@link WebApplicationContext}.
-	 * <p>Consider using {@link #from(WebApplicationContext, Function)} if
-	 * further customization of the underlying {@link MockMvc} instance is
-	 * required.
-	 * @param applicationContext the application context to detect the Spring
-	 * MVC infrastructure and application controllers from
-	 * @see MockMvcBuilders#webAppContextSetup(WebApplicationContext)
+	 * Prepare an HTTP POST request.
+	 * @return a spec for specifying the target URL
 	 */
-	public static MockMvcTester from(WebApplicationContext applicationContext) {
-		return from(applicationContext, DefaultMockMvcBuilder::build);
-	}
+	MockMvcRequestBuilder post();
 
 	/**
-	 * Create an {@link MockMvcTester} instance by registering one or more
-	 * {@code @Controller} instances and configuring Spring MVC infrastructure
-	 * programmatically.
-	 * <p>This allows full control over the instantiation and initialization of
-	 * controllers and their dependencies, similar to plain unit tests while
-	 * also making it possible to test one controller at a time.
-	 * @param controllers one or more {@code @Controller} instances or
-	 * {@code @Controller} types to test; a type ({@code Class}) will be turned
-	 * into an instance
-	 * @param customizations a function that creates a {@link MockMvc} instance
-	 * based on a {@link StandaloneMockMvcBuilder}, typically to configure the
-	 * Spring MVC infrastructure
-	 * @see MockMvcBuilders#standaloneSetup(Object...)
+	 * Prepare an HTTP PUT request.
+	 * @return a spec for specifying the target URL
 	 */
-	public static MockMvcTester of(Collection<?> controllers,
-			Function<StandaloneMockMvcBuilder, MockMvc> customizations) {
-
-		StandaloneMockMvcBuilder builder = MockMvcBuilders.standaloneSetup(controllers.toArray());
-		return create(customizations.apply(builder));
-	}
+	MockMvcRequestBuilder put();
 
 	/**
-	 * Shortcut to create an {@link MockMvcTester} instance by registering one
-	 * or more {@code @Controller} instances.
-	 * <p>The minimum infrastructure required by the
-	 * {@link org.springframework.web.servlet.DispatcherServlet DispatcherServlet}
-	 * to serve requests with annotated controllers is created. Consider using
-	 * {@link #of(Collection, Function)} if additional configuration of the MVC
-	 * infrastructure is required.
-	 * @param controllers one or more {@code @Controller} instances or
-	 * {@code @Controller} types to test; a type ({@code Class}) will be turned
-	 * into an instance
-	 * @see MockMvcBuilders#standaloneSetup(Object...)
+	 * Prepare an HTTP PATCH request.
+	 * @return a spec for specifying the target URL
 	 */
-	public static MockMvcTester of(Object... controllers) {
-		return of(Arrays.asList(controllers), StandaloneMockMvcBuilder::build);
-	}
+	MockMvcRequestBuilder patch();
 
 	/**
-	 * Return a new {@link MockMvcTester} instance using the specified
-	 * {@linkplain HttpMessageConverter message converters}.
-	 * <p>If none are specified, only basic assertions on the response body can
-	 * be performed. Consider registering a suitable JSON converter for asserting
-	 * against JSON data structures.
-	 * @param httpMessageConverters the message converters to use
-	 * @return a new instance using the specified converters
+	 * Prepare an HTTP DELETE request.
+	 * @return a spec for specifying the target URL
 	 */
-	public MockMvcTester withHttpMessageConverters(Iterable<HttpMessageConverter<?>> httpMessageConverters) {
-		return new MockMvcTester(this.mockMvc, findJsonMessageConverter(httpMessageConverters));
-	}
+	MockMvcRequestBuilder delete();
+
+	/**
+	 * Prepare an HTTP OPTIONS request.
+	 * @return a spec for specifying the target URL
+	 */
+	MockMvcRequestBuilder options();
+
+	/**
+	 * Prepare a request for the specified {@code HttpMethod}.
+	 * @return a spec for specifying the target URL
+	 */
+	MockMvcRequestBuilder method(HttpMethod method);
+
 
 	/**
 	 * Perform a request and return a {@link MvcTestResult result} that can be
@@ -227,36 +160,100 @@ public final class MockMvcTester {
 	 * @return an {@link MvcTestResult} to be wrapped in {@code assertThat}
 	 * @see MockMvc#perform(RequestBuilder)
 	 */
-	public MvcTestResult perform(RequestBuilder requestBuilder) {
-		Object result = getMvcResultOrFailure(requestBuilder);
-		if (result instanceof MvcResult mvcResult) {
-			return new DefaultMvcTestResult(mvcResult, null, this.jsonMessageConverter);
-		}
-		else {
-			return new DefaultMvcTestResult(null, (Exception) result, this.jsonMessageConverter);
-		}
+	MvcTestResult perform(RequestBuilder requestBuilder);
+
+	/**
+	 * Return a new {@link MockMvcTester} instance using the specified
+	 * {@linkplain HttpMessageConverter message converters}.
+	 * <p>If none are specified, only basic assertions on the response body can
+	 * be performed. Consider registering a suitable JSON converter for asserting
+	 * against JSON data structures.
+	 * @param httpMessageConverters the message converters to use
+	 * @return a new instance using the specified converters
+	 */
+	MockMvcTester withHttpMessageConverters(Iterable<HttpMessageConverter<?>> httpMessageConverters);
+
+	/**
+	 * Create a {@link MockMvcTester} instance that delegates to the given
+	 * {@link MockMvc} instance.
+	 * @param mockMvc the MockMvc instance to delegate calls to
+	 */
+	static MockMvcTester create(MockMvc mockMvc) {
+		return new DefaultMockMvcTester(mockMvc, null);
 	}
 
-	private Object getMvcResultOrFailure(RequestBuilder requestBuilder) {
-		try {
-			return this.mockMvc.perform(requestBuilder).andReturn();
-		}
-		catch (Exception ex) {
-			return ex;
-		}
+	/**
+	 * Create an {@link MockMvcTester} instance using the given, fully
+	 * initialized (i.e., <em>refreshed</em>) {@link WebApplicationContext}. The
+	 * given {@code customizations} are applied to the {@link DefaultMockMvcBuilder}
+	 * that ultimately creates the underlying {@link MockMvc} instance.
+	 * <p>If no further customization of the underlying {@link MockMvc} instance
+	 * is required, use {@link #from(WebApplicationContext)}.
+	 * @param applicationContext the application context to detect the Spring
+	 * MVC infrastructure and application controllers from
+	 * @param customizations a function that creates a {@link MockMvc}
+	 * instance based on a {@link DefaultMockMvcBuilder}
+	 * @see MockMvcBuilders#webAppContextSetup(WebApplicationContext)
+	 */
+	static MockMvcTester from(WebApplicationContext applicationContext,
+			Function<DefaultMockMvcBuilder, MockMvc> customizations) {
+
+		DefaultMockMvcBuilder builder = MockMvcBuilders.webAppContextSetup(applicationContext);
+		MockMvc mockMvc = customizations.apply(builder);
+		return create(mockMvc);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Nullable
-	private GenericHttpMessageConverter<Object> findJsonMessageConverter(
-			Iterable<HttpMessageConverter<?>> messageConverters) {
+	/**
+	 * Shortcut to create an {@link MockMvcTester} instance using the given,
+	 * fully initialized (i.e., <em>refreshed</em>) {@link WebApplicationContext}.
+	 * <p>Consider using {@link #from(WebApplicationContext, Function)} if
+	 * further customization of the underlying {@link MockMvc} instance is
+	 * required.
+	 * @param applicationContext the application context to detect the Spring
+	 * MVC infrastructure and application controllers from
+	 * @see MockMvcBuilders#webAppContextSetup(WebApplicationContext)
+	 */
+	static MockMvcTester from(WebApplicationContext applicationContext) {
+		return from(applicationContext, DefaultMockMvcBuilder::build);
+	}
 
-		return StreamSupport.stream(messageConverters.spliterator(), false)
-				.filter(GenericHttpMessageConverter.class::isInstance)
-				.map(GenericHttpMessageConverter.class::cast)
-				.filter(converter -> converter.canWrite(null, Map.class, JSON))
-				.filter(converter -> converter.canRead(Map.class, JSON))
-				.findFirst().orElse(null);
+	/**
+	 * Create an {@link MockMvcTester} instance by registering one or more
+	 * {@code @Controller} instances and configuring Spring MVC infrastructure
+	 * programmatically.
+	 * <p>This allows full control over the instantiation and initialization of
+	 * controllers and their dependencies, similar to plain unit tests while
+	 * also making it possible to test one controller at a time.
+	 * @param controllers one or more {@code @Controller} instances or
+	 * {@code @Controller} types to test; a type ({@code Class}) will be turned
+	 * into an instance
+	 * @param customizations a function that creates a {@link MockMvc} instance
+	 * based on a {@link StandaloneMockMvcBuilder}, typically to configure the
+	 * Spring MVC infrastructure
+	 * @see MockMvcBuilders#standaloneSetup(Object...)
+	 */
+	static MockMvcTester of(Collection<?> controllers,
+			Function<StandaloneMockMvcBuilder, MockMvc> customizations) {
+
+		StandaloneMockMvcBuilder builder = MockMvcBuilders.standaloneSetup(controllers.toArray());
+		return create(customizations.apply(builder));
+	}
+
+	/**
+	 * Shortcut to create an {@link MockMvcTester} instance by registering one
+	 * or more {@code @Controller} instances.
+	 * <p>The minimum infrastructure required by the
+	 * {@link org.springframework.web.servlet.DispatcherServlet DispatcherServlet}
+	 * to serve requests with annotated controllers is created. Consider using
+	 * {@link #of(Collection, Function)} if additional configuration of the MVC
+	 * infrastructure is required.
+	 * @param controllers one or more {@code @Controller} instances or
+	 * {@code @Controller} types to test; a type ({@code Class}) will be turned
+	 * into an instance
+	 * @see MockMvcBuilders#standaloneSetup(Object...)
+	 */
+	static MockMvcTester of(Object... controllers) {
+		return of(Arrays.asList(controllers), StandaloneMockMvcBuilder::build);
 	}
 
 }

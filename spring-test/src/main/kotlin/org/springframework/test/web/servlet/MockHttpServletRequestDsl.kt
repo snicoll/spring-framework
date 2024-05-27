@@ -40,7 +40,7 @@ import jakarta.servlet.http.Cookie
  * @author Sebastien Deleuze
  * @since 5.2
  */
-open class MockHttpServletRequestDsl internal constructor (private val builder: MockHttpServletRequestBuilder) {
+open class MockHttpServletRequestDsl internal constructor (private val builder: MockHttpServletRequestBuilder<*>) {
 
 	/**
 	 * @see [MockHttpServletRequestBuilder.contextPath]
@@ -193,7 +193,7 @@ open class MockHttpServletRequestDsl internal constructor (private val builder: 
 	/**
 	 * @see [MockHttpServletRequestBuilder.merge]
 	 */
-	fun merge(parent: MockHttpServletRequestBuilder?) {
+	fun merge(parent: MockHttpServletRequestBuilder<*>?) {
 		builder.merge(parent)
 	}
 

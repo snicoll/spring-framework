@@ -82,13 +82,15 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Sam Brannen
  * @author Kamill Sokol
  * @since 3.2
+ * @param <B> a self reference to the builder type
  */
-public class MockHttpServletRequestBuilder
-		implements ConfigurableSmartRequestBuilder<MockHttpServletRequestBuilder>, Mergeable {
+public class MockHttpServletRequestBuilder<B extends MockHttpServletRequestBuilder<B>>
+		implements ConfigurableSmartRequestBuilder<MockHttpServletRequestBuilder<B>>, Mergeable {
 
-	private final String method;
+	private final HttpMethod method;
 
-	private final URI url;
+	@Nullable
+	private URI url;
 
 	private String contextPath = "";
 
@@ -138,19 +140,33 @@ public class MockHttpServletRequestBuilder
 
 	private final List<RequestPostProcessor> postProcessors = new ArrayList<>();
 
+	/**
+	 * Create a new instance using the specified {@link HttpMethod}.
+	 * @param httpMethod the HTTP method (GET, POST, etc.)
+	 */
+	protected MockHttpServletRequestBuilder(HttpMethod httpMethod) {
+		Assert.notNull(httpMethod, "'httpMethod' is required");
+		this.method = httpMethod;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected B self() {
+		return (B) this;
+	}
 
 	/**
-	 * Package private constructor. To get an instance, use static factory
-	 * methods in {@link MockMvcRequestBuilders}.
-	 * <p>Although this class cannot be extended, additional ways to initialize
-	 * the {@code MockHttpServletRequest} can be plugged in via
-	 * {@link #with(RequestPostProcessor)}.
-	 * @param httpMethod the HTTP method (GET, POST, etc)
-	 * @param url a URL template; the resulting URL will be encoded
-	 * @param vars zero or more URI variables
+	 * Specify the URL using an absolute, fully constructed {@link java.net.URI}.
 	 */
-	MockHttpServletRequestBuilder(HttpMethod httpMethod, String url, Object... vars) {
-		this(httpMethod.name(), initUri(url, vars));
+	public B url(URI uri) {
+		this.url = uri;
+		return self();
+	}
+
+	/**
+	 * Specify the URL for the request using a URI template and URI variables.
+	 */
+	public B url(String uri, Object... uriVariables) {
+		return url(initUri(uri, uriVariables));
 	}
 
 	private static URI initUri(String url, Object[] vars) {
@@ -162,31 +178,6 @@ public class MockHttpServletRequestBuilder
 	}
 
 	/**
-	 * Alternative to {@link #MockHttpServletRequestBuilder(HttpMethod, String, Object...)}
-	 * with a pre-built URI.
-	 * @param httpMethod the HTTP method (GET, POST, etc)
-	 * @param url the URL
-	 * @since 4.0.3
-	 */
-	MockHttpServletRequestBuilder(HttpMethod httpMethod, URI url) {
-		this(httpMethod.name(), url);
-	}
-
-	/**
-	 * Alternative constructor for custom HTTP methods.
-	 * @param httpMethod the HTTP method (GET, POST, etc)
-	 * @param url the URL
-	 * @since 4.3
-	 */
-	MockHttpServletRequestBuilder(String httpMethod, URI url) {
-		Assert.notNull(httpMethod, "'httpMethod' is required");
-		Assert.notNull(url, "'url' is required");
-		this.method = httpMethod;
-		this.url = url;
-	}
-
-
-	/**
 	 * Specify the portion of the requestURI that represents the context path.
 	 * The context path, if specified, must match to the start of the request URI.
 	 * <p>In most cases, tests can be written by omitting the context path from
@@ -195,13 +186,13 @@ public class MockHttpServletRequestBuilder
 	 * path must start with a "/" and must not end with a "/".
 	 * @see jakarta.servlet.http.HttpServletRequest#getContextPath()
 	 */
-	public MockHttpServletRequestBuilder contextPath(String contextPath) {
+	public B contextPath(String contextPath) {
 		if (StringUtils.hasText(contextPath)) {
 			Assert.isTrue(contextPath.startsWith("/"), "Context path must start with a '/'");
 			Assert.isTrue(!contextPath.endsWith("/"), "Context path must not end with a '/'");
 		}
 		this.contextPath = contextPath;
-		return this;
+		return self();
 	}
 
 	/**
@@ -217,13 +208,13 @@ public class MockHttpServletRequestBuilder
 	 * end with a "/".
 	 * @see jakarta.servlet.http.HttpServletRequest#getServletPath()
 	 */
-	public MockHttpServletRequestBuilder servletPath(String servletPath) {
+	public B servletPath(String servletPath) {
 		if (StringUtils.hasText(servletPath)) {
 			Assert.isTrue(servletPath.startsWith("/"), "Servlet path must start with a '/'");
 			Assert.isTrue(!servletPath.endsWith("/"), "Servlet path must not end with a '/'");
 		}
 		this.servletPath = servletPath;
-		return this;
+		return self();
 	}
 
 	/**
@@ -234,12 +225,12 @@ public class MockHttpServletRequestBuilder
 	 * <p>If specified, the pathInfo will be used as-is.
 	 * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
 	 */
-	public MockHttpServletRequestBuilder pathInfo(@Nullable String pathInfo) {
+	public B pathInfo(@Nullable String pathInfo) {
 		if (StringUtils.hasText(pathInfo)) {
 			Assert.isTrue(pathInfo.startsWith("/"), "Path info must start with a '/'");
 		}
 		this.pathInfo = pathInfo;
-		return this;
+		return self();
 	}
 
 	/**
@@ -247,9 +238,9 @@ public class MockHttpServletRequestBuilder
 	 * secure channel, such as HTTPS.
 	 * @param secure whether the request is using a secure channel
 	 */
-	public MockHttpServletRequestBuilder secure(boolean secure){
+	public B secure(boolean secure){
 		this.secure = secure;
-		return this;
+		return self();
 	}
 
 	/**
@@ -259,17 +250,17 @@ public class MockHttpServletRequestBuilder
 	 * @see StandardCharsets
 	 * @see #characterEncoding(String)
 	 */
-	public MockHttpServletRequestBuilder characterEncoding(Charset encoding) {
-		return this.characterEncoding(encoding.name());
+	public B characterEncoding(Charset encoding) {
+		return characterEncoding(encoding.name());
 	}
 
 	/**
 	 * Set the character encoding of the request.
 	 * @param encoding the character encoding
 	 */
-	public MockHttpServletRequestBuilder characterEncoding(String encoding) {
+	public B characterEncoding(String encoding) {
 		this.characterEncoding = encoding;
-		return this;
+		return self();
 	}
 
 	/**
@@ -280,9 +271,9 @@ public class MockHttpServletRequestBuilder
 	 * parameters} map.
 	 * @param content the body content
 	 */
-	public MockHttpServletRequestBuilder content(byte[] content) {
+	public B content(byte[] content) {
 		this.content = content;
-		return this;
+		return self();
 	}
 
 	/**
@@ -293,9 +284,9 @@ public class MockHttpServletRequestBuilder
 	 * parameters} map.
 	 * @param content the body content
 	 */
-	public MockHttpServletRequestBuilder content(String content) {
+	public B content(String content) {
 		this.content = content.getBytes(StandardCharsets.UTF_8);
-		return this;
+		return self();
 	}
 
 	/**
@@ -306,10 +297,10 @@ public class MockHttpServletRequestBuilder
 	 * parameters} map.
 	 * @param contentType the content type
 	 */
-	public MockHttpServletRequestBuilder contentType(MediaType contentType) {
+	public B contentType(MediaType contentType) {
 		Assert.notNull(contentType, "'contentType' must not be null");
 		this.contentType = contentType.toString();
-		return this;
+		return self();
 	}
 
 	/**
@@ -318,20 +309,20 @@ public class MockHttpServletRequestBuilder
 	 * @param contentType the content type
 	 * @since 4.1.2
 	 */
-	public MockHttpServletRequestBuilder contentType(String contentType) {
+	public B contentType(String contentType) {
 		Assert.notNull(contentType, "'contentType' must not be null");
 		this.contentType = contentType;
-		return this;
+		return self();
 	}
 
 	/**
 	 * Set the 'Accept' header to the given media type(s).
 	 * @param mediaTypes one or more media types
 	 */
-	public MockHttpServletRequestBuilder accept(MediaType... mediaTypes) {
+	public B accept(MediaType... mediaTypes) {
 		Assert.notEmpty(mediaTypes, "'mediaTypes' must not be empty");
 		this.headers.set("Accept", MediaType.toString(Arrays.asList(mediaTypes)));
-		return this;
+		return self();
 	}
 
 	/**
@@ -340,10 +331,10 @@ public class MockHttpServletRequestBuilder
 	 * @param mediaTypes one or more media types; internally joined as
 	 * comma-separated String
 	 */
-	public MockHttpServletRequestBuilder accept(String... mediaTypes) {
+	public B accept(String... mediaTypes) {
 		Assert.notEmpty(mediaTypes, "'mediaTypes' must not be empty");
 		this.headers.set("Accept", String.join(", ", mediaTypes));
-		return this;
+		return self();
 	}
 
 	/**
@@ -351,18 +342,18 @@ public class MockHttpServletRequestBuilder
 	 * @param name the header name
 	 * @param values one or more header values
 	 */
-	public MockHttpServletRequestBuilder header(String name, Object... values) {
+	public B header(String name, Object... values) {
 		addToMultiValueMap(this.headers, name, values);
-		return this;
+		return self();
 	}
 
 	/**
 	 * Add all headers to the request. Values are always added.
 	 * @param httpHeaders the headers and values to add
 	 */
-	public MockHttpServletRequestBuilder headers(HttpHeaders httpHeaders) {
+	public B headers(HttpHeaders httpHeaders) {
 		httpHeaders.forEach(this.headers::addAll);
-		return this;
+		return self();
 	}
 
 	/**
@@ -381,9 +372,9 @@ public class MockHttpServletRequestBuilder
 	 * @param name the parameter name
 	 * @param values one or more values
 	 */
-	public MockHttpServletRequestBuilder param(String name, String... values) {
+	public B param(String name, String... values) {
 		addToMultiValueMap(this.parameters, name, values);
-		return this;
+		return self();
 	}
 
 	/**
@@ -391,13 +382,13 @@ public class MockHttpServletRequestBuilder
 	 * @param params the parameters to add
 	 * @since 4.2.4
 	 */
-	public MockHttpServletRequestBuilder params(MultiValueMap<String, String> params) {
+	public B params(MultiValueMap<String, String> params) {
 		params.forEach((name, values) -> {
 			for (String value : values) {
 				this.parameters.add(name, value);
 			}
 		});
-		return this;
+		return self();
 	}
 
 	/**
@@ -408,10 +399,10 @@ public class MockHttpServletRequestBuilder
 	 * @param values one or more values
 	 * @since 5.2.2
 	 */
-	public MockHttpServletRequestBuilder queryParam(String name, String... values) {
+	public B queryParam(String name, String... values) {
 		param(name, values);
 		this.queryParams.addAll(name, Arrays.asList(values));
-		return this;
+		return self();
 	}
 
 	/**
@@ -421,10 +412,10 @@ public class MockHttpServletRequestBuilder
 	 * @param params the parameters to add
 	 * @since 5.2.2
 	 */
-	public MockHttpServletRequestBuilder queryParams(MultiValueMap<String, String> params) {
+	public B queryParams(MultiValueMap<String, String> params) {
 		params(params);
 		this.queryParams.addAll(params);
-		return this;
+		return self();
 	}
 
 	/**
@@ -434,10 +425,10 @@ public class MockHttpServletRequestBuilder
 	 * @param values one or more values
 	 * @since 6.1.7
 	 */
-	public MockHttpServletRequestBuilder formField(String name, String... values) {
+	public B formField(String name, String... values) {
 		param(name, values);
 		this.formFields.addAll(name, Arrays.asList(values));
-		return this;
+		return self();
 	}
 
 	/**
@@ -445,20 +436,20 @@ public class MockHttpServletRequestBuilder
 	 * @param formFields the form fields to add
 	 * @since 6.1.7
 	 */
-	public MockHttpServletRequestBuilder formFields(MultiValueMap<String, String> formFields) {
+	public B formFields(MultiValueMap<String, String> formFields) {
 		params(formFields);
 		this.formFields.addAll(formFields);
-		return this;
+		return self();
 	}
 
 	/**
 	 * Add the given cookies to the request. Cookies are always added.
 	 * @param cookies the cookies to add
 	 */
-	public MockHttpServletRequestBuilder cookie(Cookie... cookies) {
+	public B cookie(Cookie... cookies) {
 		Assert.notEmpty(cookies, "'cookies' must not be empty");
 		this.cookies.addAll(Arrays.asList(cookies));
-		return this;
+		return self();
 	}
 
 	/**
@@ -467,10 +458,10 @@ public class MockHttpServletRequestBuilder
 	 * @since 4.3.6
 	 * @see #locale(Locale)
 	 */
-	public MockHttpServletRequestBuilder locale(Locale... locales) {
+	public B locale(Locale... locales) {
 		Assert.notEmpty(locales, "'locales' must not be empty");
 		this.locales.addAll(Arrays.asList(locales));
-		return this;
+		return self();
 	}
 
 	/**
@@ -478,12 +469,12 @@ public class MockHttpServletRequestBuilder
 	 * @param locale the locale, or {@code null} to reset it
 	 * @see #locale(Locale...)
 	 */
-	public MockHttpServletRequestBuilder locale(@Nullable Locale locale) {
+	public B locale(@Nullable Locale locale) {
 		this.locales.clear();
 		if (locale != null) {
 			this.locales.add(locale);
 		}
-		return this;
+		return self();
 	}
 
 	/**
@@ -491,9 +482,9 @@ public class MockHttpServletRequestBuilder
 	 * @param name the attribute name
 	 * @param value the attribute value
 	 */
-	public MockHttpServletRequestBuilder requestAttr(String name, Object value) {
+	public B requestAttr(String name, Object value) {
 		addToMap(this.requestAttributes, name, value);
-		return this;
+		return self();
 	}
 
 	/**
@@ -501,19 +492,19 @@ public class MockHttpServletRequestBuilder
 	 * @param name the session attribute name
 	 * @param value the session attribute value
 	 */
-	public MockHttpServletRequestBuilder sessionAttr(String name, Object value) {
+	public B sessionAttr(String name, Object value) {
 		addToMap(this.sessionAttributes, name, value);
-		return this;
+		return self();
 	}
 
 	/**
 	 * Set session attributes.
 	 * @param sessionAttributes the session attributes
 	 */
-	public MockHttpServletRequestBuilder sessionAttrs(Map<String, Object> sessionAttributes) {
+	public B sessionAttrs(Map<String, Object> sessionAttributes) {
 		Assert.notEmpty(sessionAttributes, "'sessionAttributes' must not be empty");
 		sessionAttributes.forEach(this::sessionAttr);
-		return this;
+		return self();
 	}
 
 	/**
@@ -521,19 +512,19 @@ public class MockHttpServletRequestBuilder
 	 * @param name the flash attribute name
 	 * @param value the flash attribute value
 	 */
-	public MockHttpServletRequestBuilder flashAttr(String name, Object value) {
+	public B flashAttr(String name, Object value) {
 		addToMap(this.flashAttributes, name, value);
-		return this;
+		return self();
 	}
 
 	/**
 	 * Set flash attributes.
 	 * @param flashAttributes the flash attributes
 	 */
-	public MockHttpServletRequestBuilder flashAttrs(Map<String, Object> flashAttributes) {
+	public B flashAttrs(Map<String, Object> flashAttributes) {
 		Assert.notEmpty(flashAttributes, "'flashAttributes' must not be empty");
 		flashAttributes.forEach(this::flashAttr);
-		return this;
+		return self();
 	}
 
 	/**
@@ -542,20 +533,20 @@ public class MockHttpServletRequestBuilder
 	 * override the content of the session provided here.
 	 * @param session the HTTP session
 	 */
-	public MockHttpServletRequestBuilder session(MockHttpSession session) {
+	public B session(MockHttpSession session) {
 		Assert.notNull(session, "'session' must not be null");
 		this.session = session;
-		return this;
+		return self();
 	}
 
 	/**
 	 * Set the principal of the request.
 	 * @param principal the principal
 	 */
-	public MockHttpServletRequestBuilder principal(Principal principal) {
+	public B principal(Principal principal) {
 		Assert.notNull(principal, "'principal' must not be null");
 		this.principal = principal;
-		return this;
+		return self();
 	}
 
 	/**
@@ -563,10 +554,10 @@ public class MockHttpServletRequestBuilder
 	 * @param remoteAddress the remote address (IP)
 	 * @since 6.0.10
 	 */
-	public MockHttpServletRequestBuilder remoteAddress(String remoteAddress) {
+	public B remoteAddress(String remoteAddress) {
 		Assert.hasText(remoteAddress, "'remoteAddress' must not be null or blank");
 		this.remoteAddress = remoteAddress;
-		return this;
+		return self();
 	}
 
 	/**
@@ -577,10 +568,10 @@ public class MockHttpServletRequestBuilder
 	 * @param postProcessor a post-processor to add
 	 */
 	@Override
-	public MockHttpServletRequestBuilder with(RequestPostProcessor postProcessor) {
+	public B with(RequestPostProcessor postProcessor) {
 		Assert.notNull(postProcessor, "postProcessor is required");
 		this.postProcessors.add(postProcessor);
-		return this;
+		return self();
 	}
 
 
@@ -604,7 +595,7 @@ public class MockHttpServletRequestBuilder
 		if (parent == null) {
 			return this;
 		}
-		if (!(parent instanceof MockHttpServletRequestBuilder parentBuilder)) {
+		if (!(parent instanceof MockHttpServletRequestBuilder<?> parentBuilder)) {
 			throw new IllegalArgumentException("Cannot merge with [" + parent.getClass().getName() + "]");
 		}
 		if (!StringUtils.hasText(this.contextPath)) {
@@ -713,10 +704,11 @@ public class MockHttpServletRequestBuilder
 	 */
 	@Override
 	public final MockHttpServletRequest buildRequest(ServletContext servletContext) {
+		Assert.notNull(this.url, "'url' is required");
 		MockHttpServletRequest request = createServletRequest(servletContext);
 
 		request.setAsyncSupported(true);
-		request.setMethod(this.method);
+		request.setMethod(this.method.name());
 
 		String requestUri = this.url.getRawPath();
 		request.setRequestURI(requestUri);

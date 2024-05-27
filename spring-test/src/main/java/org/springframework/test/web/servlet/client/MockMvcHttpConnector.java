@@ -134,7 +134,7 @@ public class MockMvcHttpConnector implements ClientHttpConnector {
 		// Initialize the client request
 		requestCallback.apply(httpRequest).block(TIMEOUT);
 
-		MockHttpServletRequestBuilder requestBuilder =
+		MockHttpServletRequestBuilder<?> requestBuilder =
 				initRequestBuilder(httpMethod, uri, httpRequest, contentRef.get());
 
 		requestBuilder.headers(httpRequest.getHeaders());
@@ -149,12 +149,12 @@ public class MockMvcHttpConnector implements ClientHttpConnector {
 		return requestBuilder;
 	}
 
-	private MockHttpServletRequestBuilder initRequestBuilder(
+	private MockHttpServletRequestBuilder<?> initRequestBuilder(
 			HttpMethod httpMethod, URI uri, MockClientHttpRequest httpRequest, @Nullable byte[] bytes) {
 
 		String contentType = httpRequest.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
 		if (!StringUtils.startsWithIgnoreCase(contentType, "multipart/")) {
-			MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(httpMethod, uri);
+			MockHttpServletRequestBuilder<?> requestBuilder = MockMvcRequestBuilders.request(httpMethod, uri);
 			if (!ObjectUtils.isEmpty(bytes)) {
 				requestBuilder.content(bytes);
 			}

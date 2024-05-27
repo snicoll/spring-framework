@@ -52,8 +52,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder get(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.GET, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> get(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.GET).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -61,8 +61,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder get(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.GET, uri);
+	public static MockHttpServletRequestBuilder<?> get(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.GET).url(uri);
 	}
 
 	/**
@@ -70,8 +70,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder post(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.POST, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> post(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.POST).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -79,8 +79,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder post(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.POST, uri);
+	public static MockHttpServletRequestBuilder<?> post(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.POST).url(uri);
 	}
 
 	/**
@@ -88,8 +88,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder put(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.PUT, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> put(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.PUT).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -97,8 +97,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder put(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.PUT, uri);
+	public static MockHttpServletRequestBuilder<?> put(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.PUT).url(uri);
 	}
 
 	/**
@@ -106,8 +106,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder patch(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.PATCH, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> patch(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.PATCH).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -115,8 +115,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder patch(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.PATCH, uri);
+	public static MockHttpServletRequestBuilder<?> patch(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.PATCH).url(uri);
 	}
 
 	/**
@@ -124,8 +124,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder delete(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.DELETE, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> delete(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.DELETE).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -133,8 +133,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder delete(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.DELETE, uri);
+	public static MockHttpServletRequestBuilder<?> delete(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.DELETE).url(uri);
 	}
 
 	/**
@@ -142,8 +142,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder options(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.OPTIONS, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> options(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.OPTIONS).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -151,8 +151,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder options(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.OPTIONS, uri);
+	public static MockHttpServletRequestBuilder<?> options(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.OPTIONS).url(uri);
 	}
 
 	/**
@@ -161,8 +161,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uriVariables zero or more URI variables
 	 * @since 4.1
 	 */
-	public static MockHttpServletRequestBuilder head(String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(HttpMethod.HEAD, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> head(String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.HEAD).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -170,8 +170,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.1
 	 */
-	public static MockHttpServletRequestBuilder head(URI uri) {
-		return new MockHttpServletRequestBuilder(HttpMethod.HEAD, uri);
+	public static MockHttpServletRequestBuilder<?> head(URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.HEAD).url(uri);
 	}
 
 	/**
@@ -180,8 +180,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param urlTemplate a URL template; the resulting URL will be encoded
 	 * @param uriVariables zero or more URI variables
 	 */
-	public static MockHttpServletRequestBuilder request(HttpMethod method, String urlTemplate, Object... uriVariables) {
-		return new MockHttpServletRequestBuilder(method, urlTemplate, uriVariables);
+	public static MockHttpServletRequestBuilder<?> request(HttpMethod method, String urlTemplate, Object... uriVariables) {
+		return new MockHttpServletRequestBuilder<>(method).url(urlTemplate, uriVariables);
 	}
 
 	/**
@@ -190,8 +190,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.0.3
 	 */
-	public static MockHttpServletRequestBuilder request(HttpMethod httpMethod, URI uri) {
-		return new MockHttpServletRequestBuilder(httpMethod, uri);
+	public static MockHttpServletRequestBuilder<?> request(HttpMethod httpMethod, URI uri) {
+		return new MockHttpServletRequestBuilder<>(httpMethod).url(uri);
 	}
 
 	/**
@@ -200,8 +200,8 @@ public abstract class MockMvcRequestBuilders {
 	 * @param uri the URL
 	 * @since 4.3
 	 */
-	public static MockHttpServletRequestBuilder request(String httpMethod, URI uri) {
-		return new MockHttpServletRequestBuilder(httpMethod, uri);
+	public static MockHttpServletRequestBuilder<?> request(String httpMethod, URI uri) {
+		return new MockHttpServletRequestBuilder<>(HttpMethod.valueOf(httpMethod)).url(uri);
 	}
 
 	/**

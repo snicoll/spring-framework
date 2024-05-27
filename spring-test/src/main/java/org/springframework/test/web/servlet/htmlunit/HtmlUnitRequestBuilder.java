@@ -425,7 +425,7 @@ final class HtmlUnitRequestBuilder implements RequestBuilder, Mergeable {
 	public Object merge(@Nullable Object parent) {
 		if (parent instanceof RequestBuilder requestBuilder) {
 			if (parent instanceof MockHttpServletRequestBuilder) {
-				MockHttpServletRequestBuilder copiedParent = MockMvcRequestBuilders.get("/");
+				MockHttpServletRequestBuilder<?> copiedParent = MockMvcRequestBuilders.get("/");
 				copiedParent.merge(parent);
 				this.parentBuilder = copiedParent;
 			}

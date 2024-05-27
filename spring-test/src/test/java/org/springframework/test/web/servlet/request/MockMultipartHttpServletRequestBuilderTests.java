@@ -68,7 +68,7 @@ public class MockMultipartHttpServletRequestBuilderTests {
 
 	@Test
 	void mergeAndBuild() {
-		MockHttpServletRequestBuilder parent = new MockHttpServletRequestBuilder(HttpMethod.GET, "/");
+		MockHttpServletRequestBuilder parent = new MockHttpServletRequestBuilder(HttpMethod.GET).url("/");
 		parent.characterEncoding("UTF-8");
 		Object result = new MockMultipartHttpServletRequestBuilder("/fileUpload").merge(parent);
 

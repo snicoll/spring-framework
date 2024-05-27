@@ -47,7 +47,7 @@ import org.springframework.util.MultiValueMap;
  * @author Arjen Poutsma
  * @since 3.2
  */
-public class MockMultipartHttpServletRequestBuilder extends MockHttpServletRequestBuilder {
+public class MockMultipartHttpServletRequestBuilder extends MockHttpServletRequestBuilder<MockMultipartHttpServletRequestBuilder> {
 
 	private final List<MockMultipartFile> files = new ArrayList<>();
 
@@ -73,7 +73,8 @@ public class MockMultipartHttpServletRequestBuilder extends MockHttpServletReque
 	 * @since 5.3.22
 	 */
 	MockMultipartHttpServletRequestBuilder(HttpMethod httpMethod, String urlTemplate, Object... uriVariables) {
-		super(httpMethod, urlTemplate, uriVariables);
+		super(httpMethod);
+		super.url(urlTemplate, uriVariables);
 		super.contentType(MediaType.MULTIPART_FORM_DATA);
 	}
 
@@ -92,7 +93,8 @@ public class MockMultipartHttpServletRequestBuilder extends MockHttpServletReque
 	 * @since 5.3.21
 	 */
 	MockMultipartHttpServletRequestBuilder(HttpMethod httpMethod, URI uri) {
-		super(httpMethod, uri);
+		super(httpMethod);
+		super.url(uri);
 		super.contentType(MediaType.MULTIPART_FORM_DATA);
 	}
 
