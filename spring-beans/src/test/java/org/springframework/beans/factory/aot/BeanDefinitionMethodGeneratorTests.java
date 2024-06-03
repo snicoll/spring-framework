@@ -69,6 +69,7 @@ import org.springframework.javapoet.ParameterizedTypeName;
 import org.springframework.util.ReflectionUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
@@ -691,9 +692,10 @@ class BeanDefinitionMethodGeneratorTests {
 		BeanDefinitionMethodGenerator generator = new BeanDefinitionMethodGenerator(
 				this.methodGeneratorFactory, registeredBean, null,
 				List.of());
-		assertThatIllegalStateException().isThrownBy(() -> generator.generateBeanDefinitionMethod(
-				this.generationContext, this.beanRegistrationsCode)).withMessage(
-				"Error processing bean with name 'testBean': instance supplier is not supported");
+		assertThatExceptionOfType(AotBeanProcessingFailedException.class)
+				.isThrownBy(() -> generator.generateBeanDefinitionMethod(
+						this.generationContext, this.beanRegistrationsCode))
+				.withMessage("Error processing bean with name 'testBean': instance supplier is not supported");
 	}
 
 	@Test
@@ -728,9 +730,10 @@ class BeanDefinitionMethodGeneratorTests {
 		BeanDefinitionMethodGenerator generator = new BeanDefinitionMethodGenerator(
 				this.methodGeneratorFactory, registeredBean, null,
 				List.of(aotContribution));
-		assertThatIllegalStateException().isThrownBy(() -> generator.generateBeanDefinitionMethod(
-				this.generationContext, this.beanRegistrationsCode)).withMessage(
-						"Error processing bean with name 'testBean': instance supplier is not supported");
+		assertThatExceptionOfType(AotBeanProcessingFailedException.class)
+				.isThrownBy(() -> generator.generateBeanDefinitionMethod(
+						this.generationContext, this.beanRegistrationsCode))
+				.withMessage("Error processing bean with name 'testBean': instance supplier is not supported");
 	}
 
 	@Test
