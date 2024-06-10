@@ -167,16 +167,23 @@ public abstract class OverrideMetadata {
 			return false;
 		}
 		OverrideMetadata that = (OverrideMetadata) obj;
-		return Objects.equals(this.beanType.getType(), that.beanType.getType()) &&
-				Objects.equals(this.beanName, that.beanName) &&
-				Objects.equals(this.strategy, that.strategy) &&
-				Arrays.equals(this.field.getAnnotations(), that.field.getAnnotations());
+		if (!Objects.equals(this.beanType.getType(), that.beanType.getType()) ||
+				!Objects.equals(this.beanName, that.beanName) ||
+				!Objects.equals(this.strategy, that.strategy)) {
+			return false;
+		}
+		if (this.beanName == null) { // by type lookup
+			return Objects.equals(this.field.getName(), that.field.getName()) &&
+					Arrays.equals(this.field.getAnnotations(), that.field.getAnnotations());
+		}
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.beanType.getType(), this.beanName, this.strategy,
-				Arrays.hashCode(this.field.getAnnotations()));
+		int hash = Objects.hash(this.beanType.getType(), this.beanName, this.strategy);
+		return (this.beanName != null ? hash : hash +
+				Objects.hash(this.field.getName(), Arrays.hashCode(this.field.getAnnotations())));
 	}
 
 	@Override
