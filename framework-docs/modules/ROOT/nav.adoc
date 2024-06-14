@@ -144,6 +144,8 @@
 ** xref:testing/webtestclient.adoc[]
 ** xref:testing/spring-mvc-test-framework.adoc[]
 *** xref:testing/spring-mvc-test-framework/server.adoc[]
+*** xref:testing/spring-mvc-test-framework/server-assertj/server-setup-options.adoc[]
+*** xref:testing/spring-mvc-test-framework/server-assertj/server-performing-requests.adoc[]
 *** xref:testing/spring-mvc-test-framework/server-static-imports.adoc[]
 *** xref:testing/spring-mvc-test-framework/server-setup-options.adoc[]
 *** xref:testing/spring-mvc-test-framework/server-setup-steps.adoc[]

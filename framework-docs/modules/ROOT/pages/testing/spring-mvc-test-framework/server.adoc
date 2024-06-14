@@ -17,8 +17,9 @@ a running server.
 
 MockMvc is a server side test framework that lets you verify most of the functionality
 of a Spring MVC application using lightweight and targeted tests. You can use it on
-its own to perform requests and to verify responses, or you can also use it through
-the xref:testing/webtestclient.adoc[WebTestClient] API with MockMvc plugged in as the server to handle requests
-with.
+its own to perform requests and to verify responses using Hamcrest, or through
+`MockMvcTester` that provides a fluent API using AssertJ. Finally, you can also use it
+through the xref:testing/webtestclient.adoc[WebTestClient] API with MockMvc plugged in
+as the server to handle requests with.
 
 
