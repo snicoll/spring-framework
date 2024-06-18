@@ -154,14 +154,13 @@ public class MockMvcTesterIntegrationTests {
 
 		@Test
 		void hasAsyncStartedTrue() {
-			// Need #perform as the regular exchange waits for async completion automatically
-			assertThat(mvc.perform(mvc.get().uri("/callable").accept(MediaType.APPLICATION_JSON)))
+			assertThat(mvc.get().uri("/callable").accept(MediaType.APPLICATION_JSON).asyncExchange())
 					.request().hasAsyncStarted(true);
 		}
 
 		@Test
 		void hasAsyncStartedFalse() {
-			assertThat(mvc.get().uri("/greet")).request().hasAsyncStarted(false);
+			assertThat(mvc.get().uri("/greet").asyncExchange()).request().hasAsyncStarted(false);
 		}
 
 		@Test
@@ -325,8 +324,7 @@ public class MockMvcTesterIntegrationTests {
 
 		@Test
 		void asyncResult() {
-			// Need #perform as the regular exchange waits for async completion automatically
-			MvcTestResult result = mvc.perform(mvc.get().uri("/callable").accept(MediaType.APPLICATION_JSON));
+			MvcTestResult result = mvc.get().uri("/callable").accept(MediaType.APPLICATION_JSON).asyncExchange();
 			assertThat(result.getMvcResult().getAsyncResult())
 					.asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
 					.containsOnly(entry("key", "value"));
