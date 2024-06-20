@@ -157,6 +157,7 @@
 *** xref:testing/spring-mvc-test-framework/server-assertj.adoc[]
 **** xref:testing/spring-mvc-test-framework/server-assertj/setup.adoc[]
 **** xref:testing/spring-mvc-test-framework/server-assertj/requests.adoc[]
+**** xref:testing/spring-mvc-test-framework/server-assertj/assertions.adoc[]
 *** xref:testing/spring-mvc-test-framework/server-htmlunit.adoc[]
 **** xref:testing/spring-mvc-test-framework/server-htmlunit/why.adoc[]
 **** xref:testing/spring-mvc-test-framework/server-htmlunit/mah.adoc[]

@@ -48,6 +48,8 @@ basis as shown in the following example:
 
 include-code::./AsyncControllerTests[tag=duration,indent=0]
 
+If you prefer to get the raw result and manage the lifecycle of the asynchronous
+request yourself, use `asyncExchange` rather than `exchange`.
 
 [[mockmvc-tester-requests-multipart]]
 == Multipart
