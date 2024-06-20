@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.springframework.docs.testing.springmvctestframework.serverassertj.mockmvctesterrequests;
+package org.springframework.docs.testing.springmvctestframework.serverassertj.mockmvctesterrequestspaths;
 
 import java.util.List;
 
-import org.springframework.docs.testing.springmvctestframework.serverassertj.mockmvctestersetup.AccountController;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -33,39 +32,24 @@ public class HotelControllerTests {
 
 	private final MockMvcTester mockMvc = MockMvcTester.of(new HotelController());
 
-
-	void createHotel() {
-		// tag::post[]
-		assertThat(mockMvc.post().uri("/hotels/{id}", 42).accept(MediaType.APPLICATION_JSON))
+	void contextAndServletPaths() {
+		// tag::context-servlet-paths[]
+		assertThat(mockMvc.get().uri("/app/main/hotels/{id}", 42)
+				.contextPath("/app").servletPath("/main"))
 				. // ...
-				// end::post[]
+				// end::context-servlet-paths[]
 				hasStatusOk();
 	}
 
-	void createHotelMultipleAssertions() {
-		// tag::post-exchange[]
-		MvcTestResult result = mockMvc.post().uri("/hotels/{id}", 42)
-				.accept(MediaType.APPLICATION_JSON).exchange();
-		assertThat(result). // ...
-				// end::post-exchange[]
-				hasStatusOk();
+	void configureMockMvcTesterWithDefaultSettings() {
+		// tag::default-customizations[]
+		MockMvcTester mockMvc = MockMvcTester.of(List.of(new HotelController()),
+				builder -> builder.defaultRequest(get("/")
+						.contextPath("/app").servletPath("/main")
+						.accept(MediaType.APPLICATION_JSON)).build());
+		// end::default-customizations[]
 	}
 
-	void queryParameters() {
-		// tag::query-parameters[]
-		assertThat(mockMvc.get().uri("/hotels?thing={thing}", "somewhere"))
-				. // ...
-				// end::query-parameters[]
-				hasStatusOk();
-	}
-
-	void parameters() {
-		// tag::parameters[]
-		assertThat(mockMvc.get().uri("/hotels").param("thing", "somewhere"))
-				. // ...
-				// end::parameters[]
-				hasStatusOk();
-	}
 
 	static class HotelController {}
 }

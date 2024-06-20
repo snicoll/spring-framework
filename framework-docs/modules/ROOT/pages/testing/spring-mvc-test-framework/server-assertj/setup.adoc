@@ -8,7 +8,6 @@ infrastructure in it.
 
 TIP: For a comparison of those two modes, check xref:testing/spring-mvc-test-framework/server-setup-options.adoc[Setup Options].
 
-
 To set up `MockMvcTester` for testing a specific controller, use the following:
 
 include-code::./AccountControllerStandaloneTests[tag=snippet,indent=0]

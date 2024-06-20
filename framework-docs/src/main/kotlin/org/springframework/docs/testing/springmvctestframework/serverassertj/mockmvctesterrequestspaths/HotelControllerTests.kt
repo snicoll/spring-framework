@@ -14,49 +14,41 @@
  * limitations under the License.
  */
 
-package org.springframework.docs.testing.springmvctestframework.serverassertj.mockmvctesterrequests
+package org.springframework.docs.testing.springmvctestframework.serverassertj.mockmvctesterrequestspaths
 
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.assertj.MockMvcTester
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
+import java.util.List
 
 class HotelControllerTests {
 
 	private val mockMvc = MockMvcTester.of(HotelController())
 
-	fun createHotel() {
-		// tag::post[]
-		assertThat(mockMvc.post().uri("/hotels/{id}", 42).accept(MediaType.APPLICATION_JSON))
+	fun contextAndServletPaths() {
+		// tag::context-servlet-paths[]
+		assertThat(mockMvc.get().uri("/app/main/hotels/{id}", 42)
+				.contextPath("/app").servletPath("/main"))
 			. // ...
-			// end::post[]
+			// end::context-servlet-paths[]
 			hasStatusOk()
 	}
 
-	fun createHotelMultipleAssertions() {
-		// tag::post-exchange[]
-		val result = mockMvc.post().uri("/hotels/{id}", 42)
-			.accept(MediaType.APPLICATION_JSON).exchange()
-		assertThat(result)
-			. // ...
-			// end::post-exchange[]
-			hasStatusOk()
+	fun configureMockMvcTesterWithDefaultSettings() {
+		// tag::default-customizations[]
+		val mockMvc =
+			MockMvcTester.of(List.of(HotelController())) { builder: StandaloneMockMvcBuilder ->
+				builder.defaultRequest<StandaloneMockMvcBuilder>(
+					MockMvcRequestBuilders.get("/")
+						.contextPath("/app").servletPath("/main")
+						.accept(MediaType.APPLICATION_JSON)
+				).build()
+			}
+		// end::default-customizations[]
 	}
 
-	fun queryParameters() {
-		// tag::query-parameters[]
-		assertThat(mockMvc.get().uri("/hotels?thing={thing}", "somewhere"))
-			. // ...
-			//end::query-parameters[]
-			hasStatusOk()
-	}
-
-	fun parameters() {
-		// tag::parameters[]
-		assertThat(mockMvc.get().uri("/hotels").param("thing", "somewhere"))
-			. // ...
-			// end::parameters[]
-			hasStatusOk()
-	}
 
 	class HotelController
 }
