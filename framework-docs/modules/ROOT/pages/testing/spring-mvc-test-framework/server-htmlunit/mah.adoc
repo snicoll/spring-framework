@@ -275,5 +275,5 @@ This is more verbose, but, by building the `WebClient` with a `MockMvc` instance
 the full power of MockMvc at our fingertips.
 
 TIP: For additional information on creating a `MockMvc` instance, see
-xref:testing/spring-mvc-test-framework/server-hamcrest/server-setup-options.adoc[Setup Choices].
+xref:testing/spring-mvc-test-framework/server-hamcrest/setup.adoc[Configuring MockMvc].
 

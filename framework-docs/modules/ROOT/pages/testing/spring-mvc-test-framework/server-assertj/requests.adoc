@@ -1,14 +1,14 @@
 [[mockmvc-tester-requests]]
 = Performing Requests
 
-This section shows how to use `MockMvcTester` on its own to perform requests and verify
-responses.
+This section shows how to use `MockMvcTester` to perform requests and its integration
+with AssertJ to verify responses.
 
 `MockMvcTester` provides a fluent API to compose the request that reuses the same
-`MockHttpServletRequestBuilder`, except that there is no need to import a static
-method. The builder that is returned is AssertJ-aware so that wrapping it in the
-regular `assertThat()` factory method triggers the exchange and provide access to a
-dedicated Assert object for `MvcTestResult`.
+`MockHttpServletRequestBuilder` as the Hamcrest support, except that there is no need
+to import a static method. The builder that is returned is AssertJ-aware so that
+wrapping it in the regular `assertThat()` factory method triggers the exchange and
+provide access to a dedicated Assert object for `MvcTestResult`.
 
 Here is a simple example that performs a `POST` on `/hotels/42` and configures the
 builder to specify an `Accept` header:
@@ -16,9 +16,9 @@ builder to specify an `Accept` header:
 include-code::./HotelControllerTests[tag=post,indent=0]
 
 AssertJ often consists of multiple `assertThat()` statements to validate the different
-part of the exchange. Rather than having a single statement as in the case above, you
+parts of the exchange. Rather than having a single statement as in the case above, you
 can use `.exchange()` to return a `MvcTestResult` that can then use in multiple
-`assertThat` statements, as shown in the following example:
+`assertThat` statements:
 
 include-code::./HotelControllerTests[tag=post-exchange,indent=0]
 

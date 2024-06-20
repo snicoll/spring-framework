@@ -1,21 +1,13 @@
-[[mockmvc-tester-setup]]
-= Setup Choices
+[[spring-mvc-test-server-setup-options]]
+= Setup Options
 
-`MockMvcTester` can be setup in one of two ways. One is to point directly to the
-controllers you want to test and programmatically configure Spring MVC infrastructure.
-The second is to point to Spring configuration with Spring MVC and controller
-infrastructure in it.
-
-To set up `MockMvcTester` for testing a specific controller, use the following:
-
-include-code::./AccountControllerStandaloneTests[tag=snippet,indent=0]
-
-To set up `MockMvcTester` through Spring configuration, use the following:
-
-include-code::./AccountControllerIntegrationTests[tag=snippet,indent=0]
+MockMvc can be setup in one of two ways. One is to point directly to the controllers you
+want to test and programmatically configure Spring MVC infrastructure. The second is to
+point to Spring configuration with Spring MVC and controller infrastructure in it.
 
 Which setup option should you use?
 
+The use of an `ApplicationContext` loads your actual Spring MVC configuration, resulting
 The `WebApplicationContext`-based test loads your actual Spring MVC configuration,
 resulting in a more complete integration test. Since the TestContext framework caches
 the loaded Spring configuration, it helps keep tests running fast, even as you introduce
@@ -35,4 +27,3 @@ answer. However, using standalone tests does imply the need for additional integ
 tests to verify your Spring MVC configuration. Alternatively, you can write all your
 tests with a `WebApplicationContext`, so that they always test against your actual Spring
 MVC configuration.
-
