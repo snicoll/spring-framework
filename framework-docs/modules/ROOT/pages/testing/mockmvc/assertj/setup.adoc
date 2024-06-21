@@ -15,3 +15,13 @@ include-code::./AccountControllerStandaloneTests[tag=snippet,indent=0]
 To set up `MockMvcTester` through Spring configuration, use the following:
 
 include-code::./AccountControllerIntegrationTests[tag=snippet,indent=0]
+
+`MockMvcTester` can convert the JSON response body, or the result of a JSONPath expression,
+to one of your domain object as long as the relevant `HttpMessageConverter` is registered.
+
+If you use Jackson to serialize content to JSON, the following example registers the
+converter:
+
+include-code::./converter/AccountControllerIntegrationTests[tag=snippet,indent=0]
+
+NOTE: The above assumes the converter has been registered as a Bean.
