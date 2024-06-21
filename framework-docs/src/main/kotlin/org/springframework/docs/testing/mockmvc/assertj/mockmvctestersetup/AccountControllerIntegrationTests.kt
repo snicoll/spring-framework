@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester
 import org.springframework.web.context.WebApplicationContext
 
 // tag::snippet[]
-)
 @SpringJUnitWebConfig(ApplicationWebConfiguration::class)
 class AccountControllerIntegrationTests(@Autowired wac: WebApplicationContext) {
 

@@ -21,7 +21,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
-import java.util.List
 
 class HotelControllerTests {
 
@@ -39,7 +38,7 @@ class HotelControllerTests {
 	fun configureMockMvcTesterWithDefaultSettings() {
 		// tag::default-customizations[]
 		val mockMvc =
-			MockMvcTester.of(List.of(HotelController())) { builder: StandaloneMockMvcBuilder ->
+			MockMvcTester.of(listOf(HotelController())) { builder: StandaloneMockMvcBuilder ->
 				builder.defaultRequest<StandaloneMockMvcBuilder>(
 					MockMvcRequestBuilders.get("/")
 						.contextPath("/app").servletPath("/main")
@@ -47,6 +46,7 @@ class HotelControllerTests {
 				).build()
 			}
 		// end::default-customizations[]
+		mockMvc.toString() // avoid  warning
 	}
 
 
