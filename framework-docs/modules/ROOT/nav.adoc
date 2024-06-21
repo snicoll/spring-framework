@@ -158,6 +158,7 @@
 **** xref:testing/mockmvc/assertj/setup.adoc[]
 **** xref:testing/mockmvc/assertj/requests.adoc[]
 **** xref:testing/mockmvc/assertj/assertions.adoc[]
+**** xref:testing/mockmvc/assertj/integration.adoc[]
 *** xref:testing/mockmvc/htmlunit.adoc[]
 **** xref:testing/mockmvc/htmlunit/why.adoc[]
 **** xref:testing/mockmvc/htmlunit/mah.adoc[]

@@ -25,3 +25,6 @@ converter:
 include-code::./converter/AccountControllerIntegrationTests[tag=snippet,indent=0]
 
 NOTE: The above assumes the converter has been registered as a Bean.
+
+Finally, if you have a `MockMvc` instance handy, you can create a `MockMvcTester` by
+providing the `MockMvc` instance to use using the `create` factory method.

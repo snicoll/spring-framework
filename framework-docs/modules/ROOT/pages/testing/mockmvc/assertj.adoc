@@ -10,3 +10,7 @@ crafted using a fluent API.
 throw (or catch) `Exception`.
 * By default, the result to assert is complete whether the processing is asynchronous
 or not. In other words, there is no need for special handling for Async requests.
+
+`MockMvcTester` is the entry point for the AssertJ support. It allows to craft the
+request and return a result that is AssertJ compatible so that it can be wrapped in
+a standard `assertThat()` method.
