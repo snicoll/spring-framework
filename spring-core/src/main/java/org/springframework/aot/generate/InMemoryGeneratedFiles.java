@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.lang.Nullable;
@@ -33,7 +34,7 @@ import org.springframework.util.Assert;
  * @author Phillip Webb
  * @since 6.0
  */
-public class InMemoryGeneratedFiles implements GeneratedFiles {
+public class InMemoryGeneratedFiles extends GeneratedFiles {
 
 	private final Map<Kind, Map<String, InputStreamSource>> files = new HashMap<>();
 
@@ -47,6 +48,11 @@ public class InMemoryGeneratedFiles implements GeneratedFiles {
 				key -> new LinkedHashMap<>());
 		Assert.state(!paths.containsKey(path), () -> "Path '" + path + "' already in use");
 		paths.put(path, content);
+	}
+
+	@Override
+	public void handleFile(Kind kind, String path, Consumer<FileHandler> handler) {
+
 	}
 
 	/**

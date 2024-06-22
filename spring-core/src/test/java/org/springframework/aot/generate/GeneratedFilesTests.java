@@ -19,6 +19,8 @@ package org.springframework.aot.generate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.lang.model.element.Modifier;
 
@@ -159,28 +161,43 @@ class GeneratedFilesTests {
 		return this.generatedFiles.assertThatFileAdded(kind, path);
 	}
 
-	static class TestGeneratedFiles implements GeneratedFiles {
+	static class TestGeneratedFiles extends GeneratedFiles {
 
 		private Kind kind;
 
 		private String path;
 
-		private InputStreamSource content;
+		private final TestFileHandler fileHandler = new TestFileHandler();
 
 		@Override
-		public void addFile(Kind kind, String path, InputStreamSource content) {
+		public void handleFile(Kind kind, String path, Consumer<FileHandler> handler) {
 			this.kind = kind;
 			this.path = path;
-			this.content = content;
+			handler.accept(this.fileHandler);
 		}
 
 		AbstractStringAssert<?> assertThatFileAdded(Kind kind, String path)
 				throws IOException {
 			assertThat(this.kind).as("kind").isEqualTo(kind);
 			assertThat(this.path).as("path").isEqualTo(path);
+			assertThat(this.fileHandler.content).as("content").isNotNull();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			this.content.getInputStream().transferTo(out);
+			this.fileHandler.content.getInputStream().transferTo(out);
 			return assertThat(out.toString(StandardCharsets.UTF_8));
+		}
+
+		private static class TestFileHandler extends FileHandler {
+
+			private InputStreamSource content;
+
+			public TestFileHandler() {
+				super(false, () -> null);
+			}
+
+			@Override
+			protected void handle(Action action, InputStreamSource content) {
+				this.content = content;
+			}
 		}
 
 	}

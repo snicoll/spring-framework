@@ -16,8 +16,12 @@
 
 package org.springframework.aot.generate;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.javapoet.JavaFile;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -36,14 +40,14 @@ import org.springframework.util.function.ThrowingConsumer;
  * @see InMemoryGeneratedFiles
  * @see FileSystemGeneratedFiles
  */
-public interface GeneratedFiles {
+public abstract class GeneratedFiles {
 
 	/**
 	 * Add a generated {@link Kind#SOURCE source file} with content from the
 	 * given {@link JavaFile}.
 	 * @param javaFile the java file to add
 	 */
-	default void addSourceFile(JavaFile javaFile) {
+	public void addSourceFile(JavaFile javaFile) {
 		validatePackage(javaFile.packageName, javaFile.typeSpec.name);
 		String className = javaFile.packageName + "." + javaFile.typeSpec.name;
 		addSourceFile(className, javaFile::writeTo);
@@ -56,7 +60,7 @@ public interface GeneratedFiles {
 	 * of the file
 	 * @param content the contents of the file
 	 */
-	default void addSourceFile(String className, CharSequence content) {
+	public void addSourceFile(String className, CharSequence content) {
 		addSourceFile(className, appendable -> appendable.append(content));
 	}
 
@@ -68,7 +72,7 @@ public interface GeneratedFiles {
 	 * @param content a {@link ThrowingConsumer} that accepts an
 	 * {@link Appendable} which will receive the file contents
 	 */
-	default void addSourceFile(String className, ThrowingConsumer<Appendable> content) {
+	public void addSourceFile(String className, ThrowingConsumer<Appendable> content) {
 		addFile(Kind.SOURCE, getClassNamePath(className), content);
 	}
 
@@ -80,7 +84,7 @@ public interface GeneratedFiles {
 	 * @param content an {@link InputStreamSource} that will provide an input
 	 * stream containing the file contents
 	 */
-	default void addSourceFile(String className, InputStreamSource content) {
+	public void addSourceFile(String className, InputStreamSource content) {
 		addFile(Kind.SOURCE, getClassNamePath(className), content);
 	}
 
@@ -90,7 +94,7 @@ public interface GeneratedFiles {
 	 * @param path the relative path of the file
 	 * @param content the contents of the file
 	 */
-	default void addResourceFile(String path, CharSequence content) {
+	public void addResourceFile(String path, CharSequence content) {
 		addResourceFile(path, appendable -> appendable.append(content));
 	}
 
@@ -101,7 +105,7 @@ public interface GeneratedFiles {
 	 * @param content a {@link ThrowingConsumer} that accepts an
 	 * {@link Appendable} which will receive the file contents
 	 */
-	default void addResourceFile(String path, ThrowingConsumer<Appendable> content) {
+	public void addResourceFile(String path, ThrowingConsumer<Appendable> content) {
 		addFile(Kind.RESOURCE, path, content);
 	}
 
@@ -112,7 +116,7 @@ public interface GeneratedFiles {
 	 * @param content an {@link InputStreamSource} that will provide an input
 	 * stream containing the file contents
 	 */
-	default void addResourceFile(String path, InputStreamSource content) {
+	public void addResourceFile(String path, InputStreamSource content) {
 		addFile(Kind.RESOURCE, path, content);
 	}
 
@@ -123,7 +127,7 @@ public interface GeneratedFiles {
 	 * @param content an {@link InputStreamSource} that will provide an input
 	 * stream containing the file contents
 	 */
-	default void addClassFile(String path, InputStreamSource content) {
+	public void addClassFile(String path, InputStreamSource content) {
 		addFile(Kind.CLASS, path, content);
 	}
 
@@ -134,7 +138,7 @@ public interface GeneratedFiles {
 	 * @param path the relative path of the file
 	 * @param content the contents of the file
 	 */
-	default void addFile(Kind kind, String path, CharSequence content) {
+	public void addFile(Kind kind, String path, CharSequence content) {
 		addFile(kind, path, appendable -> appendable.append(content));
 	}
 
@@ -146,7 +150,7 @@ public interface GeneratedFiles {
 	 * @param content a {@link ThrowingConsumer} that accepts an
 	 * {@link Appendable} which will receive the file contents
 	 */
-	default void addFile(Kind kind, String path, ThrowingConsumer<Appendable> content) {
+	public void addFile(Kind kind, String path, ThrowingConsumer<Appendable> content) {
 		Assert.notNull(content, "'content' must not be null");
 		addFile(kind, path, new AppendableConsumerInputStreamSource(content));
 	}
@@ -159,7 +163,14 @@ public interface GeneratedFiles {
 	 * @param content an {@link InputStreamSource} that will provide an input
 	 * stream containing the file contents
 	 */
-	void addFile(Kind kind, String path, InputStreamSource content);
+	public void addFile(Kind kind, String path, InputStreamSource content) {
+		Assert.notNull(kind, "'kind' must not be null");
+		Assert.hasLength(path, "'path' must not be empty");
+		Assert.notNull(content, "'content' must not be null");
+		handleFile(kind, path, handler -> handler.save(content));
+	}
+
+	public abstract void handleFile(Kind kind, String path, Consumer<FileHandler> handler);
 
 	private static String getClassNamePath(String className) {
 		Assert.hasLength(className, "'className' must not be empty");
@@ -194,7 +205,7 @@ public interface GeneratedFiles {
 	/**
 	 * The various kinds of generated files that are supported.
 	 */
-	enum Kind {
+	public enum Kind {
 
 		/**
 		 * A source file containing Java code that should be compiled.
@@ -212,6 +223,54 @@ public interface GeneratedFiles {
 		 * generated using CGLIB.
 		 */
 		CLASS
+
+	}
+
+	public abstract static class FileHandler {
+
+		private final boolean exists;
+		private final Supplier<InputStreamSource> content;
+
+		protected FileHandler(boolean exists, Supplier<InputStreamSource> content) {
+			this.exists = exists;
+			this.content = content;
+		}
+
+		public boolean exists() {
+			return this.exists;
+		}
+
+		@Nullable
+		public InputStreamSource getContent() {
+			if (exists()) {
+				this.content.get();
+			}
+			return null;
+		}
+
+		public void save(InputStreamSource source) {
+			Assert.notNull(content, "'content' must not be null");
+			if (exists()) {
+				throw new IllegalStateException("File already exists");
+			}
+			handle(Action.SAVE, source);
+		}
+
+		public void override(InputStreamSource source) {
+			Assert.notNull(content, "'content' must not be null");
+			handle(Action.OVERRIDE, source);
+		}
+
+		protected abstract void handle(Action action, InputStreamSource content);
+
+
+		protected enum Action {
+
+			SAVE,
+
+			OVERRIDE
+
+		}
 
 	}
 
