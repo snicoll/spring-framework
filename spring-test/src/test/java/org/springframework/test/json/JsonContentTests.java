@@ -16,9 +16,12 @@
 
 package org.springframework.test.json;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.test.http.HttpMessageContentConverter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -61,10 +64,11 @@ class JsonContentTests {
 	}
 
 	@Test
-	void getJsonMessageConverterShouldReturnConverter() {
-		MappingJackson2HttpMessageConverter converter = mock(MappingJackson2HttpMessageConverter.class);
+	@SuppressWarnings("unchecked")
+	void getJsonContentConverterShouldReturnConverter() {
+		HttpMessageContentConverter converter = HttpMessageContentConverter.of(List.of(mock(HttpMessageConverter.class)));
 		JsonContent content = new JsonContent(JSON, converter);
-		assertThat(content.getJsonMessageConverter()).isSameAs(converter);
+		assertThat(content.getContentConverter()).isSameAs(converter);
 	}
 
 }
