@@ -1,17 +1,12 @@
 plugins {
-	id "org.unbroken-dome.xjc"
+	id "com.github.bjornvester.xjc" version "1.8.1"
 }
 
 description = "Spring Object/XML Marshalling"
 
 xjc {
-	xjcVersion = '3.0'
-}
-
-sourceSets {
-	test {
-		xjcTargetPackage = 'org.springframework.oxm.jaxb.test'
-	}
+	xsdDir.set(layout.projectDirectory.dir("src/test/schema"))
+	defaultPackage.set('org.springframework.oxm.jaxb.test')
 }
 
 dependencies {
