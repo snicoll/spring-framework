@@ -118,6 +118,8 @@ class ConfigurationClassParser {
 
 	private final ProblemReporter problemReporter;
 
+	private final ConfigurationClassParsingListener parsingListener;
+
 	private final Environment environment;
 
 	private final ResourceLoader resourceLoader;
@@ -147,18 +149,20 @@ class ConfigurationClassParser {
 	 * to populate the set of configuration classes.
 	 */
 	public ConfigurationClassParser(MetadataReaderFactory metadataReaderFactory,
-			ProblemReporter problemReporter, Environment environment, ResourceLoader resourceLoader,
+			ProblemReporter problemReporter, ConfigurationClassParsingListener parsingListener,
+			Environment environment, ResourceLoader resourceLoader,
 			BeanNameGenerator componentScanBeanNameGenerator, BeanDefinitionRegistry registry) {
 
 		this.metadataReaderFactory = metadataReaderFactory;
 		this.problemReporter = problemReporter;
+		this.parsingListener = parsingListener;
 		this.environment = environment;
 		this.resourceLoader = resourceLoader;
 		this.propertySourceRegistry = (this.environment instanceof ConfigurableEnvironment ce ?
 				new PropertySourceRegistry(new PropertySourceProcessor(ce, this.resourceLoader)) : null);
 		this.registry = registry;
 		this.componentScanParser = new ComponentScanAnnotationParser(
-				environment, resourceLoader, componentScanBeanNameGenerator, registry);
+				environment, resourceLoader, componentScanBeanNameGenerator, parsingListener, registry);
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, resourceLoader);
 	}
 

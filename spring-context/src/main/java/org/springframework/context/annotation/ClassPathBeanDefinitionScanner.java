@@ -72,6 +72,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 	private BeanNameGenerator beanNameGenerator = AnnotationBeanNameGenerator.INSTANCE;
 
+	private ConfigurationClassParsingListener parsingListener = ConfigurationClassParsingListener.NO_OP;
+
 	private ScopeMetadataResolver scopeMetadataResolver = new AnnotationScopeMetadataResolver();
 
 	private boolean includeAnnotationConfig = true;
@@ -214,6 +216,15 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 * Set the {@link ConfigurationClassParsingListener} to use to notify about
+	 * classpath scanning.
+	 * @since 6.2
+	 */
+	public void setParsingListener(ConfigurationClassParsingListener parsingListener) {
+		this.parsingListener = parsingListener;
+	}
+
+	/**
 	 * Set the ScopeMetadataResolver to use for detected bean classes.
 	 * Note that this will override any custom "scopedProxyMode" setting.
 	 * <p>The default is an {@link AnnotationScopeMetadataResolver}.
@@ -294,6 +305,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				}
 			}
 		}
+		this.parsingListener.onComponentScan(basePackages, beanDefinitions.size());
 		return beanDefinitions;
 	}
 

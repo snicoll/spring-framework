@@ -146,6 +146,7 @@ class ConfigurationClassAndBeanMethodTests {
 		return new ConfigurationClassParser(
 				new CachingMetadataReaderFactory(),
 				new FailFastProblemReporter(),
+				ConfigurationClassParsingListener.NO_OP,
 				new StandardEnvironment(),
 				new DefaultResourceLoader(),
 				new AnnotationBeanNameGenerator(),

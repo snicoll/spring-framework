@@ -62,6 +62,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.TypeFilter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 
 /**
@@ -323,6 +325,36 @@ class ComponentScanAnnotationIntegrationTests {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ComponentScanWithBasePackagesAndValueAlias.class);
 
 		assertContextContainsBean(ctx, "fooServiceImpl");
+	}
+
+	@Test
+	void viaBeanRegistrationInvokeParsingListener() {
+		ConfigurationClassParsingListener parsingListener = mock(ConfigurationClassParsingListener.class);
+		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+		bf.registerBeanDefinition("componentScanAnnotatedConfig",
+				genericBeanDefinition(ComponentScanAnnotatedConfig.class).getBeanDefinition());
+		bf.registerBeanDefinition("configurationClassPostProcessor",
+				genericBeanDefinition(ConfigurationClassPostProcessor.class)
+						.addPropertyValue("parsingListener", parsingListener).getBeanDefinition());
+
+		GenericApplicationContext ctx = new GenericApplicationContext(bf);
+		ctx.refresh();
+		verify(parsingListener).onComponentScan(new String[] { "example.scannable" }, 11);
+	}
+
+	@Test
+	void multiComponentScanWithProgressListener() {
+		ConfigurationClassParsingListener parsingListener = mock(ConfigurationClassParsingListener.class);
+		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+		ctx.getBeanDefinition(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)
+				.getPropertyValues().addPropertyValue("parsingListener", parsingListener);
+		ctx.register(MultiComponentScan.class);
+		ctx.refresh();
+		verify(parsingListener).onComponentScan(new String[] { "example.scannable_scoped" }, 1);
+		verify(parsingListener).onComponentScan(new String[] { "example.scannable_implicitbasepackage" }, 3);
+		// One of the 3 components above has ComponentScan so another round is done, but we've already got them.
+		verify(parsingListener).onComponentScan(new String[] { "example.scannable_implicitbasepackage" }, 0);
+		ctx.close();
 	}
 
 

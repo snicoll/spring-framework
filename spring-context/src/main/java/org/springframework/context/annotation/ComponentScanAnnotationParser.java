@@ -52,15 +52,19 @@ class ComponentScanAnnotationParser {
 
 	private final BeanNameGenerator beanNameGenerator;
 
+	private final ConfigurationClassParsingListener parsingListener;
+
 	private final BeanDefinitionRegistry registry;
 
 
 	public ComponentScanAnnotationParser(Environment environment, ResourceLoader resourceLoader,
-			BeanNameGenerator beanNameGenerator, BeanDefinitionRegistry registry) {
+			BeanNameGenerator beanNameGenerator, ConfigurationClassParsingListener parsingListener,
+			BeanDefinitionRegistry registry) {
 
 		this.environment = environment;
 		this.resourceLoader = resourceLoader;
 		this.beanNameGenerator = beanNameGenerator;
+		this.parsingListener = parsingListener;
 		this.registry = registry;
 	}
 
@@ -73,6 +77,8 @@ class ComponentScanAnnotationParser {
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
 				BeanUtils.instantiateClass(generatorClass));
+
+		scanner.setParsingListener(this.parsingListener);
 
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {

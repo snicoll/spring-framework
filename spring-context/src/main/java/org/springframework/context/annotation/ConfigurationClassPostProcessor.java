@@ -153,6 +153,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	private ProblemReporter problemReporter = new FailFastProblemReporter();
 
+	private ConfigurationClassParsingListener parsingListener = ConfigurationClassParsingListener.NO_OP;
+
 	@Nullable
 	private Environment environment;
 
@@ -207,6 +209,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	public void setProblemReporter(@Nullable ProblemReporter problemReporter) {
 		this.problemReporter = (problemReporter != null ? problemReporter : new FailFastProblemReporter());
+	}
+
+	/**
+	 * Set the {@link ConfigurationClassParsingListener} to use.
+	 * <p>Use to register progress in parsing {@link Configuration} declarations,
+	 * including classpath scanning and condition evaluation. Defaults to
+	 * {@link ConfigurationClassParsingListener#NO_OP}.
+	 */
+	public void setParsingListener(@Nullable ConfigurationClassParsingListener parsingListener) {
+		this.parsingListener = (parsingListener != null ? parsingListener : ConfigurationClassParsingListener.NO_OP);
 	}
 
 	/**
@@ -408,8 +420,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Parse each @Configuration class
 		ConfigurationClassParser parser = new ConfigurationClassParser(
-				this.metadataReaderFactory, this.problemReporter, this.environment,
-				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
+				this.metadataReaderFactory, this.problemReporter, this.parsingListener,
+				this.environment, this.resourceLoader, this.componentScanBeanNameGenerator,
+				registry);
 
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = CollectionUtils.newHashSet(configCandidates.size());
@@ -547,7 +560,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		enhanceConfigClasses.tag("classCount", () -> String.valueOf(configBeanDefs.keySet().size())).end();
 	}
-
 
 	private static class ImportAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
