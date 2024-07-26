@@ -35,7 +35,7 @@ public interface ConfigurationClassParsingListener {
 
 
 	/**
-	 * Invoked when a component scan as completed, with the number of beans
+	 * Invoked when a component scan has completed, with the number of beans
 	 * that are considered as <em>additions</em> to the bean factory. If a
 	 * candidate found by component scan already exists in the bean factory,
 	 * it is not considered.
