@@ -16,6 +16,8 @@
 
 package org.springframework.context.annotation;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Interface that tools and external processes can implement to be notified
  * about the progress of configuration class parsing.
@@ -42,6 +44,15 @@ public interface ConfigurationClassParsingListener {
 	 */
 	default void onComponentScan(String[] basePackageNames, int detectedBeans) {}
 
-	default void onConfigurationClassSkipped(String beanName, String className) {}
+	/**
+	 * Invoked when a configuration class that has been parsed should be skipped,
+	 * typically because a condition that runs in the register bean phase did
+	 * not match.
+	 * <p>The given {@code beanName} if the configuration class has been imported
+	 * and has not yet been registered with the bean factory.
+	 * @param beanName the name of the configuration class, if it was registered
+	 * @param className the name of the configuration class
+	 */
+	default void onConfigurationClassSkipped(@Nullable String beanName, String className) {}
 
 }

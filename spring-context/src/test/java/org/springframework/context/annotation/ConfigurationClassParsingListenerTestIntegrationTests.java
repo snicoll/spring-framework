@@ -17,12 +17,15 @@
 package org.springframework.context.annotation;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
+import org.springframework.context.annotation.ConfigurationClassParsingListenerTestIntegrationTests.ConfigurationWithImportSelectorAndRegisterPhaseCondition.ExampleImportSelector;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.core.type.AnnotationMetadata;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
@@ -48,7 +51,20 @@ class ConfigurationClassParsingListenerTestIntegrationTests {
 		this.ctx.register(ConfigurationWithImportAndRegisterPhaseCondition.class);
 		this.ctx.refresh();
 		assertThat(this.ctx.getBeanDefinitionNames()).doesNotContain("mainConfig", "exampleConfig", "text");
-		verify(this.parsingListener).onConfigurationClassSkipped("mainConfig", ConfigurationWithImportAndRegisterPhaseCondition.class.getName());
+		InOrder ordered = inOrder(this.parsingListener);
+		ordered.verify(this.parsingListener).onConfigurationClassSkipped(null, ExampleConfiguration.class.getName());
+		ordered.verify(this.parsingListener).onConfigurationClassSkipped("mainConfig", ConfigurationWithImportAndRegisterPhaseCondition.class.getName());
+		verifyNoMoreInteractions(this.parsingListener);
+	}
+
+	@Test
+	void configurationClassWhenImportedByImportSelectedAndSkippedByConditionCallsListener() {
+		this.ctx.register(ConfigurationWithImportSelectorAndRegisterPhaseCondition.class);
+		this.ctx.refresh();
+		assertThat(this.ctx.getBeanDefinitionNames()).doesNotContain("mainConfig", "exampleConfig", "text");
+		InOrder ordered = inOrder(this.parsingListener);
+		ordered.verify(this.parsingListener).onConfigurationClassSkipped(null, ExampleConfiguration.class.getName());
+		ordered.verify(this.parsingListener).onConfigurationClassSkipped("mainConfig", ConfigurationWithImportSelectorAndRegisterPhaseCondition.class.getName());
 		verifyNoMoreInteractions(this.parsingListener);
 	}
 
@@ -57,6 +73,20 @@ class ConfigurationClassParsingListenerTestIntegrationTests {
 	@Conditional(NeverOnRegisterBeanCondition.class)
 	@Import(ExampleConfiguration.class)
 	static class ConfigurationWithImportAndRegisterPhaseCondition {
+	}
+
+	@Configuration("mainConfig")
+	@Conditional(NeverOnRegisterBeanCondition.class)
+	@Import(ExampleImportSelector.class)
+	static class ConfigurationWithImportSelectorAndRegisterPhaseCondition {
+
+		static class ExampleImportSelector implements ImportSelector {
+
+			@Override
+			public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+				return new String[] { ExampleConfiguration.class.getName() };
+			}
+		}
 	}
 
 	@Configuration("exampleConfig")

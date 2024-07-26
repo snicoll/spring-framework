@@ -135,8 +135,8 @@ class ConfigurationClassBeanDefinitionReader {
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
 			String className = configClass.getMetadata().getClassName();
+			this.parsingListener.onConfigurationClassSkipped(beanName, className);
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
-				this.parsingListener.onConfigurationClassSkipped(beanName, className);
 				this.registry.removeBeanDefinition(beanName);
 			}
 			this.importRegistry.removeImportingClass(className);
