@@ -82,6 +82,8 @@ class ConfigurationClassBeanDefinitionReader {
 
 	private final SourceExtractor sourceExtractor;
 
+	private final ConfigurationClassParsingListener parsingListener;
+
 	private final ResourceLoader resourceLoader;
 
 	private final Environment environment;
@@ -98,11 +100,12 @@ class ConfigurationClassBeanDefinitionReader {
 	 * that will be used to populate the given {@link BeanDefinitionRegistry}.
 	 */
 	ConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry, SourceExtractor sourceExtractor,
-			ResourceLoader resourceLoader, Environment environment, BeanNameGenerator importBeanNameGenerator,
-			ImportRegistry importRegistry) {
+			ConfigurationClassParsingListener parsingListener, ResourceLoader resourceLoader,
+			Environment environment, BeanNameGenerator importBeanNameGenerator, ImportRegistry importRegistry) {
 
 		this.registry = registry;
 		this.sourceExtractor = sourceExtractor;
+		this.parsingListener = parsingListener;
 		this.resourceLoader = resourceLoader;
 		this.environment = environment;
 		this.importBeanNameGenerator = importBeanNameGenerator;
@@ -131,10 +134,12 @@ class ConfigurationClassBeanDefinitionReader {
 
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
+			String className = configClass.getMetadata().getClassName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
+				this.parsingListener.onConfigurationClassSkipped(beanName, className);
 				this.registry.removeBeanDefinition(beanName);
 			}
-			this.importRegistry.removeImportingClass(configClass.getMetadata().getClassName());
+			this.importRegistry.removeImportingClass(className);
 			return;
 		}
 

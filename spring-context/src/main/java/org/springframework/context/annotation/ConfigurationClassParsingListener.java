@@ -42,4 +42,6 @@ public interface ConfigurationClassParsingListener {
 	 */
 	default void onComponentScan(String[] basePackageNames, int detectedBeans) {}
 
+	default void onConfigurationClassSkipped(String beanName, String className) {}
+
 }
