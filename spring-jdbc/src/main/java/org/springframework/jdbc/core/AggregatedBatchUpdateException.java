@@ -30,16 +30,24 @@ public class AggregatedBatchUpdateException extends BatchUpdateException {
 
 	private final int[][] successfulUpdateCounts;
 
+	private final BatchUpdateException originalException;
+
 	/**
 	 * Create an aggregated exception with the batches that have completed prior
 	 * to the given {@code cause}.
 	 * @param successfulUpdateCounts the counts of the batches that run successfully
-	 * @param cause the exception this instance aggregates
+	 * @param original the exception this instance aggregates
 	 */
-	public AggregatedBatchUpdateException(int[][] successfulUpdateCounts, BatchUpdateException cause) {
-		super(cause.getMessage(), cause.getSQLState(), cause.getErrorCode(),
-				cause.getUpdateCounts(), cause.getCause());
+	public AggregatedBatchUpdateException(int[][] successfulUpdateCounts, BatchUpdateException original) {
+		super(original.getMessage(), original.getSQLState(), original.getErrorCode(),
+				original.getUpdateCounts(), original.getCause());
 		this.successfulUpdateCounts = successfulUpdateCounts;
+		this.originalException = original;
+		// Copy state of the original exception
+		setNextException(original.getNextException());
+		for (Throwable suppressed : original.getSuppressed()) {
+			addSuppressed(suppressed);
+		}
 	}
 
 	/**
@@ -52,6 +60,14 @@ public class AggregatedBatchUpdateException extends BatchUpdateException {
 	 */
 	public int[][] getSuccessfulUpdateCounts() {
 		return this.successfulUpdateCounts;
+	}
+
+	/**
+	 * Return the original {@link BatchUpdateException} that this exception aggregates.
+	 * @return the original exception
+	 */
+	public BatchUpdateException getOriginalException() {
+		return this.originalException;
 	}
 
 }

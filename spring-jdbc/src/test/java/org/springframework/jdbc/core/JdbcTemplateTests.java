@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
@@ -802,7 +803,30 @@ class JdbcTemplateTests {
 	}
 
 	@Test
-	void testBatchUpdateWithBatchFailing() throws Exception {
+	void testBatchUpdateWithBatchFailingHasUpdateCounts() throws Exception {
+		test3BatchesOf2ItemsFailing(exception -> assertThat(exception).cause()
+				.isInstanceOfSatisfying(AggregatedBatchUpdateException.class, ex -> {
+					assertThat(ex.getSuccessfulUpdateCounts()).hasDimensions(1, 2)
+							.contains(new int[] { 1, 1 }, Index.atIndex(0));
+					assertThat(ex.getUpdateCounts()).contains(-3, -3);
+				}));
+	}
+
+	@Test
+	void testBatchUpdateWithBatchFailingMatchesOriginalException() throws Exception {
+		test3BatchesOf2ItemsFailing(exception -> assertThat(exception).cause()
+				.isInstanceOfSatisfying(AggregatedBatchUpdateException.class, ex -> {
+					BatchUpdateException originalException = ex.getOriginalException();
+					assertThat(ex.getMessage()).isEqualTo(originalException.getMessage());
+					assertThat(ex.getCause()).isEqualTo(originalException.getCause());
+					assertThat(ex.getSQLState()).isEqualTo(originalException.getSQLState());
+					assertThat(ex.getErrorCode()).isEqualTo(originalException.getErrorCode());
+					assertThat((Exception) ex.getNextException()).isSameAs(originalException.getNextException());
+					assertThat(ex.getSuppressed()).isEqualTo(originalException.getSuppressed());
+				}));
+	}
+
+	void test3BatchesOf2ItemsFailing(Consumer<Exception> exception) throws Exception {
 		String sql = "INSERT INTO NOSUCHTABLE values (?)";
 		List<Integer> ids = Arrays.asList(1, 2, 3, 2, 4, 5);
 		int[] rowsAffected = new int[] {1, 1};
@@ -815,12 +839,9 @@ class JdbcTemplateTests {
 		ParameterizedPreparedStatementSetter<Integer> setter = (ps, argument) -> ps.setInt(1, argument);
 		JdbcTemplate template = new JdbcTemplate(this.dataSource, false);
 
-		assertThatExceptionOfType(DuplicateKeyException.class).isThrownBy(() -> template.batchUpdate(sql, ids, 2, setter))
-				.havingCause().isInstanceOfSatisfying(AggregatedBatchUpdateException.class, ex -> {
-					assertThat(ex.getSuccessfulUpdateCounts()).hasDimensions(1, 2)
-							.contains(rowsAffected, Index.atIndex(0));
-					assertThat(ex.getUpdateCounts()).contains(-3, -3);
-				});
+		assertThatExceptionOfType(DuplicateKeyException.class)
+				.isThrownBy(() -> template.batchUpdate(sql, ids, 2, setter))
+				.satisfies(exception);
 		verify(this.preparedStatement, times(4)).addBatch();
 		verify(this.preparedStatement).setInt(1, 1);
 		verify(this.preparedStatement, times(2)).setInt(1, 2);
