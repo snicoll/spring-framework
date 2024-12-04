@@ -202,7 +202,8 @@ public class InstanceSupplierCodeGenerator {
 			method.addJavadoc("Get the bean instance supplier for '$L'.", beanName);
 			method.addModifiers(PRIVATE_STATIC);
 			codeWarnings.suppress(method);
-			method.returns(ParameterizedTypeName.get(BeanInstanceSupplier.class, constructor.getDeclaringClass()));
+			method.returns(ParameterizedTypeName.get(BeanInstanceSupplier.class,
+					ClassUtils.getUserClass(constructor.getDeclaringClass())));
 			method.addStatement(generateResolverForConstructor(constructor));
 		});
 
@@ -220,7 +221,8 @@ public class InstanceSupplierCodeGenerator {
 		method.addJavadoc("Get the bean instance supplier for '$L'.", beanName);
 		method.addModifiers(modifiers);
 		codeWarnings.suppress(method);
-		method.returns(ParameterizedTypeName.get(BeanInstanceSupplier.class, declaringClass));
+		method.returns(ParameterizedTypeName.get(
+				BeanInstanceSupplier.class, ClassUtils.getUserClass(declaringClass)));
 
 		CodeBlock.Builder code = CodeBlock.builder();
 		code.add(generateResolverForConstructor(constructor));
@@ -240,7 +242,7 @@ public class InstanceSupplierCodeGenerator {
 	private CodeBlock generateResolverForConstructor(Constructor<?> constructor) {
 		CodeBlock parameterTypes = generateParameterTypesCode(constructor.getParameterTypes());
 		return CodeBlock.of("return $T.<$T>forConstructor($L)", BeanInstanceSupplier.class,
-				constructor.getDeclaringClass(), parameterTypes);
+				ClassUtils.getUserClass(constructor.getDeclaringClass()), parameterTypes);
 	}
 
 	private CodeBlock generateNewInstanceCodeForConstructor(Class<?> declaringClass, CodeBlock args) {
@@ -291,7 +293,8 @@ public class InstanceSupplierCodeGenerator {
 			Class<?> suppliedType = ClassUtils.resolvePrimitiveIfNecessary(factoryMethod.getReturnType());
 			method.addJavadoc("Get the bean instance supplier for '$L'.", beanName);
 			method.addModifiers(PRIVATE_STATIC);
-			method.returns(ParameterizedTypeName.get(BeanInstanceSupplier.class, suppliedType));
+			method.returns(ParameterizedTypeName.get(
+					BeanInstanceSupplier.class, ClassUtils.getUserClass(suppliedType)));
 			method.addStatement(generateInstanceSupplierForFactoryMethod(
 					factoryMethod, suppliedType, targetClass, factoryMethod.getName()));
 		});
@@ -311,7 +314,8 @@ public class InstanceSupplierCodeGenerator {
 		method.addJavadoc("Get the bean instance supplier for '$L'.", beanName);
 		method.addModifiers(modifiers);
 		codeWarnings.suppress(method);
-		method.returns(ParameterizedTypeName.get(BeanInstanceSupplier.class, suppliedType));
+		method.returns(ParameterizedTypeName.get(
+				BeanInstanceSupplier.class, ClassUtils.getUserClass(suppliedType)));
 
 		CodeBlock.Builder code = CodeBlock.builder();
 		code.add(generateInstanceSupplierForFactoryMethod(
