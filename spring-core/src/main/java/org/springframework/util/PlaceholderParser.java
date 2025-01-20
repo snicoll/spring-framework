@@ -176,8 +176,7 @@ final class PlaceholderParser {
 
 	private SimplePlaceholderPart createSimplePlaceholderPart(String text) {
 		String[] keyAndDefault = splitKeyAndDefault(text);
-		return ((keyAndDefault != null) ? new SimplePlaceholderPart(text, keyAndDefault[0], keyAndDefault[1]) :
-				new SimplePlaceholderPart(text, text, null));
+		return new SimplePlaceholderPart(text, keyAndDefault[0], keyAndDefault[1]);
 	}
 
 	private NestedPlaceholderPart createNestedPlaceholderPart(String text, List<Part> parts) {
@@ -194,27 +193,29 @@ final class PlaceholderParser {
 			else {
 				String candidate = part.text();
 				String[] keyAndDefault = splitKeyAndDefault(candidate);
-				if (keyAndDefault != null) {
-					keyParts.add(new TextPart(keyAndDefault[0]));
-					if (keyAndDefault[1] != null) {
-						defaultParts.add(new TextPart(keyAndDefault[1]));
-					}
+				keyParts.add(new TextPart(keyAndDefault[0]));
+				if (keyAndDefault[1] != null) {
+					defaultParts.add(new TextPart(keyAndDefault[1]));
 					defaultParts.addAll(parts.subList(i + 1, parts.size()));
 					return new NestedPlaceholderPart(text, keyParts, defaultParts);
 				}
-				else {
-					keyParts.add(part);
-				}
 			}
 		}
-		// No separator found
-		return new NestedPlaceholderPart(text, parts, null);
+		return new NestedPlaceholderPart(text, keyParts, null);
 	}
 
-	@Nullable
+	/**
+	 * Process the value and split the key from the default if necessary. If
+	 * there is no default, return an array where the second element is {@code null}.
+	 * <p>
+	 * The returned key may be different from the original value as escaped
+	 * separators, if any, are resolved.
+	 * @param value the value to parse
+	 * @return the key and the default, if any
+	 */
 	private String[] splitKeyAndDefault(String value) {
 		if (this.separator == null || !value.contains(this.separator)) {
-			return null;
+			return new String[] { value, null };
 		}
 		int position = 0;
 		int index = value.indexOf(this.separator, position);
@@ -292,6 +293,8 @@ final class PlaceholderParser {
 	private boolean isEscaped(String value, int index) {
 		return (this.escape != null && index > 0 && value.charAt(index - 1) == this.escape);
 	}
+
+
 
 
 	/**

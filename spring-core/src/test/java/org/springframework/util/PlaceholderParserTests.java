@@ -279,6 +279,36 @@ class PlaceholderParserTests {
 		private final PlaceholderParser parser = new PlaceholderParser("${", "}", ":", '\\', true);
 
 		@ParameterizedTest(name = "{0} -> {1}")
+		@MethodSource("escapedInNestedPlaceholders")
+		void escapedSeparatorInNestedPlaceholder(String text, String expected) {
+			Properties properties = new Properties();
+			properties.setProperty("app.environment", "qa");
+			properties.setProperty("app.service", "protocol");
+			properties.setProperty("protocol://host/qa/name", "protocol://example.com/qa/name");
+			properties.setProperty("service/host/qa/name", "https://example.com/qa/name");
+			properties.setProperty("service/host/qa/name:value", "https://example.com/qa/name-value");
+			assertThat(this.parser.replacePlaceholders(text, properties::getProperty)).isEqualTo(expected);
+		}
+
+		static Stream<Arguments> escapedInNestedPlaceholders() {
+			return Stream.of(
+					Arguments.of("${protocol\\://host/${app.environment}/name}", "protocol://example.com/qa/name"),
+					Arguments.of("${${app.service}\\://host/${app.environment}/name}", "protocol://example.com/qa/name"),
+					Arguments.of("${service/host/${app.environment}/name:\\value}", "https://example.com/qa/name"),
+					Arguments.of("${service/host/${name\\:value}/}", "${service/host/${name:value}/}")
+					);
+		}
+
+		@Test
+		void brol() {
+			Properties properties = new Properties();
+			properties.setProperty("app.environment", "qa");
+			properties.setProperty("sm-stub://projects/my-project/secrets/qa_a-service_url/versions/latest", "https://example.com/qa/");
+			String s = this.parser.replacePlaceholders("${sm-stub\\://projects/my-project/secrets/${app.environment}_a-service_url/versions/latest}", properties::getProperty);
+			assertThat(s).isEqualTo("https://example.com/qa/");
+		}
+
+		@ParameterizedTest(name = "{0} -> {1}")
 		@MethodSource("escapedPlaceholders")
 		void escapedPlaceholderIsNotReplaced(String text, String expected) {
 			PlaceholderResolver resolver = mockPlaceholderResolver(
