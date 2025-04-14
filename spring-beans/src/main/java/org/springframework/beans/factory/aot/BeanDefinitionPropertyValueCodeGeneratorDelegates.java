@@ -46,7 +46,7 @@ import org.springframework.javapoet.CodeBlock;
  * @author Stephane Nicoll
  * @since 6.1.2
  */
-abstract class BeanDefinitionPropertyValueCodeGeneratorDelegates {
+public abstract class BeanDefinitionPropertyValueCodeGeneratorDelegates {
 
 	/**
 	 * A list of {@link Delegate} implementations for the following common bean

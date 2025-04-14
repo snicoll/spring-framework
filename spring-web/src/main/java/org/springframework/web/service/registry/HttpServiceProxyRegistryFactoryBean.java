@@ -16,6 +16,7 @@
 
 package org.springframework.web.service.registry;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -270,10 +271,20 @@ public final class HttpServiceProxyRegistryFactoryBean
 
 		private final MultiValueMap<Class<?>, Object> directLookupMap;
 
+		private final MultiValueMap<String, Class<?>> registeredClientTypes;
+
 		DefaultHttpServiceProxyRegistry(Map<String, Map<Class<?>, Object>> groupProxyMap) {
 			this.groupProxyMap = groupProxyMap;
 			this.directLookupMap = new LinkedMultiValueMap<>();
 			groupProxyMap.values().forEach(map -> map.forEach(this.directLookupMap::add));
+			this.registeredClientTypes = new LinkedMultiValueMap<>();
+			groupProxyMap.forEach((group, clients) ->
+					this.registeredClientTypes.addAll(group, new ArrayList<>(clients.keySet())));
+		}
+
+		@Override
+		public MultiValueMap<String, Class<?>> registeredClientTypes() {
+			return this.registeredClientTypes;
 		}
 
 		@SuppressWarnings("unchecked")

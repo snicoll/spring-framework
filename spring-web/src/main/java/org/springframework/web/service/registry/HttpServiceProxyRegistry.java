@@ -18,16 +18,25 @@ package org.springframework.web.service.registry;
 
 import java.util.Set;
 
+import org.springframework.util.MultiValueMap;
+
 /**
  * A registry that contains HTTP Service client proxies.
  *
  * @author Rossen Stoyanchev
  * @author Olga Maciaszek-Sharma
+ * @author Stephane Nicoll
  * @since 7.0
  * @see ImportHttpServices
  * @see HttpServiceProxyRegistryFactoryBean
  */
 public interface HttpServiceProxyRegistry {
+
+	/**
+	 * Return the registered client types, keyed by the name of their group.
+	 * @return the registered client types
+	 */
+	MultiValueMap<String,Class<?>> registeredClientTypes();
 
 	/**
 	 * Return an HTTP service client proxy from any group as long as there is
