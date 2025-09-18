@@ -40,6 +40,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  *
  * @author Phillip Webb
  * @author Sam Brannen
+ * @author Stephane Nicoll
  * @since 4.0
  * @see ConfigurationCondition
  * @see Conditional
@@ -57,5 +58,21 @@ public interface Condition {
 	 * or {@code false} to veto the annotated component's registration
 	 */
 	boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata);
+
+	/**
+	 * Determine if the condition matches when Spring AOT processes all candidates. Return
+	 * {@code true} by default so that all bean definitions are considered. Override if
+	 * the condition will never match, typically if a class or a resource on the classpath
+	 * is not found.
+	 * @param context the condition context
+	 * @param metadata the metadata of the {@link org.springframework.core.type.AnnotationMetadata class}
+	 * or {@link org.springframework.core.type.MethodMetadata method} being checked
+	 * @return {@code true} by default
+	 * @since 6.0
+	 * @see #matches(ConditionContext, AnnotatedTypeMetadata)
+	 */
+	default boolean matchesForAotProcessing(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		return true;
+	}
 
 }

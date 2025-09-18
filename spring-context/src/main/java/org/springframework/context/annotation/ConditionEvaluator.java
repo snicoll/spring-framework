@@ -48,6 +48,8 @@ import org.springframework.util.MultiValueMap;
  */
 class ConditionEvaluator {
 
+	private final boolean aotConditions;
+
 	private final ConditionContextImpl context;
 
 
@@ -57,7 +59,11 @@ class ConditionEvaluator {
 	public ConditionEvaluator(@Nullable BeanDefinitionRegistry registry,
 			@Nullable Environment environment, @Nullable ResourceLoader resourceLoader) {
 
+		// FIXME: Need to be able to configure those things, perhaps on the BeanDefinitionRegistry?
+		boolean aotConditions = (environment != null) ?
+				environment.getProperty("spring.aot.condition-evaluation", Boolean.class, Boolean.FALSE) : false;
 		this.context = new ConditionContextImpl(registry, environment, resourceLoader);
+		this.aotConditions = aotConditions;
 	}
 
 
@@ -97,12 +103,18 @@ class ConditionEvaluator {
 			if (condition instanceof ConfigurationCondition configurationCondition) {
 				requiredPhase = configurationCondition.getConfigurationPhase();
 			}
-			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
+			if ((requiredPhase == null || requiredPhase == phase) && !matches(condition, metadata)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private boolean matches(Condition condition, AnnotatedTypeMetadata annotationMetadata) {
+		return (this.aotConditions) ?
+				condition.matchesForAotProcessing(this.context, annotationMetadata) :
+				condition.matches(this.context, annotationMetadata);
 	}
 
 	/**
