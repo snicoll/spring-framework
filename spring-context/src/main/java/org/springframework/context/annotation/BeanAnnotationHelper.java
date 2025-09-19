@@ -19,6 +19,9 @@ package org.springframework.context.annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import io.micrometer.common.util.StringUtils;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -45,20 +48,17 @@ abstract class BeanAnnotationHelper {
 
 	public static String determineBeanNameFor(Method beanMethod, ConfigurableBeanFactory beanFactory) {
 		String beanName = retrieveBeanNameFor(beanMethod);
-		if (!beanName.isEmpty()) {
-			return beanName;
-		}
 		return (beanFactory.getSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR)
 				instanceof ConfigurationBeanNameGenerator cbng ?
-				cbng.deriveBeanName(MethodMetadata.introspect(beanMethod)) : beanMethod.getName());
+				cbng.deriveBeanName(MethodMetadata.introspect(beanMethod), beanName) : beanMethod.getName());
 	}
 
 	public static String determineBeanNameFor(Method beanMethod) {
 		String beanName = retrieveBeanNameFor(beanMethod);
-		return (!beanName.isEmpty() ? beanName : beanMethod.getName());
+		return (beanName != null ? beanName : beanMethod.getName());
 	}
 
-	private static String retrieveBeanNameFor(Method beanMethod) {
+	private static @Nullable String retrieveBeanNameFor(Method beanMethod) {
 		String beanName = beanNameCache.get(beanMethod);
 		if (beanName == null) {
 			// By default, the bean name is empty (indicating a name to be derived from the method name)
@@ -74,7 +74,7 @@ abstract class BeanAnnotationHelper {
 			}
 			beanNameCache.put(beanMethod, beanName);
 		}
-		return beanName;
+		return (!StringUtils.isEmpty(beanName) ? beanName : null);
 	}
 
 	public static boolean isScopedProxy(Method beanMethod) {

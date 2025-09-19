@@ -16,6 +16,8 @@
 
 package org.springframework.context.annotation;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.type.MethodMetadata;
 
 /**
@@ -23,8 +25,8 @@ import org.springframework.core.type.MethodMetadata;
  * {@link Configuration @Configuration} class purposes, not only enforcing
  * fully-qualified names for component and configuration classes themselves
  * but also fully-qualified default bean names ("className.methodName") for
- * {@link Bean @Bean} methods. This only affects methods without an explicit
- * {@link Bean#name() name} attribute specified.
+ * {@link Bean @Bean} methods. By default, this only affects methods without
+ * an explicit {@link Bean#name() name} attribute specified.
  *
  * <p>This provides an alternative to the default bean name generation for
  * {@code @Bean} methods (which uses the plain method name), primarily for use
@@ -54,7 +56,10 @@ public class FullyQualifiedConfigurationBeanNameGenerator extends FullyQualified
 
 
 	@Override
-	public String deriveBeanName(MethodMetadata beanMethod) {
+	public String deriveBeanName(MethodMetadata beanMethod, @Nullable String beanName) {
+		if (beanName != null) {
+			return beanName;
+		}
 		return beanMethod.getDeclaringClassName() + "." + beanMethod.getMethodName();
 	}
 
