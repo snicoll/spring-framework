@@ -20,3 +20,8 @@ org.springframework.test.context.ContextCustomizerFactory = \
 	org.springframework.test.context.bean.override.BeanOverrideContextCustomizerFactory,\
 	org.springframework.test.context.web.socket.MockServerContainerContextCustomizerFactory,\
 	org.springframework.test.context.support.DynamicPropertiesContextCustomizerFactory
+
+# Default SpringParameterResolver implementations for the Spring TestContext Framework
+#
+org.springframework.test.context.junit.jupiter.SpringParameterResolver = \
+  org.springframework.test.context.junit.jupiter.DefaultSpringParameterResolver

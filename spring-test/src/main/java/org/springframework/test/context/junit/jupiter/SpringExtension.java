@@ -148,6 +148,9 @@ public class SpringExtension implements BeforeAllCallback, AfterAllCallback, Tes
 	private static final MethodFilter autowiredTestOrLifecycleMethodFilter =
 			ReflectionUtils.USER_DECLARED_METHODS.and(SpringExtension::isAutowiredTestOrLifecycleMethod);
 
+	private static final SpringParameterResolverAdapter springParameterResolverAdapter =
+			new SpringParameterResolverAdapter();
+
 
 	/**
 	 * Returns {@link ExtensionContextScope#TEST_METHOD ExtensionContextScope.TEST_METHOD}.
@@ -350,24 +353,7 @@ public class SpringExtension implements BeforeAllCallback, AfterAllCallback, Tes
 	 */
 	@Override
 	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-		Parameter parameter = parameterContext.getParameter();
-		Class<?> parameterType = parameter.getType();
-		Executable executable = parameter.getDeclaringExecutable();
-		PropertyProvider junitPropertyProvider = propertyName ->
-				extensionContext.getConfigurationParameter(propertyName).orElse(null);
-		return (TestConstructorUtils.isAutowirableConstructor(executable, junitPropertyProvider) ||
-				ApplicationContext.class.isAssignableFrom(parameterType) ||
-				supportsApplicationEvents(parameterType, executable) ||
-				ParameterResolutionDelegate.isAutowirable(parameter, parameterContext.getIndex()));
-	}
-
-	private boolean supportsApplicationEvents(Class<?> parameterType, Executable executable) {
-		if (ApplicationEvents.class.isAssignableFrom(parameterType)) {
-			Assert.isTrue(executable instanceof Method,
-					"ApplicationEvents can only be injected into test and lifecycle methods");
-			return true;
-		}
-		return false;
+		return springParameterResolverAdapter.supportsParameter(parameterContext, extensionContext);
 	}
 
 	/**
@@ -379,18 +365,7 @@ public class SpringExtension implements BeforeAllCallback, AfterAllCallback, Tes
 	 */
 	@Override
 	public @Nullable Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-		Parameter parameter = parameterContext.getParameter();
-		int index = parameterContext.getIndex();
-		Executable executable = parameterContext.getDeclaringExecutable();
-		Class<?> testClass = extensionContext.getRequiredTestClass();
-		if (executable instanceof Constructor<?> constructor) {
-			testClass = constructor.getDeclaringClass();
-			extensionContext = findProperlyScopedExtensionContext(testClass, extensionContext);
-		}
-
-		ApplicationContext applicationContext = getApplicationContext(extensionContext);
-		return ParameterResolutionDelegate.resolveDependency(parameter, index, testClass,
-				applicationContext.getAutowireCapableBeanFactory());
+		return springParameterResolverAdapter.resolveParameter(parameterContext, extensionContext);
 	}
 
 
@@ -469,7 +444,7 @@ public class SpringExtension implements BeforeAllCallback, AfterAllCallback, Tes
 	 * @see SpringExtensionConfig#useTestClassScopedExtensionContext()
 	 * @see ExtensionContextScope
 	 */
-	private static ExtensionContext findProperlyScopedExtensionContext(Class<?> testClass, ExtensionContext context) {
+	static ExtensionContext findProperlyScopedExtensionContext(Class<?> testClass, ExtensionContext context) {
 		if (useTestClassScopedExtensionContextCache.get(testClass)) {
 			while (context.getRequiredTestClass() != testClass) {
 				context = context.getParent().get();
